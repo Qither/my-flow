@@ -40,6 +40,6 @@ delta files put full requirement blocks under `## ADDED Requirements` (new),
 
 ## Lifecycle
 
-`interview` writes proposal.md -> `blueprint` writes design.md + tasks.md (+ delta specs) ->
-`execute` ticks tasks -> `audit` produces a PASS report -> `spec archive <name>` merges the
+`interview` writes proposal.md -> `mf-plan` writes design.md + tasks.md (+ delta specs) ->
+`execute` ticks tasks -> `mf-verify` produces a PASS report -> `spec archive <name>` merges the
 deltas into `specs/` and moves the change to `changes/archive/`.

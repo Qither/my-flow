@@ -7,7 +7,7 @@ argument-hint: "<change-name> [--team] [--worktree]"
 # Execute
 
 Work through `changes/<name>/tasks.md` to completion. `execute` never redesigns; if the
-design turns out wrong, stop, say so, and go back to {{CALL:blueprint}}.
+design turns out wrong, stop, say so, and go back to {{CALL:mf-plan}}.
 
 Input: {{ARGS}}
 
@@ -81,7 +81,7 @@ For each pending task, in order:
 2. Cleanup of your own diff only: dead code, debug output, stray TODOs, `.only` / `.skip`,
    commented-out blocks. Do not touch code outside the diff.
 3. Re-run step 1.
-4. Independent review: run {{CALL:audit}} <name> in a separate context. Optionally
+4. Independent review: run {{CALL:mf-verify}} <name> in a separate context. Optionally
    {{CALL:ask}} for a cross-model review of the diff.
 5. Only if the report says PASS: declare done. Tick any remaining meta task, set state to
    `done`, and suggest `{{CALL:spec}} archive <name>`.
@@ -97,5 +97,5 @@ After step 5, and only then, call `update_goal` with status `complete`.
 Change: <name>   Tasks: n/m ticked   Blocked: <ids or none>
 Rebuild / Re-run executed: <list>
 Verification: PASS | FAIL | INCOMPLETE (.my-flow/verify/<file>)
-Next: {{CALL:spec}} archive <name> | fix blockers | {{CALL:blueprint}} <name> (design change needed)
+Next: {{CALL:spec}} archive <name> | fix blockers | {{CALL:mf-plan}} <name> (design change needed)
 ```

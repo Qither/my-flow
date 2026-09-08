@@ -19,24 +19,24 @@ convention, not a state machine.
 
 ## 2. The four-stage flow
 
-`interview -> blueprint -> execute -> audit`. Each stage consumes the previous stage's
-artifact. (The skill names are deliberately distinct from the built-in `/plan`, `run`, and
+`interview -> mf-plan -> execute -> mf-verify`. Each stage consumes the previous stage's
+artifact. (The mf- prefixed skills are deliberately distinct from the built-in `/plan`, `run`, and
 `verify` commands.)
 
 | Request looks like | Stages to use |
 |---|---|
 | Concrete, single file, clear acceptance | `execute` only (or just do it) |
-| Concrete, multi-file or multi-module | `blueprint -> execute -> audit` |
-| Vague, no acceptance criteria, or "should we..." | `interview -> blueprint -> execute -> audit` |
-| Touches build config, shaders, engine modules, migrations, auth | never skip `blueprint` and `audit` |
+| Concrete, multi-file or multi-module | `mf-plan -> execute -> mf-verify` |
+| Vague, no acceptance criteria, or "should we..." | `interview -> mf-plan -> execute -> mf-verify` |
+| Touches build config, shaders, engine modules, migrations, auth | never skip `mf-plan` and `mf-verify` |
 
 Rules:
 - `interview` asks one question per round and stops when non-goals and decision boundaries
-  are explicit. Do not re-open the interview inside `blueprint`.
-- `blueprint` never implements. `execute` never redesigns; if the design is wrong, stop and
+  are explicit. Do not re-open the interview inside `mf-plan`.
+- `mf-plan` never implements. `execute` never redesigns; if the design is wrong, stop and
   go back.
-- `audit` runs in a separate context from the one that wrote the code.
-- Skills: {{CALL:interview}}, {{CALL:blueprint}}, {{CALL:execute}}, {{CALL:audit}}, {{CALL:ask}},
+- `mf-verify` runs in a separate context from the one that wrote the code.
+- Skills: {{CALL:interview}}, {{CALL:mf-plan}}, {{CALL:execute}}, {{CALL:mf-verify}}, {{CALL:ask}},
   {{CALL:learn}}, {{CALL:spec}}. When the user says "interview me", "plan this change",
   "run the change", "verify the change", "ask codex/claude", or "make this a skill", use the
   matching my-flow skill (not the built-in `/plan`, `run`, or `verify`).
@@ -58,7 +58,7 @@ Structure borrowed from OpenSpec; no external tool is involved. {{CALL:spec}} ha
   - `## Do-Not-Touch` - modules, directories, or files this change must not modify.
   - `## Rebuild / Re-run After Change` - what must be regenerated, rebuilt, cooked, or re-run
     after the edit (project files, build targets, caches, test suites).
-- When every box is ticked and `audit` passed, `{{CALL:spec}} archive <name>` merges the
+- When every box is ticked and `mf-verify` passed, `{{CALL:spec}} archive <name>` merges the
   delta specs into `specs/` and moves the change to `changes/archive/`.
 - Simplified fallback for small projects: one `docs/changes/<name>.md` with the same sections.
 
@@ -97,7 +97,7 @@ Codex is an advisor and cross-verifier in this workflow, not the primary executo
 - The writer and the verifier are separate passes. Never approve work in the same context
   that produced it.
 - Final gate, in order: (1) targeted verification of the change, (2) cleanup of your own
-  diff only, (3) re-verify, (4) independent review ({{CALL:audit}} or {{CALL:ask}}),
+  diff only, (3) re-verify, (4) independent review ({{CALL:mf-verify}} or {{CALL:ask}}),
   (5) declare done and tick the last box.
 
 ## 6. Cross-model rules

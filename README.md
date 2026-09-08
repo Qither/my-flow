@@ -2,7 +2,7 @@
 
 同時支援 **Claude Code** 與 **Codex CLI** 的輕量工作流層。不帶任何 runtime、不依賴任何外部工具，只有：
 
-- 一套四階段流程 `interview → blueprint → execute → audit`（skill 名刻意避開內建的 `/plan`、`run`、`verify`）
+- 一套四階段流程 `interview → mf-plan → execute → mf-verify`（skill 名刻意避開內建的 `/plan`、`run`、`verify`）
 - 七個 skills、四個唯讀為主的 subagent 角色
 - 兩個 hooks（開場注入 change 狀態、結束前擋假完成）
 - 一支跨模型顧問腳本（Claude 問 Codex、Codex 問 Claude，皆唯讀）
@@ -38,7 +38,7 @@ claude/         ← 產生：~/.claude/CLAUDE.md 用的核心區塊
 ### 單一來源的寫法
 
 - `{{ARGS}}` → Claude `$ARGUMENTS` / Codex `{{ARGUMENTS}}`
-- `{{CALL:blueprint}}` → Claude `/my-flow:blueprint` / Codex `$my-flow-blueprint`
+- `{{CALL:mf-plan}}` → Claude `/my-flow:mf-plan` / Codex `$my-flow-mf-plan`
 - `<!-- MY-FLOW:CLAUDE --> … <!-- /MY-FLOW:CLAUDE -->` 只在 Claude 版保留；`CODEX` 同理
 - skill 的工具白名單、agent 的模型層級在 `manifest.json`
 
@@ -104,21 +104,21 @@ node scripts/spec.mjs archive <name>    # 全勾且有 PASS 報告才歸檔，�
 | 需求 | 階段 |
 |---|---|
 | 單檔、明確、有驗收 | 直接 `execute`（或直接做） |
-| 多檔但明確 | `blueprint → execute → audit` |
-| 模糊、沒驗收條件 | `interview → blueprint → execute → audit` |
-| 動到 build 設定、shader、引擎模組、migration、auth | 不可跳過 `blueprint` 與 `audit` |
+| 多檔但明確 | `mf-plan → execute → mf-verify` |
+| 模糊、沒驗收條件 | `interview → mf-plan → execute → mf-verify` |
+| 動到 build 設定、shader、引擎模組、migration、auth | 不可跳過 `mf-plan` 與 `mf-verify` |
 
 | 階段 | skill | 為什麼不叫原本的名字 |
 |---|---|---|
 | 訪談 | `interview` | 無衝突 |
-| 規劃 | `blueprint` | Claude 內建 `/plan` 是 plan mode |
+| 規劃 | `mf-plan` | Claude 內建 `/plan` 是 plan mode |
 | 執行 | `execute` | Claude 內建 skill `run` 是「啟動專案的 app」 |
-| 驗證 | `audit` | Claude 內建 skill `verify` |
+| 驗證 | `mf-verify` | Claude 內建 skill `verify` |
 
-Claude：`/my-flow:interview`、`/my-flow:blueprint <name>`、`/my-flow:execute <name>`、`/my-flow:audit <name>`、`/my-flow:ask codex --diff "…"`、`/my-flow:learn`、`/my-flow:spec status`。
+Claude：`/my-flow:interview`、`/my-flow:mf-plan <name>`、`/my-flow:execute <name>`、`/my-flow:mf-verify <name>`、`/my-flow:ask codex --diff "…"`、`/my-flow:learn`、`/my-flow:spec status`。
 Codex：同名但寫成 `$my-flow-<skill>`。
 
-`execute` 在 Claude 會印出 `/goal …` 敘述請你貼上（skill 無法自己設 goal），在 Codex 則直接 `create_goal`。最終門檻順序固定：verify → cleanup → re-verify → 獨立 review（`audit`）→ done。
+`execute` 在 Claude 會印出 `/goal …` 敘述請你貼上（skill 無法自己設 goal），在 Codex 則直接 `create_goal`。最終門檻順序固定：verify → cleanup → re-verify → 獨立 review（`mf-verify`）→ done。
 
 ## Hooks
 

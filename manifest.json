@@ -6,13 +6,13 @@
     "interview": {
       "claude": { "allowed-tools": "Read Grep Glob Bash(git log:*) Bash(git status:*) Bash(node:*) Write AskUserQuestion" }
     },
-    "blueprint": {
+    "mf-plan": {
       "claude": { "allowed-tools": "Read Grep Glob Bash(git log:*) Bash(git status:*) Bash(node:*) Write Edit Agent" }
     },
     "execute": {
       "claude": {}
     },
-    "audit": {
+    "mf-verify": {
       "claude": { "allowed-tools": "Read Grep Glob Bash Agent Write" }
     },
     "ask": {

@@ -87,7 +87,7 @@ if (cmd === 'new') {
     cpSync(src, join(dir, f));
   }
   setState(name, 'new');
-  out({ change: name, dir }, `created changes/${name}/{proposal,design,tasks}.md\nnext: fill proposal.md (interview) -> design.md + tasks.md (blueprint)`);
+  out({ change: name, dir }, `created changes/${name}/{proposal,design,tasks}.md\nnext: fill proposal.md (interview) -> design.md + tasks.md (mf-plan)`);
   process.exit(0);
 }
 
