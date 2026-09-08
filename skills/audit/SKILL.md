@@ -1,15 +1,16 @@
 ---
-name: my-flow-verify
-description: "Independent, read-only verification of a change against tasks.md, spec scenarios, and design.md constraints, with fresh evidence and a PASS / FAIL / INCOMPLETE verdict. Use before any \"done\" claim."
+name: audit
+description: "Independent, read-only verification of a change against tasks.md, spec scenarios, and design.md constraints, with fresh evidence and a PASS / FAIL / INCOMPLETE verdict. Use before any \"done\" claim, or when the user says \"verify the change\". (Distinct from the built-in verify skill.)"
 argument-hint: "<change-name | acceptance criteria>"
+allowed-tools: Read Grep Glob Bash Agent Write
 ---
 
-# Verify
+# Audit (independent verification)
 
 Verification is a separate pass from writing. Never verify in the context that produced the
 code; delegate to the read-only `verifier` role and relay its report.
 
-Input: {{ARGUMENTS}}
+Input: $ARGUMENTS
 
 ## Steps
 
@@ -22,7 +23,8 @@ Input: {{ARGUMENTS}}
 2. Delegate to the `verifier` role with the criteria list, the change directory, and
    `git diff --name-only <base>` for the change. Instruct it to run every check itself.
 
-Spawn the native `verifier` subagent. Remind it that it must not edit files.
+Use the Agent tool with `subagent_type: my-flow:verifier`. Do not run the checks in this
+context first; the point is a fresh, independent pass.
 
 3. The verifier must:
    - run build, tests, type-check, and project verification commands and quote fresh output,

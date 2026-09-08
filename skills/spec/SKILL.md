@@ -20,7 +20,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/spec.mjs" <subcommand> [args] [--json]
 
 Creates `changes/<name>/{proposal,design,tasks}.md` from `changes/.templates/` (or the
 plugin templates) and sets `.my-flow/state/current-change.json` to stage `new`. Name must be
-kebab-case. Then continue with /my-flow:interview or /my-flow:plan.
+kebab-case. Then continue with /my-flow:interview or /my-flow:blueprint.
 
 ## status [name]
 

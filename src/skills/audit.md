@@ -1,10 +1,10 @@
 ---
-name: verify
-description: Independent, read-only verification of a change against tasks.md, spec scenarios, and design.md constraints, with fresh evidence and a PASS / FAIL / INCOMPLETE verdict. Use before any "done" claim.
+name: audit
+description: Independent, read-only verification of a change against tasks.md, spec scenarios, and design.md constraints, with fresh evidence and a PASS / FAIL / INCOMPLETE verdict. Use before any "done" claim, or when the user says "verify the change". (Distinct from the built-in verify skill.)
 argument-hint: "<change-name | acceptance criteria>"
 ---
 
-# Verify
+# Audit (independent verification)
 
 Verification is a separate pass from writing. Never verify in the context that produced the
 code; delegate to the read-only `verifier` role and relay its report.

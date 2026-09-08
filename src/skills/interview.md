@@ -15,7 +15,7 @@ Input: {{ARGS}}
 
 - Use when the request has no acceptance criteria, no file or symbol anchors, or asks
   "should we ...". Also when the user explicitly asks to be interviewed.
-- Skip (go straight to {{CALL:plan}} or {{CALL:run}}) when the request already names the
+- Skip (go straight to {{CALL:blueprint}} or {{CALL:execute}}) when the request already names the
   files or symbols, the expected behavior, and how to check it.
 
 ## Flags
@@ -94,5 +94,5 @@ the hard cap. Never exit silently; always print the handoff block.
 ## Handoff
 Change: changes/<name>    Ambiguity: 0.NN (threshold 0.NN)
 Residual risk: none | <one line>
-Next: {{CALL:plan}} <name>   (or {{CALL:run}} <name> if the design is trivial)
+Next: {{CALL:blueprint}} <name>   (or {{CALL:execute}} <name> if the design is trivial)
 ```

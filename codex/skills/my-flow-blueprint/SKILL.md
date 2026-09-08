@@ -1,10 +1,10 @@
 ---
-name: my-flow-plan
-description: "Consensus planning - planner drafts design.md and tasks.md, architect and critic review in sequence until approved. Use for multi-file changes, anything touching build config, shaders, engine modules, migrations, or auth."
+name: my-flow-blueprint
+description: "Consensus planning for a change - planner drafts design.md and tasks.md, architect and critic review in sequence until approved. Use for multi-file changes, anything touching build config, shaders, engine modules, migrations, or auth, or when the user says \"plan this change\". (Distinct from the built-in /plan mode.)"
 argument-hint: "<change-name | free text> [--deliberate]"
 ---
 
-# Plan
+# Blueprint (consensus plan)
 
 Produce `design.md` and `tasks.md` for one change, reviewed to consensus. Planning only:
 this skill never edits source files.
@@ -44,7 +44,7 @@ would change the task breakdown; look everything else up.
 6. Write the artifacts. Add delta specs under `changes/<name>/specs/<capability>/spec.md`
    only if the proposal lists capabilities (ADDED / MODIFIED / REMOVED requirements with
    WHEN / THEN scenarios). Run `$my-flow-spec validate <name>` and fix every error.
-7. Update `.my-flow/state/current-change.json` to stage `plan`.
+7. Update `.my-flow/state/current-change.json` to stage `blueprint`.
 
 Delegation: spawn the native subagents `planner`, `architect`, `critic` one at a time, in
 that order; each reviewer must see the previous output. Never batch them in parallel.
@@ -69,5 +69,5 @@ that order; each reviewer must see the previous output. Never batch them in para
 ## Handoff
 Change: changes/<name>   Review: architect CLEAR|WATCH, critic OKAY (iteration n)
 Rebuild / Re-run: <echo the list from design.md>
-Next: $my-flow-run <name>
+Next: $my-flow-execute <name>
 ```

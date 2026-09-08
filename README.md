@@ -2,7 +2,7 @@
 
 同時支援 **Claude Code** 與 **Codex CLI** 的輕量工作流層。不帶任何 runtime、不依賴任何外部工具，只有：
 
-- 一套四階段流程 `interview → plan → run → verify`
+- 一套四階段流程 `interview → blueprint → execute → audit`（skill 名刻意避開內建的 `/plan`、`run`、`verify`）
 - 七個 skills、四個唯讀為主的 subagent 角色
 - 兩個 hooks（開場注入 change 狀態、結束前擋假完成）
 - 一支跨模型顧問腳本（Claude 問 Codex、Codex 問 Claude，皆唯讀）
@@ -15,7 +15,7 @@
 | 工具 / 專案 | 角色 |
 |---|---|
 | Claude Code | 日常互動式開發的主 executor（原生 agent teams + `/goal`） |
-| Codex | 顧問與交叉驗證：審 design、審 diff、當裁判；只有明確呼叫 `$my-flow-run` 才實作 |
+| Codex | 顧問與交叉驗證：審 design、審 diff、當裁判；只有明確呼叫 `$my-flow-execute` 才實作 |
 | OpenSpec | 只借用思想與目錄結構（specs / changes / delta spec / tasks.md 勾選框）；不裝 CLI、不裝 `/opsx` |
 | oh-my-claudecode | 選配。my-flow 已補上跨模型顧問與 skill 萃取；HUD 請用 claude-hud |
 | oh-my-codex | 不需要。流程精華已抽進 `src/core/core.md` 與 skills |
@@ -38,7 +38,7 @@ claude/         ← 產生：~/.claude/CLAUDE.md 用的核心區塊
 ### 單一來源的寫法
 
 - `{{ARGS}}` → Claude `$ARGUMENTS` / Codex `{{ARGUMENTS}}`
-- `{{CALL:plan}}` → Claude `/my-flow:plan` / Codex `$my-flow-plan`
+- `{{CALL:blueprint}}` → Claude `/my-flow:blueprint` / Codex `$my-flow-blueprint`
 - `<!-- MY-FLOW:CLAUDE --> … <!-- /MY-FLOW:CLAUDE -->` 只在 Claude 版保留；`CODEX` 同理
 - skill 的工具白名單、agent 的模型層級在 `manifest.json`
 
@@ -103,15 +103,22 @@ node scripts/spec.mjs archive <name>    # 全勾且有 PASS 報告才歸檔，�
 
 | 需求 | 階段 |
 |---|---|
-| 單檔、明確、有驗收 | 直接 `run`（或直接做） |
-| 多檔但明確 | `plan → run → verify` |
-| 模糊、沒驗收條件 | `interview → plan → run → verify` |
-| 動到 build 設定、shader、引擎模組、migration、auth | 不可跳過 `plan` 與 `verify` |
+| 單檔、明確、有驗收 | 直接 `execute`（或直接做） |
+| 多檔但明確 | `blueprint → execute → audit` |
+| 模糊、沒驗收條件 | `interview → blueprint → execute → audit` |
+| 動到 build 設定、shader、引擎模組、migration、auth | 不可跳過 `blueprint` 與 `audit` |
 
-Claude：`/my-flow:interview`、`/my-flow:plan <name>`、`/my-flow:run <name>`、`/my-flow:verify <name>`、`/my-flow:ask codex --diff "…"`、`/my-flow:learn`、`/my-flow:spec status`。
+| 階段 | skill | 為什麼不叫原本的名字 |
+|---|---|---|
+| 訪談 | `interview` | 無衝突 |
+| 規劃 | `blueprint` | Claude 內建 `/plan` 是 plan mode |
+| 執行 | `execute` | Claude 內建 skill `run` 是「啟動專案的 app」 |
+| 驗證 | `audit` | Claude 內建 skill `verify` |
+
+Claude：`/my-flow:interview`、`/my-flow:blueprint <name>`、`/my-flow:execute <name>`、`/my-flow:audit <name>`、`/my-flow:ask codex --diff "…"`、`/my-flow:learn`、`/my-flow:spec status`。
 Codex：同名但寫成 `$my-flow-<skill>`。
 
-`run` 在 Claude 會印出 `/goal …` 敘述請你貼上（skill 無法自己設 goal），在 Codex 則直接 `create_goal`。最終門檻順序固定：verify → cleanup → re-verify → 獨立 review → done。
+`execute` 在 Claude 會印出 `/goal …` 敘述請你貼上（skill 無法自己設 goal），在 Codex 則直接 `create_goal`。最終門檻順序固定：verify → cleanup → re-verify → 獨立 review（`audit`）→ done。
 
 ## Hooks
 

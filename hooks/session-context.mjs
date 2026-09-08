@@ -70,7 +70,7 @@ if (existsSync(changesDir)) {
   } else {
     lines.push('changes/ exists but has no active change.');
   }
-  lines.push('Flow: interview -> plan -> run -> verify. tasks.md checkboxes are the only progress ledger; design.md Do-Not-Touch and Rebuild / Re-run sections are hard rules.');
+  lines.push('Flow (my-flow skills): interview -> blueprint -> execute -> audit. tasks.md checkboxes are the only progress ledger; design.md Do-Not-Touch and Rebuild / Re-run sections are hard rules.');
 } else if (current?.change) {
   lines.push(`Current change "${current.change}" (stage: ${current.stage ?? 'unknown'}), simple mode (docs/changes/).`);
 }

@@ -16,7 +16,7 @@ Input: $ARGUMENTS
 
 - Use when the request has no acceptance criteria, no file or symbol anchors, or asks
   "should we ...". Also when the user explicitly asks to be interviewed.
-- Skip (go straight to /my-flow:plan or /my-flow:run) when the request already names the
+- Skip (go straight to /my-flow:blueprint or /my-flow:execute) when the request already names the
   files or symbols, the expected behavior, and how to check it.
 
 ## Flags
@@ -89,5 +89,5 @@ the hard cap. Never exit silently; always print the handoff block.
 ## Handoff
 Change: changes/<name>    Ambiguity: 0.NN (threshold 0.NN)
 Residual risk: none | <one line>
-Next: /my-flow:plan <name>   (or /my-flow:run <name> if the design is trivial)
+Next: /my-flow:blueprint <name>   (or /my-flow:execute <name> if the design is trivial)
 ```

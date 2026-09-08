@@ -21,23 +21,27 @@ convention, not a state machine.
 
 ## 2. The four-stage flow
 
-`interview -> plan -> run -> verify`. Each stage consumes the previous stage's artifact.
+`interview -> blueprint -> execute -> audit`. Each stage consumes the previous stage's
+artifact. (The skill names are deliberately distinct from the built-in `/plan`, `run`, and
+`verify` commands.)
 
 | Request looks like | Stages to use |
 |---|---|
-| Concrete, single file, clear acceptance | `run` only (or just do it) |
-| Concrete, multi-file or multi-module | `plan -> run -> verify` |
-| Vague, no acceptance criteria, or "should we..." | `interview -> plan -> run -> verify` |
-| Touches build config, shaders, engine modules, migrations, auth | never skip `plan` and `verify` |
+| Concrete, single file, clear acceptance | `execute` only (or just do it) |
+| Concrete, multi-file or multi-module | `blueprint -> execute -> audit` |
+| Vague, no acceptance criteria, or "should we..." | `interview -> blueprint -> execute -> audit` |
+| Touches build config, shaders, engine modules, migrations, auth | never skip `blueprint` and `audit` |
 
 Rules:
 - `interview` asks one question per round and stops when non-goals and decision boundaries
-  are explicit. Do not re-open the interview inside `plan`.
-- `plan` never implements. `run` never redesigns; if the design is wrong, stop and go back.
-- `verify` runs in a separate context from the one that wrote the code.
-- Skills: $my-flow-interview, $my-flow-plan, $my-flow-run, $my-flow-verify, $my-flow-ask,
-  $my-flow-learn, $my-flow-spec. When the user says "interview me", "plan this", "run the
-  change", "verify", "ask codex/claude", or "make this a skill", use the matching skill.
+  are explicit. Do not re-open the interview inside `blueprint`.
+- `blueprint` never implements. `execute` never redesigns; if the design is wrong, stop and
+  go back.
+- `audit` runs in a separate context from the one that wrote the code.
+- Skills: $my-flow-interview, $my-flow-blueprint, $my-flow-execute, $my-flow-audit, $my-flow-ask,
+  $my-flow-learn, $my-flow-spec. When the user says "interview me", "plan this change",
+  "run the change", "verify the change", "ask codex/claude", or "make this a skill", use the
+  matching my-flow skill (not the built-in `/plan`, `run`, or `verify`).
 
 ## 3. The intent layer (specs/ and changes/)
 
@@ -56,7 +60,7 @@ Structure borrowed from OpenSpec; no external tool is involved. $my-flow-spec ha
   - `## Do-Not-Touch` - modules, directories, or files this change must not modify.
   - `## Rebuild / Re-run After Change` - what must be regenerated, rebuilt, cooked, or re-run
     after the edit (project files, build targets, caches, test suites).
-- When every box is ticked and `verify` passed, `$my-flow-spec archive <name>` merges the
+- When every box is ticked and `audit` passed, `$my-flow-spec archive <name>` merges the
   delta specs into `specs/` and moves the change to `changes/archive/`.
 - Simplified fallback for small projects: one `docs/changes/<name>.md` with the same sections.
 
@@ -64,8 +68,8 @@ Structure borrowed from OpenSpec; no external tool is involved. $my-flow-spec ha
 
 Codex is an advisor and cross-verifier in this workflow, not the primary executor.
 - Default to reviewing, planning, and verifying. Implement only when the user explicitly
-  invokes `$my-flow-run` or asks for code changes.
-- Do not create goals unless the user invokes `$my-flow-run`. One goal per thread; ask the
+  invokes `$my-flow-execute` or asks for code changes.
+- Do not create goals unless the user invokes `$my-flow-execute`. One goal per thread; ask the
   user to clear a stale goal in the UI rather than working around it.
 - Native subagents `planner`, `architect`, `critic`, `verifier` live in `~/.codex/agents/`.
   Treat architect, critic, and verifier as read-only: they report, they do not edit.
@@ -80,7 +84,7 @@ Codex is an advisor and cross-verifier in this workflow, not the primary executo
 - The writer and the verifier are separate passes. Never approve work in the same context
   that produced it.
 - Final gate, in order: (1) targeted verification of the change, (2) cleanup of your own
-  diff only, (3) re-verify, (4) independent review ($my-flow-verify or $my-flow-ask),
+  diff only, (3) re-verify, (4) independent review ($my-flow-audit or $my-flow-ask),
   (5) declare done and tick the last box.
 
 ## 6. Cross-model rules

@@ -10,7 +10,7 @@ Input: {{ARGS}}
 
 ## When to use
 
-- A second opinion on `design.md` before {{CALL:run}}.
+- A second opinion on `design.md` before {{CALL:execute}}.
 - A review of the diff before the final gate.
 - The plan review loop is stuck after two iterations.
 - Unfamiliar SDK, engine, or API behavior where two independent readings reduce risk.

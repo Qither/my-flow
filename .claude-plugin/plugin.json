@@ -16,9 +16,9 @@
   ],
   "skills": [
     "./skills/interview/",
-    "./skills/plan/",
-    "./skills/run/",
-    "./skills/verify/",
+    "./skills/blueprint/",
+    "./skills/execute/",
+    "./skills/audit/",
     "./skills/ask/",
     "./skills/learn/",
     "./skills/spec/"

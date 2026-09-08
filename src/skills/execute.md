@@ -1,13 +1,13 @@
 ---
-name: run
-description: Execute a planned change task by task with tasks.md as the only progress ledger, wrapped in a native goal, ending with the fixed final quality gate. Use when tasks.md has unchecked boxes.
+name: execute
+description: Execute a planned change task by task with tasks.md as the only progress ledger, wrapped in a native goal, ending with the fixed final quality gate. Use when tasks.md has unchecked boxes or the user says "run the change". (Distinct from the built-in run skill, which launches the app.)
 argument-hint: "<change-name> [--team] [--worktree]"
 ---
 
-# Run
+# Execute
 
-Execute `changes/<name>/tasks.md` to completion. `run` never redesigns; if the
-design turns out wrong, stop, say so, and go back to {{CALL:plan}}.
+Work through `changes/<name>/tasks.md` to completion. `execute` never redesigns; if the
+design turns out wrong, stop, say so, and go back to {{CALL:blueprint}}.
 
 Input: {{ARGS}}
 
@@ -18,7 +18,7 @@ Input: {{ARGS}}
    the whole run.
 3. `git status --short --branch`. If the tree is dirty with unrelated work, tell the user
    before continuing.
-4. Write `.my-flow/state/current-change.json` with stage `run`.
+4. Write `.my-flow/state/current-change.json` with stage `execute`.
 
 ## 2. Goal statement
 
@@ -81,7 +81,7 @@ For each pending task, in order:
 2. Cleanup of your own diff only: dead code, debug output, stray TODOs, `.only` / `.skip`,
    commented-out blocks. Do not touch code outside the diff.
 3. Re-run step 1.
-4. Independent review: run {{CALL:verify}} <name> in a separate context. Optionally
+4. Independent review: run {{CALL:audit}} <name> in a separate context. Optionally
    {{CALL:ask}} for a cross-model review of the diff.
 5. Only if the report says PASS: declare done. Tick any remaining meta task, set state to
    `done`, and suggest `{{CALL:spec}} archive <name>`.
@@ -97,5 +97,5 @@ After step 5, and only then, call `update_goal` with status `complete`.
 Change: <name>   Tasks: n/m ticked   Blocked: <ids or none>
 Rebuild / Re-run executed: <list>
 Verification: PASS | FAIL | INCOMPLETE (.my-flow/verify/<file>)
-Next: {{CALL:spec}} archive <name> | fix blockers | {{CALL:plan}} <name> (design change needed)
+Next: {{CALL:spec}} archive <name> | fix blockers | {{CALL:blueprint}} <name> (design change needed)
 ```

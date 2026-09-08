@@ -83,6 +83,6 @@ if (!/^\.my-flow\/?$/m.test(giText)) {
 
 console.log(`
 Done. Start with:
-  interview -> plan -> run -> verify   (Claude: /my-flow:<skill>, Codex: $my-flow-<skill>)
+  interview -> blueprint -> execute -> audit   (Claude: /my-flow:<skill>, Codex: $my-flow-<skill>)
   new change: node "${join(ROOT, 'scripts', 'spec.mjs')}" new <name>
 Fill in the "Project facts" section of CLAUDE.md / AGENTS.md before the first plan.`);

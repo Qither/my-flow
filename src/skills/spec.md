@@ -26,7 +26,7 @@ node "{{MYFLOW_ROOT}}/scripts/spec.mjs" <subcommand> [args] [--json]
 
 Creates `changes/<name>/{proposal,design,tasks}.md` from `changes/.templates/` (or the
 plugin templates) and sets `.my-flow/state/current-change.json` to stage `new`. Name must be
-kebab-case. Then continue with {{CALL:interview}} or {{CALL:plan}}.
+kebab-case. Then continue with {{CALL:interview}} or {{CALL:blueprint}}.
 
 ## status [name]
 
