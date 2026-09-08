@@ -6,8 +6,8 @@ In this workflow Codex is an advisor and cross-verifier: review, plan, verify; i
 only when explicitly asked. Skills: `$my-flow-interview`, `$my-flow-plan`, `$my-flow-run`,
 `$my-flow-verify`, `$my-flow-ask`, `$my-flow-learn`, `$my-flow-spec`.
 
-Intent lives in `openspec/changes/<name>/` (`proposal.md`, `design.md`, `tasks.md`);
-`tasks.md` checkboxes are the only progress ledger.
+Intent lives in `changes/<name>/` (`proposal.md`, `design.md`, `tasks.md`); current truth in
+`specs/`; `tasks.md` checkboxes are the only progress ledger. See `specs/README.md`.
 
 ## Project facts (fill in)
 

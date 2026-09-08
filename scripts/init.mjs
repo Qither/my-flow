@@ -2,16 +2,15 @@
 /**
  * my-flow init [--simple] [--tools claude,codex] [dir]
  *
- * Sets up a project for the my-flow workflow:
- *   - runs `openspec init --tools <tools>` when the CLI is available (unless --simple)
- *   - appends the project CLAUDE.md / AGENTS.md blocks and .claude/rules/openspec.md
- *   - creates .my-flow/ and git-ignores it
- *   - --simple: no OpenSpec; creates docs/changes/ with a single-file change template
+ * Sets up a project for the my-flow workflow. No external tools are required.
+ *   default : creates specs/ (current truth) and changes/ (intent per change) with templates
+ *   --simple: no specs/ or changes/; one markdown file per change under docs/changes/
+ * Both modes append the project CLAUDE.md / AGENTS.md blocks, add .claude/rules/specs.md,
+ * create .my-flow/ and git-ignore it.
  */
 import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnCli } from './lib/spawn.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
@@ -38,45 +37,36 @@ function upsert(path, block) {
   writeFileSync(path, out, 'utf8');
   console.log(`${s !== -1 ? 'updated' : 'wrote'} ${path}`);
 }
+function copyIfMissing(from, to) {
+  if (existsSync(to)) return false;
+  mkdirSync(dirname(to), { recursive: true });
+  cpSync(from, to);
+  console.log(`wrote ${to}`);
+  return true;
+}
 
 console.log(`my-flow init -> ${project}${SIMPLE ? ' (simple mode)' : ''}`);
 
-// 1. OpenSpec
+// 1. intent layer
 if (!SIMPLE) {
-  const has = spawnCli('openspec', ['--version'], { encoding: 'utf8' }).result;
-  if (has.status === 0) {
-    if (existsSync(join(project, 'openspec'))) {
-      console.log('openspec/ already exists; skipping openspec init (run `openspec update` yourself if needed)');
-    } else {
-      const r = spawnCli('openspec', ['init', '--tools', tools, project], { stdio: 'inherit' }).result;
-      if (r.status !== 0) console.log('openspec init failed; continuing with templates only');
-    }
-  } else {
-    console.log('openspec CLI not found. Install with: npm i -g @fission-ai/openspec   (continuing with templates only)');
-    mkdirSync(join(project, 'openspec', 'specs'), { recursive: true });
-    mkdirSync(join(project, 'openspec', 'changes', 'archive'), { recursive: true });
+  mkdirSync(join(project, 'specs'), { recursive: true });
+  mkdirSync(join(project, 'changes', 'archive'), { recursive: true });
+  copyIfMissing(join(T, 'specs-README.md'), join(project, 'specs', 'README.md'));
+  for (const f of ['proposal.md', 'design.md', 'tasks.md']) {
+    copyIfMissing(join(T, 'change', f), join(project, 'changes', '.templates', f));
   }
-  // my-flow change templates (design.md carries the two required sections)
-  const dest = join(project, 'openspec', 'templates');
-  mkdirSync(dest, { recursive: true });
-  for (const f of ['proposal.md', 'design.md', 'tasks.md']) cpSync(join(T, 'openspec', f), join(dest, f));
-  console.log(`wrote ${dest}/{proposal,design,tasks}.md`);
+  for (const d of ['specs', 'changes/archive']) {
+    const keep = join(project, d, '.gitkeep');
+    if (!existsSync(keep)) writeFileSync(keep, '');
+  }
 } else {
-  const dest = join(project, 'docs', 'changes');
-  mkdirSync(dest, { recursive: true });
-  cpSync(join(T, 'simple', 'change.md'), join(dest, '_template.md'));
-  console.log(`wrote ${dest}/_template.md`);
+  copyIfMissing(join(T, 'simple', 'change.md'), join(project, 'docs', 'changes', '_template.md'));
 }
 
 // 2. project blocks
 if (tools.includes('claude')) {
   upsert(join(project, 'CLAUDE.md'), readFileSync(join(T, 'project', 'CLAUDE.md'), 'utf8'));
-  const rule = join(project, '.claude', 'rules', 'openspec.md');
-  if (!existsSync(rule)) {
-    mkdirSync(dirname(rule), { recursive: true });
-    cpSync(join(T, 'project', 'rules', 'openspec.md'), rule);
-    console.log(`wrote ${rule}`);
-  }
+  copyIfMissing(join(T, 'project', 'rules', 'specs.md'), join(project, '.claude', 'rules', 'specs.md'));
 }
 if (tools.includes('codex')) {
   upsert(join(project, 'AGENTS.md'), readFileSync(join(T, 'project', 'AGENTS.md'), 'utf8'));
@@ -94,4 +84,5 @@ if (!/^\.my-flow\/?$/m.test(giText)) {
 console.log(`
 Done. Start with:
   interview -> plan -> run -> verify   (Claude: /my-flow:<skill>, Codex: $my-flow-<skill>)
+  new change: node "${join(ROOT, 'scripts', 'spec.mjs')}" new <name>
 Fill in the "Project facts" section of CLAUDE.md / AGENTS.md before the first plan.`);

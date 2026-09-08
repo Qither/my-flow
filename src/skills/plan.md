@@ -13,22 +13,23 @@ Input: {{ARGS}}
 
 ## Inputs
 
-- A change name: load `openspec/changes/<name>/proposal.md`.
-- Free text: write a short `proposal.md` inline first (Why / What Changes / Non-Goals /
-  Decision Boundaries / Success Criteria). Do not start an interview here; if the text is too
-  vague to write those sections, stop and suggest {{CALL:interview}}.
+- A change name: load `changes/<name>/proposal.md`.
+- Free text: create the change with `{{CALL:spec}} new <name>` and write a short
+  `proposal.md` inline first (Why / What Changes / Non-Goals / Decision Boundaries / Success
+  Criteria). Do not start an interview here; if the text is too vague to write those
+  sections, stop and suggest {{CALL:interview}}.
 - `--deliberate`: add a three-scenario pre-mortem and an explicit test plan
   (unit / integration / end-to-end / observability). Auto-enable for auth, migrations,
   destructive operations, public API changes, build or shader pipeline changes.
 
 ## Boundary
 
-Writes only under `openspec/changes/<name>/` and `.my-flow/`. Ask the user only when a
-decision would change the task breakdown; look everything else up.
+Writes only under `changes/<name>/` and `.my-flow/`. Ask the user only when a decision
+would change the task breakdown; look everything else up.
 
 ## Steps
 
-1. Load `proposal.md`, related `openspec/specs/**`, project `CLAUDE.md` / `AGENTS.md`.
+1. Load `proposal.md`, related `specs/**/spec.md`, project `CLAUDE.md` / `AGENTS.md`.
 2. **Planner** drafts. Delegate to the `planner` role with the proposal and the paths it
    touches. Expected output: PLAN-DR header (Principles 3-5, Decision Drivers top 3, Viable
    Options >= 2 or explicit invalidation), `design.md`, `tasks.md`.
@@ -40,10 +41,9 @@ decision would change the task breakdown; look everything else up.
    Maximum three iterations. After two failed iterations, offer {{CALL:ask}} as a
    tie-breaker. If still not approved, present the best version and the open findings; do
    not pretend consensus.
-6. Write the artifacts. If the `openspec` CLI exists run
-   `openspec validate <name> --strict` and fix format errors. Add delta specs under
-   `changes/<name>/specs/<capability>/spec.md` only if the proposal lists capabilities;
-   otherwise ensure `.openspec.yaml` has `skip_specs: true`.
+6. Write the artifacts. Add delta specs under `changes/<name>/specs/<capability>/spec.md`
+   only if the proposal lists capabilities (ADDED / MODIFIED / REMOVED requirements with
+   WHEN / THEN scenarios). Run `{{CALL:spec}} validate <name>` and fix every error.
 7. Update `.my-flow/state/current-change.json` to stage `plan`.
 
 <!-- MY-FLOW:CLAUDE -->
@@ -74,7 +74,7 @@ that order; each reviewer must see the previous output. Never batch them in para
 
 ```
 ## Handoff
-Change: openspec/changes/<name>   Review: architect CLEAR|WATCH, critic OKAY (iteration n)
+Change: changes/<name>   Review: architect CLEAR|WATCH, critic OKAY (iteration n)
 Rebuild / Re-run: <echo the list from design.md>
 Next: {{CALL:run}} <name>
 ```

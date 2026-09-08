@@ -6,7 +6,7 @@ argument-hint: "<change-name> [--team] [--worktree]"
 
 # Run
 
-Execute `openspec/changes/<name>/tasks.md` to completion. `run` never redesigns; if the
+Execute `changes/<name>/tasks.md` to completion. `run` never redesigns; if the
 design turns out wrong, stop, say so, and go back to $my-flow-plan.
 
 Input: {{ARGUMENTS}}
@@ -25,7 +25,7 @@ Input: {{ARGUMENTS}}
 Compose one statement (under 4000 characters):
 
 ```
-Complete every unchecked task in openspec/changes/<name>/tasks.md, in order, under the
+Complete every unchecked task in changes/<name>/tasks.md, in order, under the
 constraints of design.md: never modify anything listed in Do-Not-Touch; after each task run
 the Rebuild / Re-run steps that apply to it. Tick a box only after that task's own
 verification passed. Done only when every box is ticked, the final gate has run in order
@@ -63,7 +63,7 @@ For each pending task, in order:
 4. Independent review: run $my-flow-verify <name> in a separate context. Optionally
    $my-flow-ask for a cross-model review of the diff.
 5. Only if the report says PASS: declare done. Tick any remaining meta task, set state to
-   `done`, and suggest `openspec archive <name>`.
+   `done`, and suggest `$my-flow-spec archive <name>`.
 
 After step 5, and only then, call `update_goal` with status `complete`.
 
@@ -74,5 +74,5 @@ After step 5, and only then, call `update_goal` with status `complete`.
 Change: <name>   Tasks: n/m ticked   Blocked: <ids or none>
 Rebuild / Re-run executed: <list>
 Verification: PASS | FAIL | INCOMPLETE (.my-flow/verify/<file>)
-Next: openspec archive <name> | fix blockers | $my-flow-plan <name> (design change needed)
+Next: $my-flow-spec archive <name> | fix blockers | $my-flow-plan <name> (design change needed)
 ```

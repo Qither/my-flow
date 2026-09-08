@@ -14,9 +14,9 @@ Input: {{ARGUMENTS}}
 ## Steps
 
 1. Assemble the criteria:
-   - every line of `openspec/changes/<name>/tasks.md` (ticked boxes are claims to check),
+   - every line of `changes/<name>/tasks.md` (ticked boxes are claims to check),
    - every `#### Scenario:` (WHEN / THEN) in `changes/<name>/specs/**` and the touched
-     `openspec/specs/**`,
+     `specs/**`,
    - `design.md` `## Do-Not-Touch` and `## Rebuild / Re-run After Change`,
    - or, without a change, the acceptance criteria given in the input.
 2. Delegate to the `verifier` role with the criteria list, the change directory, and

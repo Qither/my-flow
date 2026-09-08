@@ -1,14 +1,14 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "my-flow",
-  "description": "Lightweight cross-tool workflow layer for Claude Code and Codex CLI (interview -> plan -> run -> verify, OpenSpec as the intent layer)",
+  "description": "Lightweight cross-tool workflow layer for Claude Code and Codex CLI (interview -> plan -> run -> verify, specs/ + changes/ as the intent layer)",
   "owner": {
     "name": "Qither"
   },
   "plugins": [
     {
       "name": "my-flow",
-      "description": "Four-stage workflow (interview, plan, run, verify) with read-only reviewer subagents, a cross-model advisor, and OpenSpec change files as the record of intent.",
+      "description": "Four-stage workflow (interview, plan, run, verify) with read-only reviewer subagents, a cross-model advisor, and changes/<name> files as the record of intent.",
       "version": "0.1.0",
       "author": {
         "name": "Qither"
@@ -16,7 +16,7 @@
       "source": "./",
       "category": "productivity",
       "homepage": "https://github.com/Qither/my-flow",
-      "tags": ["workflow", "openspec", "codex", "planning", "verification"]
+      "tags": ["workflow", "specs", "codex", "planning", "verification"]
     }
   ],
   "version": "0.1.0"

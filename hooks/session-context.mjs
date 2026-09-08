@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * SessionStart hook (Claude Code + Codex): inject the active OpenSpec change status so a
- * fresh session knows where the previous one stopped. Always exits 0; fails open.
+ * SessionStart hook (Claude Code + Codex): inject the active change status so a fresh
+ * session knows where the previous one stopped. Pure file scan, no external tools.
+ * Always exits 0; fails open.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { readHookInput } from './lib/stdin.mjs';
 
 const skip = (process.env.MY_FLOW_SKIP_HOOKS ?? '').split(',').map((s) => s.trim());
@@ -16,73 +16,63 @@ if (skip.includes('session-context') || skip.includes('all')) {
 
 const input = await readHookInput();
 const cwd = typeof input.cwd === 'string' && input.cwd ? input.cwd : process.cwd();
-const specRoot = join(cwd, 'openspec');
+const changesDir = join(cwd, 'changes');
 const lines = [];
 
-function runOpenspec(args) {
+const read = (p) => {
   try {
-    // openspec is an npm shim (.cmd on Windows), so it must go through a shell; pass one
-    // pre-joined string to avoid Node's shell+array deprecation. Args here contain no spaces.
-    const r = spawnSync(['openspec', ...args].join(' '), {
-      cwd,
-      encoding: 'utf8',
-      timeout: 5000,
-      shell: true,
-      windowsHide: true,
-    });
-    if (r.status !== 0 || !r.stdout) return null;
-    return JSON.parse(r.stdout);
+    return readFileSync(p, 'utf8');
   } catch {
     return null;
   }
-}
-
+};
 function countTasks(tasksPath) {
-  if (!existsSync(tasksPath)) return null;
-  const text = readFileSync(tasksPath, 'utf8');
+  const text = read(tasksPath);
+  if (text === null) return null;
   const done = (text.match(/^\s*- \[x\]/gim) ?? []).length;
   const open = (text.match(/^\s*- \[ \]/gm) ?? []).length;
   return { done, total: done + open };
 }
+const norm = (s) => (s ?? '').replace(/\r\n/g, '\n').trim();
+function artifacts(dir) {
+  return ['proposal', 'design', 'tasks']
+    .map((f) => {
+      const t = read(join(dir, `${f}.md`));
+      if (t === null) return `${f}=missing`;
+      const tpl = read(join(changesDir, '.templates', `${f}.md`));
+      if (tpl !== null && norm(tpl) === norm(t)) return `${f}=empty`; // untouched template
+      const meaningful = t.replace(/<!--[\s\S]*?-->/g, '').split('\n').some((l) => l.trim() && !/^#/.test(l.trim()));
+      return `${f}=${meaningful ? 'done' : 'empty'}`;
+    })
+    .join(' ');
+}
 
 let current = null;
 try {
-  const statePath = join(cwd, '.my-flow', 'state', 'current-change.json');
-  if (existsSync(statePath)) current = JSON.parse(readFileSync(statePath, 'utf8'));
+  current = JSON.parse(read(join(cwd, '.my-flow', 'state', 'current-change.json')) ?? 'null');
 } catch {
   current = null;
 }
 
-if (existsSync(specRoot)) {
-  const changesDir = join(specRoot, 'changes');
-  const changes = existsSync(changesDir)
-    ? readdirSync(changesDir, { withFileTypes: true })
-        .filter((d) => d.isDirectory() && d.name !== 'archive')
-        .map((d) => d.name)
-    : [];
+if (existsSync(changesDir)) {
+  const changes = readdirSync(changesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && d.name !== 'archive' && !d.name.startsWith('.') && !d.name.startsWith('_'))
+    .map((d) => d.name)
+    .sort();
   if (changes.length) {
-    lines.push('Active OpenSpec changes (openspec/changes/):');
-    for (const name of changes.slice(0, 8)) {
-      const t = countTasks(join(changesDir, name, 'tasks.md'));
-      const mark = current?.change === name ? ' <- current' : '';
-      lines.push(`- ${name}: ${t ? `${t.done}/${t.total} tasks ticked` : 'no tasks.md yet'}${mark}`);
+    lines.push('Active changes (changes/<name>/):');
+    for (const n of changes.slice(0, 8)) {
+      const t = countTasks(join(changesDir, n, 'tasks.md'));
+      const mark = current?.change === n ? ` <- current (stage: ${current.stage ?? 'unknown'})` : '';
+      lines.push(`- ${n}: ${t ? `${t.done}/${t.total} tasks ticked` : 'no tasks.md'}; ${artifacts(join(changesDir, n))}${mark}`);
     }
     if (changes.length > 8) lines.push(`- ... ${changes.length - 8} more`);
   } else {
-    lines.push('OpenSpec is initialised but there are no active changes.');
+    lines.push('changes/ exists but has no active change.');
   }
-  if (current?.change) {
-    const status = runOpenspec(['status', '--change', current.change, '--json']);
-    if (status?.artifacts) {
-      const summary = status.artifacts.map((a) => `${a.id ?? a.name}: ${a.status}`).join(', ');
-      lines.push(`Current change "${current.change}" (stage: ${current.stage ?? 'unknown'}) artifacts: ${summary}`);
-    } else {
-      lines.push(`Current change "${current.change}" (stage: ${current.stage ?? 'unknown'}).`);
-    }
-  }
-  lines.push('Use the my-flow skills: interview -> plan -> run -> verify. tasks.md checkboxes are the only progress ledger.');
+  lines.push('Flow: interview -> plan -> run -> verify. tasks.md checkboxes are the only progress ledger; design.md Do-Not-Touch and Rebuild / Re-run sections are hard rules.');
 } else if (current?.change) {
-  lines.push(`my-flow current change: "${current.change}" (stage: ${current.stage ?? 'unknown'}), simple mode (no openspec/).`);
+  lines.push(`Current change "${current.change}" (stage: ${current.stage ?? 'unknown'}), simple mode (docs/changes/).`);
 }
 
 if (!lines.length) {

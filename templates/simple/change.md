@@ -1,7 +1,7 @@
 # Change: <name>
 
-<!-- Single-file alternative to openspec/changes/<name>/ for projects that do not use
-     OpenSpec. Same sections, same rules: checkboxes below are the only progress ledger. -->
+<!-- Single-file alternative to changes/<name>/ for small projects. Same sections, same
+     rules: the checkboxes below are the only progress ledger. -->
 
 ## Why
 

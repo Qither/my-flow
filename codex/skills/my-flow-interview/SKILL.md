@@ -1,6 +1,6 @@
 ---
 name: my-flow-interview
-description: "Socratic interview that turns a vague idea into an OpenSpec proposal with explicit non-goals and decision boundaries. Use when a request has no acceptance criteria or file anchors, or when the user says \"interview me\"."
+description: "Socratic interview that turns a vague idea into a change proposal (changes/<name>/proposal.md) with explicit non-goals and decision boundaries. Use when a request has no acceptance criteria or file anchors, or when the user says \"interview me\"."
 argument-hint: "<idea> [--quick] [--change <name>]"
 ---
 
@@ -21,12 +21,12 @@ Input: {{ARGUMENTS}}
 ## Flags
 
 - `--quick`: threshold 0.30, max 5 rounds. Default: threshold 0.20, max 8 rounds.
-- `--change <name>`: attach to an existing `openspec/changes/<name>/` instead of creating one.
+- `--change <name>`: attach to an existing `changes/<name>/` instead of creating one.
 
 ## 1. Preflight (no questions yet)
 
-1. Read the project `CLAUDE.md` / `AGENTS.md`, `openspec/config.yaml` if present, and any
-   `openspec/specs/**` that cover the touched area.
+1. Read the project `CLAUDE.md` / `AGENTS.md` and any `specs/**/spec.md` that cover the
+   touched area.
 2. Run `git log -10 --oneline` and `git status --short` for recent context.
 3. List every unknown you would have to ask about, then route each one:
    - `[from-code]` answer it yourself by reading the code. Never ask the user.
@@ -74,13 +74,11 @@ the hard cap. Never exit silently; always print the handoff block.
 
 ## 6. Outputs
 
-1. If the `openspec` CLI exists and no `--change` was given, create the change with
-   `openspec new change <name>` (kebab-case slug of the idea) so `.openspec.yaml` exists.
-   Otherwise create `openspec/changes/<name>/` from the templates, or `docs/changes/<name>.md`
-   in simple mode.
+1. Unless `--change` was given, create the change with `$my-flow-spec new <name>`
+   (kebab-case slug of the idea), or `docs/changes/<name>.md` from the template in simple mode.
 2. Write `proposal.md` with: `## Why`, `## What Changes`, `## Non-Goals`,
-   `## Decision Boundaries`, `## Capabilities` (new / modified, or "none - skip_specs"),
-   `## Impact`, `## Success Criteria`.
+   `## Decision Boundaries`, `## Capabilities` (new / modified, or "none"), `## Impact`,
+   `## Success Criteria`.
 3. Save the transcript to `.my-flow/interviews/<name>-<timestamp>.md`.
 4. Write `.my-flow/state/current-change.json` as `{"change":"<name>","stage":"interview"}`.
 
@@ -88,7 +86,7 @@ the hard cap. Never exit silently; always print the handoff block.
 
 ```
 ## Handoff
-Change: openspec/changes/<name>    Ambiguity: 0.NN (threshold 0.NN)
+Change: changes/<name>    Ambiguity: 0.NN (threshold 0.NN)
 Residual risk: none | <one line>
 Next: $my-flow-plan <name>   (or $my-flow-run <name> if the design is trivial)
 ```

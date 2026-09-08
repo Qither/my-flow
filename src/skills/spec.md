@@ -1,45 +1,52 @@
 ---
 name: spec
-description: Thin helper around the OpenSpec change structure - show status, validate, or create a new change directory from templates (works without the openspec CLI).
-argument-hint: "status [name] | validate | new <name> | archive <name>"
+description: Manage the intent layer (specs/ and changes/) with no external tool - create a change from templates, show status, validate structure, or archive a finished change and merge its delta specs.
+argument-hint: "new <name> | status [name] | validate [name] | archive <name>"
 ---
 
 # Spec helper
 
 Input: {{ARGS}}
 
-Locate the OpenSpec root: `openspec/` in the current project. If it is missing and the
-subcommand is not `new`, say so and suggest `my-flow init` or `openspec init`.
+All mechanics are in the `spec.mjs` script; run it and relay its output. Layout and format
+are documented in `specs/README.md` (created by `my-flow init`).
 
-## status [name]
-
-- With the `openspec` CLI: `openspec list --json` and, for the active or named change,
-  `openspec status --change <name> --json`. Summarize as: change, artifacts and their state
-  (ready / blocked / done), ticked vs total tasks.
-- Without the CLI: list `openspec/changes/*/` (excluding `archive/`), and count `- [x]` vs
-  `- [ ]` in each `tasks.md`.
-- Also read `.my-flow/state/current-change.json` and report the current stage.
-
-## validate
-
-- With the CLI: `openspec validate --all --strict --json`; report errors with file and line.
-- Without the CLI, check by hand: `design.md` has `## Do-Not-Touch` and
-  `## Rebuild / Re-run After Change`; `tasks.md` lines match `- [ ] N.M ...`; every spec
-  requirement has at least one `#### Scenario:` with WHEN / THEN.
+<!-- MY-FLOW:CLAUDE -->
+```
+node "${CLAUDE_PLUGIN_ROOT}/scripts/spec.mjs" <subcommand> [args] [--json]
+```
+<!-- /MY-FLOW:CLAUDE -->
+<!-- MY-FLOW:CODEX -->
+```
+node "{{MYFLOW_ROOT}}/scripts/spec.mjs" <subcommand> [args] [--json]
+```
+<!-- /MY-FLOW:CODEX -->
 
 ## new <name>
 
-- With the CLI: `openspec new change <name>`, then overwrite `design.md` with the my-flow
-  template so the two required sections exist.
-- Without the CLI: create `openspec/changes/<name>/{.openspec.yaml,proposal.md,design.md,tasks.md}`
-  from the my-flow templates (`templates/openspec/`). `.openspec.yaml` content:
-  `schema: spec-driven`, `created: <YYYY-MM-DD>`, `skip_specs: true` until capabilities are listed.
-- Write `.my-flow/state/current-change.json` with stage `new`.
+Creates `changes/<name>/{proposal,design,tasks}.md` from `changes/.templates/` (or the
+plugin templates) and sets `.my-flow/state/current-change.json` to stage `new`. Name must be
+kebab-case. Then continue with {{CALL:interview}} or {{CALL:plan}}.
+
+## status [name]
+
+Lists active changes with ticked / total tasks, artifact state (missing / empty / done),
+delta spec count, and which change is current. Summarize in one line per change.
+
+## validate [name]
+
+Structural checks, exit 1 on errors:
+- proposal / design / tasks exist; design has `## Do-Not-Touch` and
+  `## Rebuild / Re-run After Change`; proposal has Non-Goals and Decision Boundaries (warning).
+- tasks lines match `- [ ] N.M ... and verify ...`.
+- spec files: every `### Requirement:` has a `#### Scenario:` (four hashes) with WHEN / THEN;
+  delta files have an ADDED / MODIFIED / REMOVED section.
+Fix every error before handing off; report warnings.
 
 ## archive <name>
 
-- Refuse unless every box in `tasks.md` is ticked and a PASS report exists under
-  `.my-flow/verify/`.
-- With the CLI: `openspec archive <name> --yes`. Without: move the directory to
-  `openspec/changes/archive/<YYYY-MM-DD>-<name>/` and remind the user to merge delta specs
-  into `openspec/specs/` by hand.
+Refuses unless every task is ticked and a PASS report exists under `.my-flow/verify/`
+(`--force` overrides; say so explicitly if you use it). Merges delta specs into
+`specs/<capability>/spec.md` (ADDED appends, MODIFIED replaces the block, REMOVED deletes,
+RENAMED is reported for manual handling) and moves the change to
+`changes/archive/<date>-<name>/`. Review the merge log and the resulting spec diff.

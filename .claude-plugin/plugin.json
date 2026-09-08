@@ -1,7 +1,7 @@
 {
   "name": "my-flow",
   "version": "0.1.0",
-  "description": "Lightweight cross-tool workflow layer for Claude Code and Codex CLI, built on native features with OpenSpec as the intent layer.",
+  "description": "Lightweight cross-tool workflow layer for Claude Code and Codex CLI, built on native features with a specs/ + changes/ intent layer (structure borrowed from OpenSpec, no tool dependency).",
   "author": {
     "name": "Qither"
   },
@@ -11,7 +11,7 @@
     "claude-code",
     "codex",
     "workflow",
-    "openspec",
+    "specs",
     "plugin"
   ],
   "skills": [

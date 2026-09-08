@@ -1,5 +1,5 @@
 {
-  "description": "my-flow hooks: OpenSpec status on session start, fake-completion guard on stop",
+  "description": "my-flow hooks: active-change status on session start, fake-completion guard on stop",
   "hooks": {
     "SessionStart": [
       {

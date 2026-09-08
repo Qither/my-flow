@@ -148,7 +148,7 @@ for (const [name, cfg] of Object.entries(manifest.agents)) {
     author: { name: 'Qither' },
     repository: 'https://github.com/Qither/my-flow',
     license: 'MIT',
-    keywords: ['claude-code', 'codex', 'workflow', 'openspec', 'plugin'],
+    keywords: ['claude-code', 'codex', 'workflow', 'specs', 'plugin'],
     skills: Object.keys(manifest.skills).map((n) => `./skills/${n}/`),
     agents: Object.keys(manifest.agents).map((n) => `./agents/${n}.md`),
     hooks: './hooks/hooks.json',

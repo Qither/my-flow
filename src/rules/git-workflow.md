@@ -2,7 +2,7 @@
 
 - Commit per task when practical: `<type>(<change>): <task id> <summary>` with types
   feat, fix, refactor, docs, test, chore, perf, ci.
-- Commit `openspec/` together with the code it describes.
+- Commit `specs/` and `changes/` together with the code they describe.
 - Never commit `.my-flow/`.
 - Do risky changes in a worktree; never rewrite shared history.
 - Before a PR: `git diff <base>...HEAD`, re-read `design.md` Do-Not-Touch, confirm every

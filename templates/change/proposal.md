@@ -20,8 +20,8 @@
 <!-- `<capability-path>`: description. Each creates specs/<capability-path>/spec.md. -->
 
 ### Modified Capabilities
-<!-- Existing capabilities whose requirements change. Leave empty (and set skip_specs: true
-     in .openspec.yaml) for pure refactors, tooling, or docs. -->
+<!-- Existing capabilities whose requirements change (each needs a delta spec under
+     changes/<name>/specs/<capability>/spec.md). Write "none" for pure refactors, tooling, or docs. -->
 
 ## Impact
 
