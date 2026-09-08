@@ -1,0 +1,46 @@
+{
+  "version": "0.1.0",
+  "pluginName": "my-flow",
+  "codexSkillPrefix": "my-flow-",
+  "skills": {
+    "interview": {
+      "claude": { "allowed-tools": "Read Grep Glob Bash(git log:*) Bash(git status:*) Bash(openspec:*) Write AskUserQuestion" }
+    },
+    "plan": {
+      "claude": { "allowed-tools": "Read Grep Glob Bash(git log:*) Bash(git status:*) Bash(openspec:*) Write Edit Agent" }
+    },
+    "run": {
+      "claude": {}
+    },
+    "verify": {
+      "claude": { "allowed-tools": "Read Grep Glob Bash Agent Write" }
+    },
+    "ask": {
+      "claude": { "allowed-tools": "Read Grep Glob Bash(node:*) Bash(git diff:*) Bash(git log:*) Write" }
+    },
+    "learn": {
+      "claude": { "allowed-tools": "Read Grep Glob Write", "disable-model-invocation": true }
+    },
+    "spec": {
+      "claude": { "allowed-tools": "Read Grep Glob Bash(openspec:*) Write" }
+    }
+  },
+  "agents": {
+    "planner": {
+      "claude": { "model": "opus" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "high" }
+    },
+    "architect": {
+      "claude": { "model": "opus" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "high" }
+    },
+    "critic": {
+      "claude": { "model": "sonnet" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "medium" }
+    },
+    "verifier": {
+      "claude": { "model": "sonnet" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "medium" }
+    }
+  }
+}

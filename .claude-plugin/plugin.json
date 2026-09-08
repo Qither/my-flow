@@ -1,0 +1,33 @@
+{
+  "name": "my-flow",
+  "version": "0.1.0",
+  "description": "Lightweight cross-tool workflow layer for Claude Code and Codex CLI, built on native features with OpenSpec as the intent layer.",
+  "author": {
+    "name": "Qither"
+  },
+  "repository": "https://github.com/Qither/my-flow",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "workflow",
+    "openspec",
+    "plugin"
+  ],
+  "skills": [
+    "./skills/interview/",
+    "./skills/plan/",
+    "./skills/run/",
+    "./skills/verify/",
+    "./skills/ask/",
+    "./skills/learn/",
+    "./skills/spec/"
+  ],
+  "agents": [
+    "./agents/planner.md",
+    "./agents/architect.md",
+    "./agents/critic.md",
+    "./agents/verifier.md"
+  ],
+  "hooks": "./hooks/hooks.json"
+}

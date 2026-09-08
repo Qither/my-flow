@@ -1,0 +1,18 @@
+{
+  "name": "my-flow",
+  "version": "0.1.0",
+  "description": "Lightweight cross-tool workflow layer for Claude Code and Codex CLI, built on native features with OpenSpec as the intent layer.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "my-flow": "scripts/cli.mjs"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
