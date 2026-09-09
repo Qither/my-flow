@@ -6,6 +6,7 @@
  *   node scripts/spec.mjs status [name] [--json] list changes, ticked/total tasks, artifact state
  *   node scripts/spec.mjs validate [name] [--json]  structural checks (all active changes when no name)
  *   node scripts/spec.mjs archive <name> [--force]  move to changes/archive/<date>-<name>/ and merge delta specs
+ *   node scripts/spec.mjs stage <name> <stage> [--force]  set .my-flow/state/current-change.json (refreshes `updated`)
  *
  * Layout (borrowed from OpenSpec, no CLI required):
  *   specs/<capability>/spec.md                       current truth
@@ -30,7 +31,7 @@ for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--root') root = resolve(argv[++i]);
   else if (!argv[i].startsWith('--')) positional.push(argv[i]);
 }
-const [cmd, name] = positional;
+const [cmd, name, stageArg] = positional;
 const CHANGES = join(root, 'changes');
 const SPECS = join(root, 'specs');
 const STATE = join(root, '.my-flow', 'state', 'current-change.json');
@@ -71,8 +72,10 @@ function artifactState(dir, file) {
   return meaningful.length ? 'done' : 'empty';
 }
 function setState(change, stage) {
+  const state = { change, stage, updated: new Date().toISOString() };
   mkdirSync(dirname(STATE), { recursive: true });
-  writeFileSync(STATE, JSON.stringify({ change, stage, updated: new Date().toISOString() }, null, 2) + '\n');
+  writeFileSync(STATE, JSON.stringify(state, null, 2) + '\n');
+  return state;
 }
 
 // ---------------------------------------------------------------- new
@@ -348,4 +351,16 @@ if (cmd === 'archive') {
   process.exit(0);
 }
 
-fail('usage: spec.mjs <new <name> | status [name] | validate [name] | archive <name>> [--json] [--root dir]');
+// ---------------------------------------------------------------- stage
+const STAGES = ['new', 'interview', 'mf-plan', 'execute', 'done', 'archived'];
+if (cmd === 'stage') {
+  if (!name || !/^[a-z0-9][a-z0-9-]*$/.test(name) || !stageArg) fail(`usage: spec.mjs stage <kebab-case-name> <${STAGES.join('|')}> [--force]`);
+  if (!STAGES.includes(stageArg)) fail(`unknown stage "${stageArg}" (expected one of: ${STAGES.join(', ')})`);
+  const known = existsSync(join(CHANGES, name)) || existsSync(join(root, 'docs', 'changes', `${name}.md`));
+  if (!known && !FORCE) fail(`changes/${name} does not exist (use --force to set the state anyway)`);
+  const state = setState(name, stageArg);
+  out(state, `${name}: stage ${stageArg} (updated ${state.updated})`);
+  process.exit(0);
+}
+
+fail('usage: spec.mjs <new <name> | status [name] | validate [name] | archive <name> | stage <name> <stage>> [--json] [--root dir]');

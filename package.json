@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs --check"
+    "check": "node scripts/build.mjs --check",
+    "test": "node --test test/spec.test.mjs test/completion-guard.test.mjs"
   },
   "engines": {
     "node": ">=20"

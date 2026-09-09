@@ -113,7 +113,7 @@ Claude Code 內建了 `/plan`（計畫模式）以及名為 `run` 與 `verify` �
 
 ### 每個工作階段只有一個迴圈主導權
 
-在 Claude Code 中，每個工作階段最多只有一個 `/goal` 與最多一個 agent team。`execute` 會印出 `/goal` 敘述供你貼上（技能本身無法設定它）。在 Codex 中，每個執行緒一個 goal；`execute` 僅在沒有進行中的 goal 時才呼叫 `create_goal`。
+在 Claude Code 中，每個工作階段最多只有一個 `/goal` 與最多一個 agent team。`execute` 會印出 `/goal` 敘述供你貼上（技能本身無法設定它）；Stop 掛鉤只是後備機制，在 `execute` 階段攔截仍留有未勾選任務的完成宣稱，且僅在 `spec stage` 寫入的狀態仍新鮮時生效。在 Codex 中，每個執行緒一個 goal；`execute` 僅在沒有進行中的 goal 時才呼叫 `create_goal`。
 
 ### Claude 與 Codex 各自負責什麼
 
@@ -134,6 +134,7 @@ Claude Code 負責互動式工作並執行迴圈。Codex 負責審查、規劃�
 | `spec status [name] [--json]` | 已勾選 / 總任務數、產出物狀態（missing / empty / done）、delta spec 數量 | 未修改過的範本計為 empty |
 | `spec validate [name] [--json]` | 結構檢查：必要章節、任務行格式、情境格式、delta 章節；MODIFIED / REMOVED 的需求會對照主 spec 檢查 | 有錯誤時以結束代碼 1 結束 |
 | `spec archive <name> [--force]` | 要求所有核取方塊已勾選且 `.my-flow/verify/` 下存在 PASS 報告；將 delta spec 合併到 `specs/` 並把變更移到 `changes/archive/` | `--force` 跳過該關卡 |
+| `spec stage <name> <stage>` | 以新的 `updated` 時間戳寫入 `.my-flow/state/current-change.json`（`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`） | execute-guard 只在此檔案未超過 12 小時時才會觸發 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以唯讀方式執行另一個 CLI 作為顧問；將產出物寫入 `.my-flow/ask/` | 提示詞透過 stdin 傳入；輸出為空視為失敗 |
 
 ## 技能
@@ -148,7 +149,7 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 | `mf-verify <name \| criteria>` | 在任何「已完成」宣告之前 | 委派給唯讀的 verifier，由它自行執行檢查並逐條標準回報 | `.my-flow/verify/<name>-<time>.md`，包含 PASS / FAIL / INCOMPLETE |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 對設計尋求第二意見、最終關卡前的 diff 審查、規劃停滯時的裁決 | 封裝 `ask` 腳本，做摘要並說明是否同意 | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | 本次工作階段解決了某個專案特有且困難的問題 | 三問式品質關卡，然後萃取出一個 SKILL.md | 同時寫入 `.claude/skills/` 與 `.agents/skills/` |
-| `spec new\|status\|validate\|archive` | 管理意圖層 | 封裝 `spec` 腳本並解讀其輸出 | 與腳本相同 |
+| `spec new\|status\|validate\|archive\|stage` | 管理意圖層 | 封裝 `spec` 腳本並解讀其輸出 | 與腳本相同 |
 
 `learn` 設定了 `disable-model-invocation`；只有你才能呼叫它。
 
@@ -174,9 +175,9 @@ Claude 以 `my-flow:planner` 等名稱呼叫它們。Codex 從 `~/.codex/agents/
 | 事件 | 腳本 | 行為 |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | 如果專案中存在 `changes/`，列出進行中的變更及其已勾選 / 總任務數與產出物狀態。永遠以結束代碼 0 結束 |
-| Stop | `hooks/completion-guard.mjs` | 如果最後一則訊息宣稱已完成，但 diff 中仍包含 `test.skip`、`.only`、佔位 TODO 或存根回傳值，則攔截並說明原因；在 `execute` 階段，只要 tasks.md 還有未勾選且未標記 blocked 的任務也會阻擋 |
+| Stop | `hooks/completion-guard.mjs` | 如果最後一則訊息宣稱已完成，但 diff 中仍包含 `test.skip`、`.only`、佔位 TODO 或存根回傳值，則攔截並說明原因；在 `execute` 階段，若 tasks.md 還有未勾選且未標記 blocked 的任務，也會攔截完成宣稱，但僅限狀態檔未超過 12 小時（`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`）。沒有完成宣稱的訊息永遠不會被攔截 |
 
-這兩個腳本由 Claude（透過外掛中的 `hooks/hooks.json`）與 Codex（透過 PowerShell shim）共用。可用 `MY_FLOW_SKIP_HOOKS=completion-guard` 或 `execute-guard`（或 `all`）停用。
+這兩個腳本由 Claude（透過外掛中的 `hooks/hooks.json`）與 Codex（透過 PowerShell shim）共用。可用 `MY_FLOW_SKIP_HOOKS=completion-guard` 或 `execute-guard`（或 `all`）停用。execute-guard 的 TTL 預設為 12 小時，可用 `MY_FLOW_EXECUTE_GUARD_TTL_HOURS` 覆寫。
 
 ## 跨模型顧問
 
@@ -238,7 +239,7 @@ codex/          generated: Codex skills, agent TOMLs, AGENTS.md block, hooks tem
 claude/         generated: the block installed into ~/.claude/CLAUDE.md
 ```
 
-編輯 `src/`，然後執行 `node scripts/build.mjs`。產生的檔案已提交到儲存庫，因此 `claude --plugin-dir` 不需要建置步驟；當它們與來源不一致時，`node scripts/build.mjs --check` 會失敗。
+編輯 `src/`，然後執行 `node scripts/build.mjs`。產生的檔案已提交到儲存庫，因此 `claude --plugin-dir` 不需要建置步驟；當它們與來源不一致時，`node scripts/build.mjs --check` 會失敗。`npm test` 會執行內建的 `node --test` 測試套件，涵蓋 `spec.mjs` 與 Stop 掛鉤，不需要任何相依套件。
 
 來源慣例：
 
@@ -275,7 +276,8 @@ node scripts/install.mjs --uninstall codex # reverse
 | `ask codex` 失敗並提示 "model requires a newer version of Codex" | `~/.codex/config.toml` 中的模型比 CLI 更新。執行 `codex update`，或傳入 `--model gpt-5.5`（或設定 `MY_FLOW_CODEX_MODEL`） |
 | `ask codex` 失敗並回報 `EINVAL` | 已在 `scripts/lib/spawn.mjs` 中修正：Windows 上的 `.cmd` shim 必須透過 shell 執行。請確認你使用的是目前版本 |
 | 模型沒有列出 `/my-flow:learn` | 這是預期行為。它設定了 `disable-model-invocation`；請自行輸入 |
-| Stop 掛鉤一直攔截 | 它只在最後一則訊息宣稱已完成**且** diff 中存在虛假完成標記時才攔截。修正這些標記，或將其作為阻礙項回報。可用 `MY_FLOW_SKIP_HOOKS=completion-guard` 繞過 |
+| Stop 掛鉤一直攔截 | 它只在最後一則訊息宣稱已完成**且**（diff 中存在虛假完成標記，或目前變更處於 `execute` 階段且仍有未勾選任務）時才攔截。修正這些標記、完成或標記 blocked 任務，或執行 `spec stage <name> done`。可用 `MY_FLOW_SKIP_HOOKS=completion-guard` 或 `execute-guard` 繞過 |
+| execute-guard 從不觸發，或對舊變更觸發 | 它讀取 `.my-flow/state/current-change.json`，當 `updated` 超過 12 小時就忽略。執行 `spec stage <name> execute` 重新整理，或 `spec stage <name> done` 解除 |
 | `spec archive` 拒絕執行 | 所有核取方塊必須已勾選，且 `.my-flow/verify/` 下必須存在包含 `Verdict: PASS` 的報告。請先執行 `mf-verify`，或使用 `--force` 並明確說明 |
 | Codex 要求信任掛鉤 | 在 `/hooks` 中核准一次；上游的信任雜湊格式可能已變更 |
 | Windows 上的分割窗格團隊 | Claude Code 不支援；團隊在處理程序內執行。不要要求 tmux 窗格 |

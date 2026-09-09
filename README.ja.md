@@ -113,7 +113,7 @@ Claude Code には組み込みの `/plan`(プランモード)と、`run` およ�
 
 ### セッションごとにループの権限はひとつ
 
-Claude Code では、セッションごとに `/goal` は最大 1 つ、エージェントチームも最大 1 つです。`execute` は貼り付け用の `/goal` 文を出力します(スキル自身は設定できません)。Codex ではスレッドごとに goal は 1 つで、`execute` はアクティブな goal がない場合にのみ `create_goal` を呼び出します。
+Claude Code では、セッションごとに `/goal` は最大 1 つ、エージェントチームも最大 1 つです。`execute` は貼り付け用の `/goal` 文を出力します(スキル自身は設定できません)。Stop フックはあくまでバックストップで、`execute` 中に未チェックのタスクを残したまま完了を宣言した場合のみ、しかも `spec stage` が書いた状態が新しい間だけブロックします。Codex ではスレッドごとに goal は 1 つで、`execute` はアクティブな goal がない場合にのみ `create_goal` を呼び出します。
 
 ### Claude と Codex のそれぞれの役割
 
@@ -134,6 +134,7 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | `spec status [name] [--json]` | チェック済み / 全タスク数、成果物の状態(missing / empty / done)、delta spec の数 | 未編集のテンプレートは empty として数えられます |
 | `spec validate [name] [--json]` | 構造チェック: 必須セクション、タスク行の形式、シナリオの形式、delta セクション。MODIFIED / REMOVED の要件はメイン spec と照合します | エラー時は終了コード 1 |
 | `spec archive <name> [--force]` | すべてのチェックボックスがチェック済みで、`.my-flow/verify/` 配下に PASS レポートがあることを要求します。delta spec を `specs/` にマージし、変更を `changes/archive/` に移動します | `--force` はゲートをスキップします |
+| `spec stage <name> <stage>` | 新しい `updated` タイムスタンプ付きで `.my-flow/state/current-change.json` を書き込みます(`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`) | execute-guard はこのファイルが 12 時間以内の場合にのみ作動します |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | もう一方の CLI をアドバイザーとして読み取り専用で実行し、成果物を `.my-flow/ask/` に書き込みます | プロンプトは stdin 経由で渡されます。出力が空の場合は失敗として扱われます |
 
 ## スキル
@@ -148,7 +149,7 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 | `mf-verify <name \| criteria>` | 「完了」を宣言する前に必ず | 読み取り専用の verifier に委譲し、verifier 自身がチェックを実行して基準ごとに報告します | PASS / FAIL / INCOMPLETE を含む `.my-flow/verify/<name>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 設計へのセカンドオピニオン、最終ゲート前の diff レビュー、計画が行き詰まったときの裁定 | `ask` スクリプトをラップし、要約し、同意するかどうかを述べます | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | セッションでプロジェクト固有の難しい問題を解決した | 3 つの質問による品質ゲートの後、SKILL.md を抽出します | `.claude/skills/` と `.agents/skills/` の両方に書き込まれます |
-| `spec new\|status\|validate\|archive` | インテントレイヤーの管理 | `spec` スクリプトをラップし、その出力を解釈します | スクリプトと同じ |
+| `spec new\|status\|validate\|archive\|stage` | インテントレイヤーの管理 | `spec` スクリプトをラップし、その出力を解釈します | スクリプトと同じ |
 
 `learn` には `disable-model-invocation` が設定されています。呼び出せるのはあなただけです。
 
@@ -174,9 +175,9 @@ Claude では `my-flow:planner` などとして指定します。Codex は `~/.c
 | イベント | スクリプト | 動作 |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | プロジェクトに `changes/` がある場合、アクティブな変更をチェック済み / 全タスク数と成果物の状態とともに一覧表示します。常に終了コード 0 で終了します |
-| Stop | `hooks/completion-guard.mjs` | 最後のメッセージが完了を宣言しているのに diff に `test.skip`、`.only`、プレースホルダーの TODO、スタブの return がまだ含まれている場合、ブロックして理由を説明します。`execute` 中は、tasks.md に未チェックかつ blocked 未指定のタスクが残っている間もブロックします |
+| Stop | `hooks/completion-guard.mjs` | 最後のメッセージが完了を宣言しているのに diff に `test.skip`、`.only`、プレースホルダーの TODO、スタブの return がまだ含まれている場合、ブロックして理由を説明します。`execute` 中は、tasks.md に未チェックかつ blocked 未指定のタスクが残っている場合も完了宣言をブロックしますが、状態ファイルが 12 時間以内(`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`)の場合に限ります。完了宣言を含まないメッセージは決してブロックされません |
 
-どちらのスクリプトも Claude(プラグイン内の `hooks/hooks.json` 経由)と Codex(PowerShell シム経由)で共有されます。`MY_FLOW_SKIP_HOOKS=completion-guard`、または `execute-guard`(または `all`)で無効化できます。
+どちらのスクリプトも Claude(プラグイン内の `hooks/hooks.json` 経由)と Codex(PowerShell シム経由)で共有されます。`MY_FLOW_SKIP_HOOKS=completion-guard`、または `execute-guard`(または `all`)で無効化できます。execute-guard の TTL はデフォルトで 12 時間で、`MY_FLOW_EXECUTE_GUARD_TTL_HOURS` で上書きできます。
 
 ## クロスモデルアドバイザー
 
@@ -238,7 +239,7 @@ codex/          generated: Codex skills, agent TOMLs, AGENTS.md block, hooks tem
 claude/         generated: the block installed into ~/.claude/CLAUDE.md
 ```
 
-`src/` を編集してから `node scripts/build.mjs` を実行します。生成ファイルはコミットされているため、`claude --plugin-dir` にビルド手順は不要です。`node scripts/build.mjs --check` は生成ファイルがソースからずれていると失敗します。
+`src/` を編集してから `node scripts/build.mjs` を実行します。生成ファイルはコミットされているため、`claude --plugin-dir` にビルド手順は不要です。`node scripts/build.mjs --check` は生成ファイルがソースからずれていると失敗します。`npm test` は `spec.mjs` と Stop フックの組み込み `node --test` スイートを実行します。依存関係は不要です。
 
 ソースの規約:
 
@@ -275,7 +276,8 @@ oh-my-codex がインストールされている場合は、先に次の順序�
 | `ask codex` が "model requires a newer version of Codex" で失敗する | `~/.codex/config.toml` のモデルが CLI より新しいためです。`codex update` を実行するか、`--model gpt-5.5` を渡す(または `MY_FLOW_CODEX_MODEL` を設定する)ことで対処できます |
 | `ask codex` が `EINVAL` で失敗する | `scripts/lib/spawn.mjs` で修正済みです: Windows の `.cmd` シムはシェル経由で実行する必要があります。最新バージョンを実行していることを確認してください |
 | `/my-flow:learn` がモデルの一覧に表示されない | 意図した動作です。`disable-model-invocation` が設定されているため、自分で入力してください |
-| Stop フックがブロックし続ける | ブロックするのは、最後のメッセージが完了を宣言していて、**かつ** diff に偽の完了マーカーがある場合のみです。それらを修正するか、ブロッカーとして報告してください。`MY_FLOW_SKIP_HOOKS=completion-guard` で回避できます |
+| Stop フックがブロックし続ける | ブロックするのは、最後のメッセージが完了を宣言していて、**かつ** diff に偽の完了マーカーがあるか、現在の変更が `execute` ステージで未チェックのタスクが残っている場合のみです。マーカーを修正するか、タスクを完了または blocked にするか、`spec stage <name> done` を実行してください。`MY_FLOW_SKIP_HOOKS=completion-guard` または `execute-guard` で回避できます |
+| execute-guard が作動しない、または古い変更で作動する | `.my-flow/state/current-change.json` を読み、`updated` が 12 時間より古いと無視します。`spec stage <name> execute` で更新するか、`spec stage <name> done` で解除してください |
 | `spec archive` が拒否する | すべてのチェックボックスがチェック済みで、`Verdict: PASS` を含むレポートが `.my-flow/verify/` 配下に存在する必要があります。先に `mf-verify` を実行するか、`--force` を使ってその旨を明記してください |
 | Codex がフックの信頼を求めてくる | `/hooks` で一度承認してください。信頼済みハッシュの形式が上流で変わった可能性があります |
 | Windows での分割ペインのチーム | Claude Code ではサポートされていません。チームはプロセス内で実行されます。tmux ペインを要求しないでください |

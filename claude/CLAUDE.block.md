@@ -46,7 +46,7 @@ Rules:
 ## 3. The intent layer (specs/ and changes/)
 
 Structure borrowed from OpenSpec; no external tool is involved. /my-flow:spec handles
-`new / status / validate / archive`.
+`new / status / validate / archive / stage`.
 
 - `specs/<capability>/spec.md` is the current truth about behavior (requirements with
   WHEN / THEN scenarios).
@@ -71,8 +71,9 @@ Claude Code is the primary interactive executor.
   (`env`). On Windows teammates run in-process only; do not ask for split panes.
 - One loop authority per session: at most one active `/goal` and at most one team. `execute`
   prints the `/goal` statement, then waits for the user to paste it; it never tries to set
-  it itself. The Stop hook is only a backstop: during stage `execute` it blocks stops that
-  leave unticked, unblocked tasks.
+  it itself. The Stop hook is only a backstop: during stage `execute` it blocks a completion
+  claim that leaves unticked, unblocked tasks, and only while the state file (written by
+  `spec stage`) is younger than 12 hours. Plain answers are never blocked.
 - Start a team only when `design.md` lists two or more disjoint file-ownership groups.
   Teammates edit only files they own and report back through the shared task list.
 - For risky changes, work in a worktree (`claude -w <name>`), or give a subagent

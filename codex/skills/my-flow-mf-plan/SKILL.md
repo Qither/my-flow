@@ -44,7 +44,7 @@ would change the task breakdown; look everything else up.
 6. Write the artifacts. Add delta specs under `changes/<name>/specs/<capability>/spec.md`
    only if the proposal lists capabilities (ADDED / MODIFIED / REMOVED requirements with
    WHEN / THEN scenarios). Run `$my-flow-spec validate <name>` and fix every error.
-7. Update `.my-flow/state/current-change.json` to stage `mf-plan`.
+7. Run `$my-flow-spec stage <name> mf-plan` to record the current stage.
 
 Delegation: spawn the native subagents `planner`, `architect`, `critic` one at a time, in
 that order; each reviewer must see the previous output. Never batch them in parallel.

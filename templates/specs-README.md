@@ -1,7 +1,7 @@
 # specs/ and changes/ - the intent layer
 
 This layout borrows OpenSpec's structure without depending on any tool. my-flow's `spec`
-helper (`new / status / validate / archive`) handles the mechanics.
+helper (`new / status / validate / archive / stage`) handles the mechanics.
 
 ```
 specs/<capability>/spec.md               current truth: requirements + scenarios

@@ -81,7 +81,7 @@ the hard cap. Never exit silently; always print the handoff block.
    `## Decision Boundaries`, `## Capabilities` (new / modified, or "none"), `## Impact`,
    `## Success Criteria`.
 3. Save the transcript to `.my-flow/interviews/<name>-<timestamp>.md`.
-4. Write `.my-flow/state/current-change.json` as `{"change":"<name>","stage":"interview"}`.
+4. Run `/my-flow:spec stage <name> interview` to record the current stage.
 
 ## Handoff (always the last thing you print)
 

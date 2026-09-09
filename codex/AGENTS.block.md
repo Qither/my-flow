@@ -46,7 +46,7 @@ Rules:
 ## 3. The intent layer (specs/ and changes/)
 
 Structure borrowed from OpenSpec; no external tool is involved. $my-flow-spec handles
-`new / status / validate / archive`.
+`new / status / validate / archive / stage`.
 
 - `specs/<capability>/spec.md` is the current truth about behavior (requirements with
   WHEN / THEN scenarios).

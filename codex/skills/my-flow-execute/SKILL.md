@@ -18,7 +18,8 @@ Input: {{ARGUMENTS}}
    the whole run.
 3. `git status --short --branch`. If the tree is dirty with unrelated work, tell the user
    before continuing.
-4. Write `.my-flow/state/current-change.json` with stage `execute`.
+4. Run `$my-flow-spec stage <name> execute`. This writes `.my-flow/state/current-change.json`
+   with a fresh `updated` timestamp; never edit that file by hand.
 
 ## 2. Goal statement
 
@@ -48,7 +49,8 @@ For each pending task, in order:
    codebase.
 2. Run the task's own verification phrase (the "and verify ..." part). If the task touches
    anything listed in Rebuild / Re-run, run those steps now.
-3. Only if the check passed: tick the box in `tasks.md`. Optional commit
+3. Only if the check passed: tick the box in `tasks.md`, then run
+   `$my-flow-spec stage <name> execute` to refresh the state timestamp. Optional commit
    `feat(<name>): <task id> <summary>`.
 4. If the check failed twice with materially different approaches, record the blocker under
    the task in `tasks.md` (`  - blocked: <reason>`) and continue with independent tasks.
@@ -62,9 +64,9 @@ For each pending task, in order:
 3. Re-run step 1.
 4. Independent review: run $my-flow-mf-verify <name> in a separate context. Optionally
    $my-flow-ask for a cross-model review of the diff.
-5. Only if the report says PASS: declare done. Tick any remaining meta task, write
-   `.my-flow/state/current-change.json` with stage `done` (this releases the Stop-hook
-   backstop), and suggest `$my-flow-spec archive <name>`.
+5. Only if the report says PASS: declare done. Tick any remaining meta task, run
+   `$my-flow-spec stage <name> done` (this releases the Stop-hook backstop), and suggest
+   `$my-flow-spec archive <name>`.
 
 After step 5, and only then, call `update_goal` with status `complete`.
 

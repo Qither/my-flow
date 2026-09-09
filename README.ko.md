@@ -113,7 +113,7 @@ Claude Code에는 내장 `/plan`(플랜 모드)과 `run`, `verify`라는 이름�
 
 ### 세션당 하나의 루프 권한
 
-Claude Code에서는 세션당 `/goal`은 최대 하나, 에이전트 팀도 최대 하나입니다. `execute`는 붙여넣을 수 있도록 `/goal` 문을 출력합니다(스킬은 스스로 설정할 수 없습니다). Codex에서는 스레드당 goal이 하나이며, `execute`는 활성 goal이 없을 때만 `create_goal`을 호출합니다.
+Claude Code에서는 세션당 `/goal`은 최대 하나, 에이전트 팀도 최대 하나입니다. `execute`는 붙여넣을 수 있도록 `/goal` 문을 출력합니다(스킬은 스스로 설정할 수 없습니다). Stop 훅은 백스톱일 뿐이며, `execute` 중에 체크되지 않은 작업을 남긴 완료 주장만, 그것도 `spec stage`가 쓴 상태가 신선한 동안에만 차단합니다. Codex에서는 스레드당 goal이 하나이며, `execute`는 활성 goal이 없을 때만 `create_goal`을 호출합니다.
 
 ### Claude와 Codex가 각각 하는 일
 
@@ -134,6 +134,7 @@ Claude Code는 대화형 작업을 수행하고 루프를 실행합니다. Codex
 | `spec status [name] [--json]` | 체크됨 / 전체 태스크 수, 산출물 상태(missing / empty / done), delta spec 개수 | 손대지 않은 템플릿은 empty로 계산됩니다 |
 | `spec validate [name] [--json]` | 구조 검사: 필수 섹션, 태스크 줄 형식, 시나리오 형식, delta 섹션. MODIFIED / REMOVED 요구사항은 메인 spec과 대조합니다 | 오류 시 종료 코드 1 |
 | `spec archive <name> [--force]` | 모든 체크박스가 체크되어 있고 `.my-flow/verify/` 아래에 PASS 보고서가 있어야 합니다. delta spec을 `specs/`에 병합하고 변경 사항을 `changes/archive/`로 옮깁니다 | `--force`는 게이트를 건너뜁니다 |
+| `spec stage <name> <stage>` | 새 `updated` 타임스탬프와 함께 `.my-flow/state/current-change.json`을 씁니다(`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) | execute-guard는 이 파일이 12시간 이내일 때만 작동합니다 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 다른 CLI를 어드바이저로 읽기 전용 실행하고, 산출물을 `.my-flow/ask/`에 기록합니다 | 프롬프트는 stdin으로 전달됩니다. 출력이 비어 있으면 실패로 간주합니다 |
 
 ## 스킬
@@ -148,7 +149,7 @@ Claude에서는 `/my-flow:<name>`으로, Codex에서는 `$my-flow-<name>`으로 
 | `mf-verify <name \| criteria>` | "완료"를 주장하기 전에 항상 | 읽기 전용 verifier에 위임하며, verifier가 직접 검사를 실행하고 기준별로 보고합니다 | PASS / FAIL / INCOMPLETE가 담긴 `.my-flow/verify/<name>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 설계에 대한 2차 의견, 최종 게이트 전 diff 검토, 계획이 막혔을 때의 결정 | `ask` 스크립트를 감싸고, 요약하며, 동의 여부를 밝힙니다 | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | 세션에서 프로젝트 고유의 어려운 문제를 해결했음 | 세 가지 질문의 품질 게이트를 거친 뒤 SKILL.md를 추출합니다 | `.claude/skills/`와 `.agents/skills/` 모두에 기록됩니다 |
-| `spec new\|status\|validate\|archive` | 인텐트 레이어 관리 | `spec` 스크립트를 감싸고 그 출력을 해석합니다 | 스크립트와 동일 |
+| `spec new\|status\|validate\|archive\|stage` | 인텐트 레이어 관리 | `spec` 스크립트를 감싸고 그 출력을 해석합니다 | 스크립트와 동일 |
 
 `learn`에는 `disable-model-invocation`이 설정되어 있습니다. 오직 사용자만 호출할 수 있습니다.
 
@@ -174,9 +175,9 @@ Claude에서는 `my-flow:planner` 등으로 지정합니다. Codex는 `~/.codex/
 | 이벤트 | 스크립트 | 동작 |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | 프로젝트에 `changes/`가 있으면 활성 변경 사항을 체크됨 / 전체 태스크 수와 산출물 상태와 함께 나열합니다. 항상 종료 코드 0으로 종료합니다 |
-| Stop | `hooks/completion-guard.mjs` | 마지막 메시지가 완료를 주장하지만 diff에 여전히 `test.skip`, `.only`, 자리표시자 TODO, 스텁 return이 들어 있으면 차단하고 이유를 설명합니다. `execute` 단계에서는 tasks.md에 체크되지 않았고 blocked 표시도 없는 작업이 남아 있는 동안에도 차단합니다 |
+| Stop | `hooks/completion-guard.mjs` | 마지막 메시지가 완료를 주장하지만 diff에 여전히 `test.skip`, `.only`, 자리표시자 TODO, 스텁 return이 들어 있으면 차단하고 이유를 설명합니다. `execute` 단계에서는 tasks.md에 체크되지 않았고 blocked 표시도 없는 작업이 남아 있으면 완료 주장도 차단하지만, 상태 파일이 12시간 이내(`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`)일 때만 그렇습니다. 완료 주장이 없는 메시지는 절대 차단되지 않습니다 |
 
-두 스크립트 모두 Claude(플러그인의 `hooks/hooks.json` 경유)와 Codex(PowerShell 심 경유)가 공유합니다. `MY_FLOW_SKIP_HOOKS=completion-guard` 또는 `execute-guard`(또는 `all`)로 비활성화할 수 있습니다.
+두 스크립트 모두 Claude(플러그인의 `hooks/hooks.json` 경유)와 Codex(PowerShell 심 경유)가 공유합니다. `MY_FLOW_SKIP_HOOKS=completion-guard` 또는 `execute-guard`(또는 `all`)로 비활성화할 수 있습니다. execute-guard의 TTL은 기본 12시간이며 `MY_FLOW_EXECUTE_GUARD_TTL_HOURS`로 재정의할 수 있습니다.
 
 ## 크로스 모델 어드바이저
 
@@ -238,7 +239,7 @@ codex/          generated: Codex skills, agent TOMLs, AGENTS.md block, hooks tem
 claude/         generated: the block installed into ~/.claude/CLAUDE.md
 ```
 
-`src/`를 편집한 뒤 `node scripts/build.mjs`를 실행합니다. 생성된 파일은 커밋되어 있으므로 `claude --plugin-dir`에는 빌드 단계가 필요 없습니다. `node scripts/build.mjs --check`는 생성 파일이 소스와 어긋나면 실패합니다.
+`src/`를 편집한 뒤 `node scripts/build.mjs`를 실행합니다. 생성된 파일은 커밋되어 있으므로 `claude --plugin-dir`에는 빌드 단계가 필요 없습니다. `node scripts/build.mjs --check`는 생성 파일이 소스와 어긋나면 실패합니다. `npm test`는 `spec.mjs`와 Stop 훅에 대한 내장 `node --test` 스위트를 실행하며 의존성이 필요 없습니다.
 
 소스 규약:
 
@@ -275,7 +276,8 @@ oh-my-codex가 설치되어 있다면 먼저 다음 순서로 제거하세요.
 | `ask codex`가 "model requires a newer version of Codex"로 실패함 | `~/.codex/config.toml`의 모델이 CLI보다 새롭습니다. `codex update`를 실행하거나 `--model gpt-5.5`를 전달하세요(또는 `MY_FLOW_CODEX_MODEL`을 설정하세요) |
 | `ask codex`가 `EINVAL`로 실패함 | `scripts/lib/spawn.mjs`에서 수정되었습니다: Windows의 `.cmd` 심은 셸을 거쳐야 합니다. 최신 버전을 실행하고 있는지 확인하세요 |
 | 모델이 `/my-flow:learn`을 나열하지 않음 | 의도된 동작입니다. `disable-model-invocation`이 설정되어 있으므로 직접 입력하세요 |
-| Stop 훅이 계속 차단함 | 마지막 메시지가 완료를 주장하고 **동시에** diff에 거짓 완료 마커가 있을 때만 차단합니다. 이를 수정하거나 블로커로 보고하세요. `MY_FLOW_SKIP_HOOKS=completion-guard`로 우회할 수 있습니다 |
+| Stop 훅이 계속 차단함 | 마지막 메시지가 완료를 주장하고 **동시에** diff에 거짓 완료 마커가 있거나 현재 변경 사항이 `execute` 단계이면서 체크되지 않은 작업이 남아 있을 때만 차단합니다. 마커를 수정하거나, 작업을 끝내거나 blocked로 표시하거나, `spec stage <name> done`을 실행하세요. `MY_FLOW_SKIP_HOOKS=completion-guard` 또는 `execute-guard`로 우회할 수 있습니다 |
+| execute-guard가 작동하지 않거나 오래된 변경 사항에 작동함 | `.my-flow/state/current-change.json`을 읽으며 `updated`가 12시간보다 오래되면 무시합니다. `spec stage <name> execute`로 갱신하거나 `spec stage <name> done`으로 해제하세요 |
 | `spec archive`가 거부함 | 모든 체크박스가 체크되어 있어야 하고 `Verdict: PASS`를 포함한 보고서가 `.my-flow/verify/` 아래에 있어야 합니다. 먼저 `mf-verify`를 실행하거나, `--force`를 사용하고 그 사실을 밝히세요 |
 | Codex가 훅을 신뢰할지 물어봄 | `/hooks`에서 한 번 승인하세요. 신뢰 해시 형식이 업스트림에서 바뀌었을 수 있습니다 |
 | Windows에서의 분할 창 팀 | Claude Code에서 지원하지 않습니다. 팀은 프로세스 내에서 실행됩니다. tmux 창을 요청하지 마세요 |

@@ -1,7 +1,7 @@
 ---
 name: spec
-description: "Manage the intent layer (specs/ and changes/) with no external tool - create a change from templates, show status, validate structure, or archive a finished change and merge its delta specs."
-argument-hint: "new <name> | status [name] | validate [name] | archive <name>"
+description: "Manage the intent layer (specs/ and changes/) with no external tool - create a change from templates, show status, validate structure, set the current stage, or archive a finished change and merge its delta specs."
+argument-hint: "new <name> | status [name] | validate [name] | archive <name> | stage <name> <stage>"
 allowed-tools: "Read Grep Glob Bash(node:*) Write"
 ---
 
@@ -48,3 +48,13 @@ Refuses unless every task is ticked and a PASS report exists under `.my-flow/ver
 `specs/<capability>/spec.md` (ADDED appends, MODIFIED replaces the block, REMOVED deletes,
 RENAMED is reported for manual handling) and moves the change to
 `changes/archive/<date>-<name>/`. Review the merge log and the resulting spec diff.
+
+## stage <name> <stage>
+
+Writes `.my-flow/state/current-change.json` as `{change, stage, updated}` with a fresh
+timestamp. Stages: `new`, `interview`, `mf-plan`, `execute`, `done`, `archived`. The change
+must exist (`changes/<name>/` or `docs/changes/<name>.md`); `--force` overrides. Always use
+this instead of editing the file by hand: the Stop hook's execute-guard only fires while
+`stage` is `execute` and `updated` is younger than 12 hours (`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`),
+so /my-flow:execute re-runs `stage <name> execute` after each ticked task and
+`stage <name> done` after the final gate.

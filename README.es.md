@@ -113,7 +113,7 @@ Claude Code tiene un `/plan` integrado (modo de planificación) y skills incorpo
 
 ### Una sola autoridad de bucle por sesión
 
-En Claude Code, como máximo un `/goal` y como máximo un equipo de agentes por sesión. `execute` imprime la declaración de `/goal` para que usted la pegue (las skills no pueden establecerla por sí mismas). En Codex, un goal por hilo; `execute` llama a `create_goal` solo cuando no hay ninguno activo.
+En Claude Code, como máximo un `/goal` y como máximo un equipo de agentes por sesión. `execute` imprime la declaración de `/goal` para que usted la pegue (las skills no pueden establecerla por sí mismas); el hook de Stop es solo un respaldo que bloquea las afirmaciones de finalización que dejan tareas sin marcar durante `execute`, y solo mientras el estado escrito por `spec stage` esté fresco. En Codex, un goal por hilo; `execute` llama a `create_goal` solo cuando no hay ninguno activo.
 
 ### Qué hace cada uno: Claude y Codex
 
@@ -134,6 +134,7 @@ Todos los comandos son scripts de Node puro. `node scripts/cli.mjs <command>` (o
 | `spec status [name] [--json]` | Tareas marcadas / totales, estado de los artefactos (missing / empty / done), número de delta specs | Las plantillas sin modificar cuentan como vacías |
 | `spec validate [name] [--json]` | Comprobaciones estructurales: secciones obligatorias, formato de las líneas de tarea, formato de los escenarios, secciones delta; los requisitos MODIFIED / REMOVED se comprueban contra la spec principal | Sale con 1 si hay errores |
 | `spec archive <name> [--force]` | Requiere que todas las casillas estén marcadas y un informe PASS bajo `.my-flow/verify/`; fusiona los delta specs en `specs/` y mueve el cambio a `changes/archive/` | `--force` omite la puerta de control |
+| `spec stage <name> <stage>` | Escribe `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) con una marca de tiempo `updated` nueva | El execute-guard solo se activa mientras este archivo tenga menos de 12 h |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Ejecuta la otra CLI en modo de solo lectura como asesor; escribe un artefacto en `.my-flow/ask/` | El prompt pasa por stdin; una salida vacía cuenta como fallo |
 
 ## Skills
@@ -148,7 +149,7 @@ Claude las invoca como `/my-flow:<name>`, Codex como `$my-flow-<name>`.
 | `mf-verify <name \| criteria>` | Antes de cualquier afirmación de "terminado" | Delega en el verifier de solo lectura, que ejecuta las comprobaciones por sí mismo e informa por criterio | `.my-flow/verify/<name>-<time>.md` con PASS / FAIL / INCOMPLETE |
 | `ask <codex\|claude> [--diff] [--files] <question>` | Segunda opinión sobre un diseño, revisión del diff antes de la puerta final, desempate cuando la planificación se estanca | Envuelve el script `ask`, resume e indica si está de acuerdo | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | La sesión resolvió algo específico del proyecto y difícil | Puerta de calidad de tres preguntas y luego extrae un SKILL.md | Se escribe tanto en `.claude/skills/` como en `.agents/skills/` |
-| `spec new\|status\|validate\|archive` | Gestión de la capa de intención | Envuelve el script `spec` e interpreta su salida | la misma que el script |
+| `spec new\|status\|validate\|archive\|stage` | Gestión de la capa de intención | Envuelve el script `spec` e interpreta su salida | la misma que el script |
 
 `learn` tiene `disable-model-invocation`; solo usted puede invocarla.
 
@@ -174,9 +175,9 @@ Claude se dirige a ellos como `my-flow:planner`, etc. Codex los carga desde `~/.
 | Evento | Script | Comportamiento |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | Si el proyecto tiene `changes/`, lista los cambios activos con tareas marcadas / totales y el estado de los artefactos. Siempre sale con 0 |
-| Stop | `hooks/completion-guard.mjs` | Si el último mensaje afirma que se ha completado el trabajo pero el diff todavía contiene `test.skip`, `.only`, TODO de relleno o retornos stub, bloquea y explica por qué; durante `execute` también bloquea mientras tasks.md tenga tareas sin marcar y sin la etiqueta blocked |
+| Stop | `hooks/completion-guard.mjs` | Si el último mensaje afirma que se ha completado el trabajo pero el diff todavía contiene `test.skip`, `.only`, TODO de relleno o retornos stub, bloquea y explica por qué; durante `execute` también bloquea una afirmación de finalización mientras tasks.md tenga tareas sin marcar y sin la etiqueta blocked, siempre que el archivo de estado tenga menos de 12 h (`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`). Los mensajes sin afirmación de finalización nunca se bloquean |
 
-Ambos scripts son compartidos por Claude (mediante `hooks/hooks.json` en el plugin) y Codex (mediante el shim de PowerShell). Desactívelos con `MY_FLOW_SKIP_HOOKS=completion-guard` o `execute-guard` (o `all`).
+Ambos scripts son compartidos por Claude (mediante `hooks/hooks.json` en el plugin) y Codex (mediante el shim de PowerShell). Desactívelos con `MY_FLOW_SKIP_HOOKS=completion-guard` o `execute-guard` (o `all`). El TTL del execute-guard es de 12 horas por defecto; anúlelo con `MY_FLOW_EXECUTE_GUARD_TTL_HOURS`.
 
 ## Asesor entre modelos
 
@@ -238,7 +239,7 @@ codex/          generated: Codex skills, agent TOMLs, AGENTS.md block, hooks tem
 claude/         generated: the block installed into ~/.claude/CLAUDE.md
 ```
 
-Edite `src/` y luego ejecute `node scripts/build.mjs`. Los archivos generados se confirman en el repositorio para que `claude --plugin-dir` no necesite ningún paso de build; `node scripts/build.mjs --check` falla cuando se desvían.
+Edite `src/` y luego ejecute `node scripts/build.mjs`. Los archivos generados se confirman en el repositorio para que `claude --plugin-dir` no necesite ningún paso de build; `node scripts/build.mjs --check` falla cuando se desvían. `npm test` ejecuta la suite integrada `node --test` para `spec.mjs` y el hook de Stop; no necesita dependencias.
 
 Convenciones de la fuente:
 
@@ -275,7 +276,8 @@ El instalador omite cualquier `~/.codex/agents/<name>.toml` que no haya creado �
 | `ask codex` falla con "model requires a newer version of Codex" | El modelo de `~/.codex/config.toml` es más reciente que la CLI. Ejecute `codex update` o pase `--model gpt-5.5` (o establezca `MY_FLOW_CODEX_MODEL`) |
 | `ask codex` falla con `EINVAL` | Corregido en `scripts/lib/spawn.mjs`: los shims `.cmd` en Windows deben pasar por un shell. Asegúrese de ejecutar la versión actual |
 | El modelo no lista `/my-flow:learn` | Es intencional. Tiene `disable-model-invocation`; escríbalo usted mismo |
-| El hook de Stop bloquea continuamente | Solo bloquea cuando el último mensaje afirma que se ha completado el trabajo **y** el diff contiene marcadores de finalización falsa. Corríjalos o repórtelos como bloqueadores. Evítelo con `MY_FLOW_SKIP_HOOKS=completion-guard` |
+| El hook de Stop bloquea continuamente | Solo bloquea cuando el último mensaje afirma que se ha completado el trabajo **y** el diff contiene marcadores de finalización falsa o el cambio actual está en la etapa `execute` con tareas sin marcar. Corrija los marcadores, termine o bloquee las tareas, o ejecute `spec stage <name> done`. Evítelo con `MY_FLOW_SKIP_HOOKS=completion-guard` o `execute-guard` |
+| El execute-guard nunca se activa, o se activa para un cambio antiguo | Lee `.my-flow/state/current-change.json` y lo ignora cuando `updated` tiene más de 12 h. Ejecute `spec stage <name> execute` para refrescarlo, o `spec stage <name> done` para liberarlo |
 | `spec archive` se niega | Todas las casillas deben estar marcadas y debe existir un informe que contenga `Verdict: PASS` bajo `.my-flow/verify/`. Ejecute primero `mf-verify`, o use `--force` e indíquelo |
 | Codex pide confiar en los hooks | Apruébelos una vez en `/hooks`; el formato de los hashes de confianza puede haber cambiado upstream |
 | Equipos en paneles divididos en Windows | No lo admite Claude Code; los equipos se ejecutan en el mismo proceso. No pida paneles de tmux |

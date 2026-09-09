@@ -18,7 +18,8 @@ Input: {{ARGS}}
    the whole run.
 3. `git status --short --branch`. If the tree is dirty with unrelated work, tell the user
    before continuing.
-4. Write `.my-flow/state/current-change.json` with stage `execute`.
+4. Run `{{CALL:spec}} stage <name> execute`. This writes `.my-flow/state/current-change.json`
+   with a fresh `updated` timestamp; never edit that file by hand.
 
 ## 2. Goal statement
 
@@ -44,10 +45,13 @@ Then STOP and wait. Do not start task 1 until the user replies. If the user says
 is already active for this change, or explicitly declines ("skip the goal"), continue
 without it. Keep one loop authority per session: never ask for a second `/goal`.
 
-Backstop: while the change is in stage `execute`, the my-flow Stop hook blocks any stop
-that leaves unticked, unblocked tasks in `tasks.md`, listing what remains. This is a
-safety net for a forgotten `/goal`, not a replacement for it. The hook stops nagging when
-the stage becomes `done` (step 4.5) or the user sets `MY_FLOW_SKIP_HOOKS=execute-guard`.
+Backstop: while the change is in stage `execute`, the my-flow Stop hook blocks a message
+that claims completion ("done", "implemented", ...) while `tasks.md` still has unticked,
+unblocked tasks, listing what remains. Plain answers and questions to the user are never
+blocked. This is a safety net for a forgotten `/goal`, not a replacement for it. The state
+expires 12 hours after its last `updated` timestamp (`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`
+overrides), which is why the task loop refreshes it; the hook stops entirely when the
+stage becomes `done` (step 4.5) or the user sets `MY_FLOW_SKIP_HOOKS=execute-guard`.
 
 `--team`: only when `design.md` has `## File Ownership` with two or more disjoint groups.
 Describe the teammates in natural language (one per ownership group, each told which
@@ -75,7 +79,8 @@ For each pending task, in order:
    codebase.
 2. Run the task's own verification phrase (the "and verify ..." part). If the task touches
    anything listed in Rebuild / Re-run, run those steps now.
-3. Only if the check passed: tick the box in `tasks.md`. Optional commit
+3. Only if the check passed: tick the box in `tasks.md`, then run
+   `{{CALL:spec}} stage <name> execute` to refresh the state timestamp. Optional commit
    `feat(<name>): <task id> <summary>`.
 4. If the check failed twice with materially different approaches, record the blocker under
    the task in `tasks.md` (`  - blocked: <reason>`) and continue with independent tasks.
@@ -89,9 +94,9 @@ For each pending task, in order:
 3. Re-run step 1.
 4. Independent review: run {{CALL:mf-verify}} <name> in a separate context. Optionally
    {{CALL:ask}} for a cross-model review of the diff.
-5. Only if the report says PASS: declare done. Tick any remaining meta task, write
-   `.my-flow/state/current-change.json` with stage `done` (this releases the Stop-hook
-   backstop), and suggest `{{CALL:spec}} archive <name>`.
+5. Only if the report says PASS: declare done. Tick any remaining meta task, run
+   `{{CALL:spec}} stage <name> done` (this releases the Stop-hook backstop), and suggest
+   `{{CALL:spec}} archive <name>`.
 
 <!-- MY-FLOW:CODEX -->
 After step 5, and only then, call `update_goal` with status `complete`.

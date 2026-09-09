@@ -30,7 +30,7 @@ if (!cmd || cmd === '-h' || cmd === '--help' || !scripts[cmd]) {
   install claude|codex [--link] [--dry-run] install one tool surface
   uninstall codex [--dry-run]               restore the Codex surface
   init [--simple] [--tools claude,codex]    set up a project (specs/, changes/, templates)
-  spec new|status|validate|archive ...      manage the intent layer (no external tool)
+  spec new|status|validate|archive|stage ... manage the intent layer (no external tool)
   ask <codex|claude> [--diff] [--files a,b] <question...>   cross-model advisor`);
   process.exit(cmd && !scripts[cmd] ? 1 : 0);
 }
