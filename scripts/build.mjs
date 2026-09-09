@@ -151,7 +151,6 @@ for (const [name, cfg] of Object.entries(manifest.agents)) {
     keywords: ['claude-code', 'codex', 'workflow', 'specs', 'plugin'],
     skills: Object.keys(manifest.skills).map((n) => `./skills/${n}/`),
     agents: Object.keys(manifest.agents).map((n) => `./agents/${n}.md`),
-    hooks: './hooks/hooks.json',
   };
   emit('.claude-plugin/plugin.json', JSON.stringify(plugin, null, 2) + '\n');
 }

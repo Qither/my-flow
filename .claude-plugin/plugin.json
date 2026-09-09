@@ -28,6 +28,5 @@
     "./agents/architect.md",
     "./agents/critic.md",
     "./agents/verifier.md"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
