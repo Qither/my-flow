@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 /**
- * Stop hook (Claude Code + Codex): block a completion claim when the working-tree diff
- * still contains fake-completion markers (skipped/focused tests, placeholder TODOs, stub
- * returns, unimplemented throws). Distilled from oh-my-claudecode's workflow-drift-guard.
+ * Stop hook (Claude Code + Codex). Two independent rules:
  *
- * Output: {} to allow, or {"decision":"block","reason":"..."}. Always exits 0.
- * Opt out: MY_FLOW_SKIP_HOOKS=completion-guard
+ *  1. execute-guard: while the current change is in stage `execute` and its tasks.md still
+ *     has unticked tasks that are not marked "blocked:", block the stop and list what remains.
+ *     This is a deterministic backstop for a forgotten /goal, not a replacement for it.
+ *  2. completion-guard: block a completion claim when the working-tree diff still contains
+ *     fake-completion markers (skipped/focused tests, placeholder TODOs, stub returns,
+ *     unimplemented throws). Distilled from oh-my-claudecode's workflow-drift-guard.
+ *
+ * Output: {} to allow, or {"decision":"block","reason":"..."}. Always exits 0. Honors
+ * stop_hook_active so a block never loops. Opt out per rule:
+ *   MY_FLOW_SKIP_HOOKS=execute-guard | completion-guard | all
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,11 +24,56 @@ const allow = () => {
 };
 
 const skip = (process.env.MY_FLOW_SKIP_HOOKS ?? '').split(',').map((s) => s.trim());
-if (skip.includes('completion-guard') || skip.includes('all')) allow();
+const skipExecute = skip.includes('execute-guard') || skip.includes('all');
+const skipCompletion = skip.includes('completion-guard') || skip.includes('all');
+if (skipExecute && skipCompletion) allow();
 
 const input = await readHookInput();
 if (input.stop_hook_active === true) allow(); // never loop on our own block
 const cwd = typeof input.cwd === 'string' && input.cwd ? input.cwd : process.cwd();
+
+// ---- rule 1: execute-guard ----
+function remainingTasks() {
+  let state;
+  try {
+    state = JSON.parse(readFileSync(join(cwd, '.my-flow', 'state', 'current-change.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+  if (state?.stage !== 'execute' || !state.change) return null;
+  const candidates = [join(cwd, 'changes', state.change, 'tasks.md'), join(cwd, 'docs', 'changes', `${state.change}.md`)];
+  const path = candidates.find((p) => existsSync(p));
+  if (!path) return null;
+  const lines = readFileSync(path, 'utf8').split(/\r?\n/);
+  const remaining = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^\s*- \[ \] (\d+\.\d+ .*)$/.exec(lines[i]);
+    if (!m) continue;
+    let blocked = false;
+    for (let j = i + 1; j < lines.length && /^\s+\S/.test(lines[j]) && !/^\s*- \[/.test(lines[j]); j++) {
+      if (/blocked:/i.test(lines[j])) blocked = true;
+    }
+    if (!blocked) remaining.push(m[1].trim());
+  }
+  return { change: state.change, path, remaining };
+}
+
+if (!skipExecute) {
+  const r = remainingTasks();
+  if (r && r.remaining.length) {
+    const reason =
+      `[my-flow execute-guard] Change "${r.change}" is in stage execute and tasks.md still has ${r.remaining.length} unticked task(s):\n` +
+      r.remaining.slice(0, 5).map((t) => `- ${t}`).join('\n') +
+      (r.remaining.length > 5 ? `\n- ... ${r.remaining.length - 5} more` : '') +
+      `\nContinue with the next task, or mark it "  - blocked: <reason>" under the task if it cannot proceed. ` +
+      `When the final gate has passed, set .my-flow/state/current-change.json stage to "done". (Bypass: MY_FLOW_SKIP_HOOKS=execute-guard)`;
+    process.stdout.write(JSON.stringify({ decision: 'block', reason }));
+    process.exit(0);
+  }
+}
+if (skipCompletion) allow();
+
+// ---- rule 2: completion-guard ----
 
 const COMPLETION_CLAIM_RE =
   /\b(?:done|complete[sd]?|finished|implemented|fixed|resolved|all set|ready\s+(?:for\s+(?:review|merge|release|qa|testing)|to\s+(?:merge|ship|release|submit)))\b/i;

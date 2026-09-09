@@ -174,9 +174,9 @@ Claude 以 `my-flow:planner` 等名稱呼叫它們。Codex 從 `~/.codex/agents/
 | 事件 | 腳本 | 行為 |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | 如果專案中存在 `changes/`，列出進行中的變更及其已勾選 / 總任務數與產出物狀態。永遠以結束代碼 0 結束 |
-| Stop | `hooks/completion-guard.mjs` | 如果最後一則訊息宣稱已完成，但 diff 中仍包含 `test.skip`、`.only`、佔位 TODO 或存根回傳值，則攔截並說明原因 |
+| Stop | `hooks/completion-guard.mjs` | 如果最後一則訊息宣稱已完成，但 diff 中仍包含 `test.skip`、`.only`、佔位 TODO 或存根回傳值，則攔截並說明原因；在 `execute` 階段，只要 tasks.md 還有未勾選且未標記 blocked 的任務也會阻擋 |
 
-這兩個腳本由 Claude（透過外掛中的 `hooks/hooks.json`）與 Codex（透過 PowerShell shim）共用。可用 `MY_FLOW_SKIP_HOOKS=completion-guard`（或 `all`）停用。
+這兩個腳本由 Claude（透過外掛中的 `hooks/hooks.json`）與 Codex（透過 PowerShell shim）共用。可用 `MY_FLOW_SKIP_HOOKS=completion-guard` 或 `execute-guard`（或 `all`）停用。
 
 ## 跨模型顧問
 

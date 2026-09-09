@@ -174,9 +174,9 @@ Claude では `my-flow:planner` などとして指定します。Codex は `~/.c
 | イベント | スクリプト | 動作 |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | プロジェクトに `changes/` がある場合、アクティブな変更をチェック済み / 全タスク数と成果物の状態とともに一覧表示します。常に終了コード 0 で終了します |
-| Stop | `hooks/completion-guard.mjs` | 最後のメッセージが完了を宣言しているのに diff に `test.skip`、`.only`、プレースホルダーの TODO、スタブの return がまだ含まれている場合、ブロックして理由を説明します |
+| Stop | `hooks/completion-guard.mjs` | 最後のメッセージが完了を宣言しているのに diff に `test.skip`、`.only`、プレースホルダーの TODO、スタブの return がまだ含まれている場合、ブロックして理由を説明します。`execute` 中は、tasks.md に未チェックかつ blocked 未指定のタスクが残っている間もブロックします |
 
-どちらのスクリプトも Claude(プラグイン内の `hooks/hooks.json` 経由)と Codex(PowerShell シム経由)で共有されます。`MY_FLOW_SKIP_HOOKS=completion-guard`(または `all`)で無効化できます。
+どちらのスクリプトも Claude(プラグイン内の `hooks/hooks.json` 経由)と Codex(PowerShell シム経由)で共有されます。`MY_FLOW_SKIP_HOOKS=completion-guard`、または `execute-guard`(または `all`)で無効化できます。
 
 ## クロスモデルアドバイザー
 

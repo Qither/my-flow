@@ -32,15 +32,21 @@ verification passed. Done only when every box is ticked, the final gate has run 
 (verify, cleanup, re-verify, independent review), and the verification report says PASS.
 ```
 
-Skills cannot set the session goal. Print exactly:
+Skills cannot set the session goal, so hand it to the user and wait. Print exactly:
 
 ```
-Paste this to keep the session on task:
+Paste this to keep the session on task, then say "continue":
 /goal <the statement above>
 ```
 
-Then start task 1 immediately; do not wait for the paste. Keep one loop authority per
-session: if a `/goal` is already active, do not ask for a second one.
+Then STOP and wait. Do not start task 1 until the user replies. If the user says a `/goal`
+is already active for this change, or explicitly declines ("skip the goal"), continue
+without it. Keep one loop authority per session: never ask for a second `/goal`.
+
+Backstop: while the change is in stage `execute`, the my-flow Stop hook blocks any stop
+that leaves unticked, unblocked tasks in `tasks.md`, listing what remains. This is a
+safety net for a forgotten `/goal`, not a replacement for it. The hook stops nagging when
+the stage becomes `done` (step 4.5) or the user sets `MY_FLOW_SKIP_HOOKS=execute-guard`.
 
 `--team`: only when `design.md` has `## File Ownership` with two or more disjoint groups.
 Describe the teammates in natural language (one per ownership group, each told which
@@ -72,8 +78,9 @@ For each pending task, in order:
 3. Re-run step 1.
 4. Independent review: run /my-flow:mf-verify <name> in a separate context. Optionally
    /my-flow:ask for a cross-model review of the diff.
-5. Only if the report says PASS: declare done. Tick any remaining meta task, set state to
-   `done`, and suggest `/my-flow:spec archive <name>`.
+5. Only if the report says PASS: declare done. Tick any remaining meta task, write
+   `.my-flow/state/current-change.json` with stage `done` (this releases the Stop-hook
+   backstop), and suggest `/my-flow:spec archive <name>`.
 
 ## Report (always the last thing you print)
 

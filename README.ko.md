@@ -174,9 +174,9 @@ Claude에서는 `my-flow:planner` 등으로 지정합니다. Codex는 `~/.codex/
 | 이벤트 | 스크립트 | 동작 |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | 프로젝트에 `changes/`가 있으면 활성 변경 사항을 체크됨 / 전체 태스크 수와 산출물 상태와 함께 나열합니다. 항상 종료 코드 0으로 종료합니다 |
-| Stop | `hooks/completion-guard.mjs` | 마지막 메시지가 완료를 주장하지만 diff에 여전히 `test.skip`, `.only`, 자리표시자 TODO, 스텁 return이 들어 있으면 차단하고 이유를 설명합니다 |
+| Stop | `hooks/completion-guard.mjs` | 마지막 메시지가 완료를 주장하지만 diff에 여전히 `test.skip`, `.only`, 자리표시자 TODO, 스텁 return이 들어 있으면 차단하고 이유를 설명합니다. `execute` 단계에서는 tasks.md에 체크되지 않았고 blocked 표시도 없는 작업이 남아 있는 동안에도 차단합니다 |
 
-두 스크립트 모두 Claude(플러그인의 `hooks/hooks.json` 경유)와 Codex(PowerShell 심 경유)가 공유합니다. `MY_FLOW_SKIP_HOOKS=completion-guard`(또는 `all`)로 비활성화할 수 있습니다.
+두 스크립트 모두 Claude(플러그인의 `hooks/hooks.json` 경유)와 Codex(PowerShell 심 경유)가 공유합니다. `MY_FLOW_SKIP_HOOKS=completion-guard` 또는 `execute-guard`(또는 `all`)로 비활성화할 수 있습니다.
 
 ## 크로스 모델 어드바이저
 

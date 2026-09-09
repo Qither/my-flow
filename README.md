@@ -113,7 +113,7 @@ Claude Code has a built-in `/plan` (plan mode) and bundled skills named `run` an
 
 ### One loop authority per session
 
-In Claude Code, at most one `/goal` and at most one agent team per session. `execute` prints the `/goal` statement for you to paste (skills cannot set it themselves). In Codex, one goal per thread; `execute` calls `create_goal` only when none is active.
+In Claude Code, at most one `/goal` and at most one agent team per session. `execute` prints the `/goal` statement and waits for you to paste it (skills cannot set it themselves); the Stop hook is only a backstop that blocks stops leaving unticked tasks during `execute`. In Codex, one goal per thread; `execute` calls `create_goal` only when none is active.
 
 ### What Claude and Codex each do
 
@@ -174,9 +174,9 @@ Claude addresses them as `my-flow:planner` etc. Codex loads them from `~/.codex/
 | Event | Script | Behavior |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | If the project has `changes/`, lists active changes with ticked / total tasks and artifact state. Always exits 0 |
-| Stop | `hooks/completion-guard.mjs` | If the last message claims completion but the diff still contains `test.skip`, `.only`, placeholder TODOs or stub returns, blocks and explains why |
+| Stop | `hooks/completion-guard.mjs` | If the last message claims completion but the diff still contains `test.skip`, `.only`, placeholder TODOs or stub returns, blocks and explains why; during `execute` it also blocks while tasks.md still has unticked tasks not marked blocked |
 
-Both scripts are shared by Claude (via `hooks/hooks.json` in the plugin) and Codex (via the PowerShell shim). Disable with `MY_FLOW_SKIP_HOOKS=completion-guard` (or `all`).
+Both scripts are shared by Claude (via `hooks/hooks.json` in the plugin) and Codex (via the PowerShell shim). Disable with `MY_FLOW_SKIP_HOOKS=completion-guard` or `execute-guard` (or `all`).
 
 ## Cross-model advisor
 

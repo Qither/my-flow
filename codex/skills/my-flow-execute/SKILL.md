@@ -62,8 +62,9 @@ For each pending task, in order:
 3. Re-run step 1.
 4. Independent review: run $my-flow-mf-verify <name> in a separate context. Optionally
    $my-flow-ask for a cross-model review of the diff.
-5. Only if the report says PASS: declare done. Tick any remaining meta task, set state to
-   `done`, and suggest `$my-flow-spec archive <name>`.
+5. Only if the report says PASS: declare done. Tick any remaining meta task, write
+   `.my-flow/state/current-change.json` with stage `done` (this releases the Stop-hook
+   backstop), and suggest `$my-flow-spec archive <name>`.
 
 After step 5, and only then, call `update_goal` with status `complete`.
 

@@ -174,9 +174,9 @@ Claude les désigne par `my-flow:planner`, etc. Codex les charge depuis `~/.code
 | Événement | Script | Comportement |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | Si le projet contient `changes/`, liste les changements actifs avec les tâches cochées / totales et l'état des artefacts. Quitte toujours avec le code 0 |
-| Stop | `hooks/completion-guard.mjs` | Si le dernier message déclare l'achèvement mais que le diff contient encore `test.skip`, `.only`, des TODO de remplissage ou des retours factices (stubs), bloque et explique pourquoi |
+| Stop | `hooks/completion-guard.mjs` | Si le dernier message déclare l'achèvement mais que le diff contient encore `test.skip`, `.only`, des TODO de remplissage ou des retours factices (stubs), bloque et explique pourquoi ; pendant `execute`, il bloque aussi tant que tasks.md contient des tâches non cochées et non marquées blocked |
 
-Les deux scripts sont partagés par Claude (via `hooks/hooks.json` dans le plugin) et Codex (via le shim PowerShell). Désactivez-les avec `MY_FLOW_SKIP_HOOKS=completion-guard` (ou `all`).
+Les deux scripts sont partagés par Claude (via `hooks/hooks.json` dans le plugin) et Codex (via le shim PowerShell). Désactivez-les avec `MY_FLOW_SKIP_HOOKS=completion-guard` ou `execute-guard` (ou `all`).
 
 ## Conseiller inter-modèles
 

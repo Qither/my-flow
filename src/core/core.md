@@ -69,7 +69,9 @@ Claude Code is the primary interactive executor.
 - Agent teams are enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in `settings.json`
   (`env`). On Windows teammates run in-process only; do not ask for split panes.
 - One loop authority per session: at most one active `/goal` and at most one team. `execute`
-  prints the `/goal` statement for the user to paste; it never tries to set it itself.
+  prints the `/goal` statement, then waits for the user to paste it; it never tries to set
+  it itself. The Stop hook is only a backstop: during stage `execute` it blocks stops that
+  leave unticked, unblocked tasks.
 - Start a team only when `design.md` lists two or more disjoint file-ownership groups.
   Teammates edit only files they own and report back through the shared task list.
 - For risky changes, work in a worktree (`claude -w <name>`), or give a subagent

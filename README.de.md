@@ -174,9 +174,9 @@ Claude spricht sie als `my-flow:planner` usw. an. Codex lädt sie aus `~/.codex/
 | Ereignis | Skript | Verhalten |
 |---|---|---|
 | SessionStart | `hooks/session-context.mjs` | Wenn das Projekt `changes/` enthält, listet es die aktiven Changes mit abgehakten / gesamten Aufgaben und Artefaktzustand auf. Beendet sich immer mit Exit-Code 0 |
-| Stop | `hooks/completion-guard.mjs` | Wenn die letzte Nachricht Fertigstellung behauptet, das Diff aber noch `test.skip`, `.only`, Platzhalter-TODOs oder Stub-Rückgaben enthält, blockiert es und erklärt warum |
+| Stop | `hooks/completion-guard.mjs` | Wenn die letzte Nachricht Fertigstellung behauptet, das Diff aber noch `test.skip`, `.only`, Platzhalter-TODOs oder Stub-Rückgaben enthält, blockiert es und erklärt warum; während `execute` blockiert er außerdem, solange tasks.md noch unerledigte, nicht als blocked markierte Aufgaben enthält |
 
-Beide Skripte werden von Claude (über `hooks/hooks.json` im Plugin) und Codex (über das PowerShell-Shim) gemeinsam genutzt. Deaktivieren Sie sie mit `MY_FLOW_SKIP_HOOKS=completion-guard` (oder `all`).
+Beide Skripte werden von Claude (über `hooks/hooks.json` im Plugin) und Codex (über das PowerShell-Shim) gemeinsam genutzt. Deaktivieren Sie sie mit `MY_FLOW_SKIP_HOOKS=completion-guard` oder `execute-guard` (oder `all`).
 
 ## Modellübergreifender Berater
 
