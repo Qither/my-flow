@@ -1,7 +1,7 @@
 ---
 name: my-flow-spec
-description: "Manage the intent layer (specs/ and changes/) with no external tool - create a change from templates, show status, validate structure, set the current stage, or archive a finished change and merge its delta specs."
-argument-hint: "new <name> | status [name] | validate [name] | archive <name> | stage <name> <stage>"
+description: "Manage the intent layer (specs/ and changes/) with no external tool - create a change from templates, show status (stale, overlap and audit warnings), validate structure, set the current stage, archive a finished change and merge its delta specs, or abandon a change without merging."
+argument-hint: "new <name> | status [name] [--stale-days n] | validate [name] | archive <name> | abandon <name> [--reason \\\"...\\\"] | stage <name> <stage>"
 ---
 
 # Spec helper
@@ -24,7 +24,19 @@ kebab-case. Then continue with $my-flow-interview or $my-flow-mf-plan.
 ## status [name]
 
 Lists active changes with ticked / total tasks, artifact state (missing / empty / done),
-delta spec count, and which change is current. Summarize in one line per change.
+delta spec count, and which change is current. Summarize in one line per change, then relay
+every warning line printed after the rows (JSON: top-level `warnings`):
+- `[stale <n>d]` on a row: unfinished and nothing under `changes/<name>/` modified for
+  `--stale-days` days (default 14, or `MY_FLOW_STALE_DAYS`). A fully ticked change is never
+  stale. Ask whether to resume it or `abandon` it.
+- `state: current change "<name>" ...`: the state file names a change that is stale or gone
+  (silent once the stage is `archived`).
+- `overlap: <cap> "<Req>" in changes a (MODIFIED) and b (REMOVED)`: two active changes carry a
+  delta for the same requirement (ADDED / MODIFIED / REMOVED by heading, RENAMED by its FROM
+  line). Reporting only; decide which change lands first.
+- `audit suggested: <cap> (<n> merges since last audit)`: `MY_FLOW_AUDIT_EVERY` (default 5)
+  archived deltas for that capability since the last archived or abandoned `*audit-<cap>`
+  change. Run $my-flow-mf-audit.
 
 ## validate [name]
 
@@ -38,6 +50,8 @@ Structural checks, exit 1 on errors:
   (error); REMOVED needs a `**Reason**:` line (error) and a `**Migration**:` line (warning);
   ADDED must not already exist (warning: use MODIFIED); RENAMED FROM must exist and is never
   merged automatically.
+- overlap with another active change's delta (same capability, same requirement name) is a
+  warning naming the other change and its section kind, never an error.
 Fix every error before handing off; report warnings.
 
 ## archive <name>
@@ -46,7 +60,23 @@ Refuses unless every task is ticked and a PASS report exists under `.my-flow/ver
 (`--force` overrides; say so explicitly if you use it). Merges delta specs into
 `specs/<capability>/spec.md` (ADDED appends, MODIFIED replaces the block, REMOVED deletes,
 RENAMED is reported for manual handling) and moves the change to
-`changes/archive/<date>-<name>/`. Review the merge log and the resulting spec diff.
+`changes/archive/<date>-<name>/`. Every ADDED or MODIFIED block receives one provenance line
+`<!-- via: <date>-<name> -->` directly under its heading (older markers in the block are
+dropped), so each requirement points back to the archived change that produced it. Review the
+merge log and the resulting spec diff.
+
+## abandon <name> [--reason "..."] [--force]
+
+The third exit for a change that will not be finished: dropped after interview, superseded,
+or parked for good. Requires an `## Abandoned` section with a `**Reason**:` line in
+`proposal.md` (`--reason` appends it). Moves the change to
+`changes/archive/<date>-<name>-abandoned/` and merges nothing, so `specs/` is untouched.
+Refuses a fully ticked change (that is an `archive`) unless `--force`. Second use: recording a
+clean audit so the `audit suggested` nudge clears without inventing work:
+```
+spec new audit-<cap>
+spec abandon audit-<cap> --reason "audit clean, no findings"
+```
 
 ## stage <name> <stage>
 

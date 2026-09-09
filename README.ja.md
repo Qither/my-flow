@@ -131,9 +131,10 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | `uninstall codex [--dry-run]` | `install codex` を元に戻します。`~/.codex` 内のそれ以外はすべて保持します | |
 | `init [--simple] [--tools claude,codex] [dir]` | `specs/`、`changes/`(`.templates/` と `archive/` を含む)、`specs/README.md`、`.claude/rules/specs.md`、`.my-flow/` を作成し、プロジェクトの `CLAUDE.md` / `AGENTS.md` にブロックを追記します | `--simple` は変更ごとにひとつの `docs/changes/<name>.md` を使う方式に切り替えます |
 | `spec new <name>` | テンプレートから `changes/<name>/{proposal,design,tasks}.md` を作成し、それを現在の変更としてマークします | kebab-case の名前 |
-| `spec status [name] [--json]` | チェック済み / 全タスク数、成果物の状態(missing / empty / done)、delta spec の数 | 未編集のテンプレートは empty として数えられます |
+| `spec status [name] [--json]` | チェック済み / 全タスク数、成果物の状態(missing / empty / done)、delta spec の数。14 日間手つかずの未完了 change に `[stale Nd]` を付け(`--stale-days`、`MY_FLOW_STALE_DAYS`)、2 つの change が同じ要件を主張すると `overlap:`、capability に 5 回マージされると `audit suggested:` を表示(`MY_FLOW_AUDIT_EVERY`) | 未編集のテンプレートは empty として数えられます |
 | `spec validate [name] [--json]` | 構造チェック: 必須セクション、タスク行の形式、シナリオの形式、delta セクション。MODIFIED / REMOVED の要件はメイン spec と照合します | エラー時は終了コード 1 |
 | `spec archive <name> [--force]` | すべてのチェックボックスがチェック済みで、`.my-flow/verify/` 配下に PASS レポートがあることを要求します。delta spec を `specs/` にマージし、変更を `changes/archive/` に移動します | `--force` はゲートをスキップします |
+| `spec abandon <name> --reason "..." [--force]` | 完了させない change の第 3 の出口。`proposal.md` に `**Reason**:` 行を持つ `## Abandoned` 節が必要(`--reason` で追記)。change を `changes/archive/<date>-<name>-abandoned/` へ移動し、何もマージしない | すべてチェック済みの change は拒否(`archive` を使う)。クリーンな監査の記録にも使う: `spec new audit-<cap>` の後に `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | 新しい `updated` タイムスタンプ付きで `.my-flow/state/current-change.json` を書き込みます(`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`) | execute-guard はこのファイルが 12 時間以内の場合にのみ作動します |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | もう一方の CLI をアドバイザーとして読み取り専用で実行し、成果物を `.my-flow/ask/` に書き込みます | プロンプトは stdin 経由で渡されます。出力が空の場合は失敗として扱われます |
 
@@ -147,9 +148,10 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 | `mf-plan <name \| text> [--deliberate]` | 複数ファイルの変更。ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れるもの | planner が下書き → architect がレビュー(`CLEAR / WATCH / BLOCK`)→ critic がレビュー(`OKAY / REJECT`)、最大 3 ラウンド | `design.md`(Do-Not-Touch と Rebuild / Re-run を含む必要があります)、`tasks.md` |
 | `execute <name> [--team] [--worktree]` | `tasks.md` に未チェックの項目がある | goal 文を組み立て、タスクごとに実装・検証・チェックを行い、固定の最終ゲートを実行します | Claude: 貼り付け用の `/goal …` を表示。Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | 「完了」を宣言する前に必ず | 読み取り専用の verifier に委譲し、verifier 自身がチェックを実行して基準ごとに報告します | PASS / FAIL / INCOMPLETE を含む `.my-flow/verify/<name>-<time>.md` |
+| `mf-audit <capability \| all>` | `spec status` が `audit suggested` を表示したとき、またはユーザーが「audit the spec」と言ったとき | 読み取り専用の architect が `specs/<cap>/spec.md` をコードとテストと照合: 未実装の要件、文書化されていない挙動、矛盾、置き場所の違う要件を報告。`specs/` は決して編集しない | `Status: CLEAN / DRIFT / BROKEN` と `audit-<cap>` で終わる提案 change 名を含む `.my-flow/verify/audit-<cap>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 設計へのセカンドオピニオン、最終ゲート前の diff レビュー、計画が行き詰まったときの裁定 | `ask` スクリプトをラップし、要約し、同意するかどうかを述べます | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | セッションでプロジェクト固有の難しい問題を解決した | 3 つの質問による品質ゲートの後、SKILL.md を抽出します | `.claude/skills/` と `.agents/skills/` の両方に書き込まれます |
-| `spec new\|status\|validate\|archive\|stage` | インテントレイヤーの管理 | `spec` スクリプトをラップし、その出力を解釈します | スクリプトと同じ |
+| `spec new\|status\|validate\|abandon\|archive\|stage` | インテントレイヤーの管理 | `spec` スクリプトをラップし、その出力を解釈します | スクリプトと同じ |
 
 `learn` には `disable-model-invocation` が設定されています。呼び出せるのはあなただけです。
 

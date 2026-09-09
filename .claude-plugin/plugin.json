@@ -19,6 +19,7 @@
     "./skills/mf-plan/",
     "./skills/execute/",
     "./skills/mf-verify/",
+    "./skills/mf-audit/",
     "./skills/ask/",
     "./skills/learn/",
     "./skills/spec/"

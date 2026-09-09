@@ -131,9 +131,10 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | `uninstall codex [--dry-run]` | Reverses `install codex`, preserving everything else in `~/.codex` | |
 | `init [--simple] [--tools claude,codex] [dir]` | Creates `specs/`, `changes/` (with `.templates/` and `archive/`), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`, and appends a block to the project `CLAUDE.md` / `AGENTS.md` | `--simple` switches to one `docs/changes/<name>.md` per change |
 | `spec new <name>` | Creates `changes/<name>/{proposal,design,tasks}.md` from templates and marks it current | kebab-case names |
-| `spec status [name] [--json]` | Ticked / total tasks, artifact state (missing / empty / done), delta spec count | Untouched templates count as empty |
+| `spec status [name] [--json]` | Ticked / total tasks, artifact state (missing / empty / done), delta spec count; flags `[stale Nd]` on unfinished changes untouched for 14 days (`--stale-days`, `MY_FLOW_STALE_DAYS`), `overlap:` when two changes claim one requirement, `audit suggested:` after 5 merges into a capability (`MY_FLOW_AUDIT_EVERY`) | Untouched templates count as empty |
 | `spec validate [name] [--json]` | Structural checks: required sections, task line format, scenario format, delta sections; MODIFIED / REMOVED requirements are checked against the main spec | Exit 1 on errors |
 | `spec archive <name> [--force]` | Requires all boxes ticked and a PASS report under `.my-flow/verify/`; merges delta specs into `specs/` and moves the change to `changes/archive/` | `--force` skips the gate |
+| `spec abandon <name> --reason "..." [--force]` | Third exit for a change that will not be finished: requires an `## Abandoned` section with a `**Reason**:` line (`--reason` appends it), moves the change to `changes/archive/<date>-<name>-abandoned/`, merges nothing | Refuses a fully ticked change (use `archive`). Also records a clean audit: `spec new audit-<cap>` then `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | Writes `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) with a fresh `updated` timestamp | The execute-guard only fires while this file is younger than 12 h |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Runs the other CLI read-only as an advisor; writes an artifact to `.my-flow/ask/` | Prompt goes through stdin; empty output counts as failure |
 
@@ -147,9 +148,10 @@ Claude invokes them as `/my-flow:<name>`, Codex as `$my-flow-<name>`.
 | `mf-plan <name \| text> [--deliberate]` | Multi-file changes; anything touching build config, shaders, engine modules, migrations, auth | planner drafts → architect reviews (`CLEAR / WATCH / BLOCK`) → critic reviews (`OKAY / REJECT`), up to three rounds | `design.md` (must contain Do-Not-Touch and Rebuild / Re-run), `tasks.md` |
 | `execute <name> [--team] [--worktree]` | `tasks.md` has unticked boxes | Composes the goal statement; implements task by task, verifies, ticks; runs the fixed final gate | Claude: prints `/goal …` for you to paste. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | Before any "done" claim | Delegates to the read-only verifier, which runs the checks itself and reports per criterion | `.my-flow/verify/<name>-<time>.md` with PASS / FAIL / INCOMPLETE |
+| `mf-audit <capability \| all>` | `spec status` prints `audit suggested`, or the user says "audit the spec" | Read-only architect pass comparing `specs/<cap>/spec.md` with code and tests: unimplemented requirements, undocumented behavior, contradictions, misplaced requirements; never edits `specs/` | `.my-flow/verify/audit-<cap>-<time>.md` with `Status: CLEAN / DRIFT / BROKEN` and a suggested change name ending in `audit-<cap>` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | Second opinion on a design, diff review before the final gate, tie-break when planning stalls | Wraps the `ask` script, summarizes, and states whether it agrees | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | The session solved something project-specific and hard | Three-question quality gate, then extracts a SKILL.md | Written to both `.claude/skills/` and `.agents/skills/` |
-| `spec new\|status\|validate\|archive\|stage` | Managing the intent layer | Wraps the `spec` script and interprets its output | same as the script |
+| `spec new\|status\|validate\|abandon\|archive\|stage` | Managing the intent layer | Wraps the `spec` script and interprets its output | same as the script |
 
 `learn` has `disable-model-invocation`; only you can call it.
 

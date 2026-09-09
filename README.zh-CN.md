@@ -131,9 +131,10 @@ Claude Code 负责交互式工作并运行循环。Codex 负责审查、规划�
 | `uninstall codex [--dry-run]` | 撤销 `install codex`，保留 `~/.codex` 中的其他一切 | |
 | `init [--simple] [--tools claude,codex] [dir]` | 创建 `specs/`、`changes/`（含 `.templates/` 和 `archive/`）、`specs/README.md`、`.claude/rules/specs.md`、`.my-flow/`，并向项目的 `CLAUDE.md` / `AGENTS.md` 追加一段内容 | `--simple` 切换为每个变更一个 `docs/changes/<name>.md` |
 | `spec new <name>` | 从模板创建 `changes/<name>/{proposal,design,tasks}.md` 并将其标记为当前变更 | 名称使用 kebab-case |
-| `spec status [name] [--json]` | 已勾选 / 总任务数、工件状态（missing / empty / done）、delta spec 数量 | 未修改过的模板计为 empty |
+| `spec status [name] [--json]` | 已勾选 / 总任务数、工件状态（missing / empty / done）、delta spec 数量；14 天未动过的未完成变更标记为 `[stale Nd]`（`--stale-days`、`MY_FLOW_STALE_DAYS`），两个变更声明同一需求时输出 `overlap:`，某能力累计 5 次合并后输出 `audit suggested:`（`MY_FLOW_AUDIT_EVERY`） | 未修改过的模板计为 empty |
 | `spec validate [name] [--json]` | 结构检查：必需章节、任务行格式、场景格式、delta 章节；MODIFIED / REMOVED 的需求会对照主 spec 检查 | 有错误时以退出码 1 退出 |
 | `spec archive <name> [--force]` | 要求所有复选框已勾选且 `.my-flow/verify/` 下存在 PASS 报告；将 delta spec 合并到 `specs/` 并把变更移到 `changes/archive/` | `--force` 跳过该门禁 |
+| `spec abandon <name> --reason "..." [--force]` | 不会完成的变更的第三个出口：要求 `proposal.md` 有带 `**Reason**:` 行的 `## Abandoned` 节（`--reason` 会追加），把变更移到 `changes/archive/<date>-<name>-abandoned/`，不合并任何内容 | 拒绝已全部勾选的变更（请用 `archive`）。也用于记录一次无发现的审计：`spec new audit-<cap>` 然后 `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | 以新的 `updated` 时间戳写入 `.my-flow/state/current-change.json`（`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`） | execute-guard 只在此文件未超过 12 小时时才会触发 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以只读方式运行另一个 CLI 作为顾问；将工件写入 `.my-flow/ask/` | 提示词通过 stdin 传入；输出为空视为失败 |
 
@@ -147,9 +148,10 @@ Claude 以 `/my-flow:<name>` 调用它们，Codex 以 `$my-flow-<name>` 调用�
 | `mf-plan <name \| text> [--deliberate]` | 多文件变更；任何涉及构建配置、着色器、引擎模块、数据迁移、鉴权的改动 | planner 起草 → architect 审查（`CLEAR / WATCH / BLOCK`）→ critic 审查（`OKAY / REJECT`），最多三轮 | `design.md`（必须包含 Do-Not-Touch 和 Rebuild / Re-run）、`tasks.md` |
 | `execute <name> [--team] [--worktree]` | `tasks.md` 中还有未勾选的复选框 | 组织 goal 语句；逐个任务实现、验证、勾选；运行固定的最终门禁 | Claude：打印 `/goal …` 供你粘贴。Codex：`create_goal` |
 | `mf-verify <name \| criteria>` | 在任何“已完成”声明之前 | 委托给只读的 verifier，由它自行运行检查并逐条标准报告 | `.my-flow/verify/<name>-<time>.md`，包含 PASS / FAIL / INCOMPLETE |
+| `mf-audit <capability \| all>` | `spec status` 输出 `audit suggested`，或用户说“audit the spec”时 | 只读的 architect 将 `specs/<cap>/spec.md` 与代码和测试对照：未实现的需求、未记录的行为、相互矛盾、放错能力的需求；绝不编辑 `specs/` | `.my-flow/verify/audit-<cap>-<time>.md`，含 `Status: CLEAN / DRIFT / BROKEN` 和以 `audit-<cap>` 结尾的建议变更名 |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 对设计寻求第二意见、最终门禁前的 diff 审查、规划停滞时的裁决 | 封装 `ask` 脚本，做摘要并说明是否同意 | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | 本次会话解决了某个项目特有且困难的问题 | 三问式质量门禁，然后提炼出一个 SKILL.md | 同时写入 `.claude/skills/` 和 `.agents/skills/` |
-| `spec new\|status\|validate\|archive\|stage` | 管理意图层 | 封装 `spec` 脚本并解读其输出 | 与脚本相同 |
+| `spec new\|status\|validate\|abandon\|archive\|stage` | 管理意图层 | 封装 `spec` 脚本并解读其输出 | 与脚本相同 |
 
 `learn` 设置了 `disable-model-invocation`；只有你才能调用它。
 

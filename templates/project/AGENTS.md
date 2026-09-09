@@ -4,7 +4,8 @@
 This project follows the my-flow working agreement (user-level `~/.codex/AGENTS.md`).
 In this workflow Codex is an advisor and cross-verifier: review, plan, verify; implement
 only when explicitly asked. Skills: `$my-flow-interview`, `$my-flow-mf-plan`,
-`$my-flow-execute`, `$my-flow-mf-verify`, `$my-flow-ask`, `$my-flow-learn`, `$my-flow-spec`.
+`$my-flow-execute`, `$my-flow-mf-verify`, `$my-flow-ask`, `$my-flow-learn`, `$my-flow-spec`,
+`$my-flow-mf-audit`. Unfinished changes leave through `spec abandon`, never by deletion.
 
 Intent lives in `changes/<name>/` (`proposal.md`, `design.md`, `tasks.md`); current truth in
 `specs/`; `tasks.md` checkboxes are the only progress ledger. See `specs/README.md`.

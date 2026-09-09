@@ -15,6 +15,9 @@
     "mf-verify": {
       "claude": { "allowed-tools": "Read Grep Glob Bash Agent Write" }
     },
+    "mf-audit": {
+      "claude": { "allowed-tools": "Read Grep Glob Bash Agent Write" }
+    },
     "ask": {
       "claude": { "allowed-tools": "Read Grep Glob Bash(node:*) Bash(git diff:*) Bash(git log:*) Write" }
     },

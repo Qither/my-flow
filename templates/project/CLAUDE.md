@@ -5,7 +5,8 @@ This project follows the my-flow working agreement (user-level `~/.claude/CLAUDE
 `interview -> mf-plan -> execute -> mf-verify`, with `changes/<name>/` as the record of intent,
 `specs/` as the current truth, and `tasks.md` checkboxes as the only progress ledger.
 Skills: `/my-flow:interview`, `/my-flow:mf-plan`, `/my-flow:execute`, `/my-flow:mf-verify`,
-`/my-flow:ask`, `/my-flow:learn`, `/my-flow:spec` (not the built-in `/plan`, `run`, `verify`).
+`/my-flow:ask`, `/my-flow:learn`, `/my-flow:spec`, `/my-flow:mf-audit` (not the built-in `/plan`,
+`run`, `verify`). Unfinished changes leave through `spec abandon`, never by deleting the directory.
 See `specs/README.md` for the format.
 
 ## Project facts (fill in)

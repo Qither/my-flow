@@ -6,17 +6,19 @@
  *   node scripts/spec.mjs status [name] [--json] list changes, ticked/total tasks, artifact state
  *   node scripts/spec.mjs validate [name] [--json]  structural checks (all active changes when no name)
  *   node scripts/spec.mjs archive <name> [--force]  move to changes/archive/<date>-<name>/ and merge delta specs
+ *   node scripts/spec.mjs abandon <name> [--reason "..."] [--force]  move to changes/archive/<date>-<name>-abandoned/, merge nothing
  *   node scripts/spec.mjs stage <name> <stage> [--force]  set .my-flow/state/current-change.json (refreshes `updated`)
  *
  * Layout (borrowed from OpenSpec, no CLI required):
  *   specs/<capability>/spec.md                       current truth
  *   changes/<name>/proposal.md|design.md|tasks.md    intent for one change
  *   changes/<name>/specs/<capability>/spec.md        delta: ## ADDED|MODIFIED|REMOVED Requirements
- *   changes/archive/<YYYY-MM-DD>-<name>/             archived changes
+ *   changes/archive/<YYYY-MM-DD>-<name>/             archived changes (deltas merged into specs/)
+ *   changes/archive/<YYYY-MM-DD>-<name>-abandoned/   abandoned changes (deltas never merged)
  *
- * Options: --root <project dir> (default: cwd)
+ * Options: --root <project dir> (default: cwd), --stale-days <n> (status; default 14, env MY_FLOW_STALE_DAYS)
  */
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,12 +28,22 @@ const argv = process.argv.slice(2);
 const JSON_OUT = argv.includes('--json');
 const FORCE = argv.includes('--force');
 let root = process.cwd();
+const opts = {}; // value-taking flags other than --root
 const positional = [];
 for (let i = 0; i < argv.length; i++) {
   if (argv[i] === '--root') root = resolve(argv[++i]);
+  else if (argv[i] === '--stale-days' || argv[i] === '--reason') opts[argv[i]] = argv[++i];
   else if (!argv[i].startsWith('--')) positional.push(argv[i]);
 }
 const [cmd, name, stageArg] = positional;
+/** CLI flag, then environment variable, then default; non-numeric or non-positive values fall back. */
+function numOpt(flag, envVar, fallback) {
+  for (const v of [opts[flag], process.env[envVar]]) {
+    const n = Number(v);
+    if (v !== undefined && v !== '' && Number.isFinite(n) && n > 0) return n;
+  }
+  return fallback;
+}
 const CHANGES = join(root, 'changes');
 const SPECS = join(root, 'specs');
 const STATE = join(root, '.my-flow', 'state', 'current-change.json');
@@ -71,6 +83,85 @@ function artifactState(dir, file) {
     .filter((l) => l.trim() && !/^#/.test(l.trim()));
   return meaningful.length ? 'done' : 'empty';
 }
+/**
+ * Newest mtime (ms) of dir itself and everything under it. Directories count because a copied
+ * file keeps its source mtime on Windows (`spec new` copies templates), while the directory's
+ * mtime is the moment its entries were created.
+ */
+function newestMtime(dir) {
+  let max = statSync(dir).mtimeMs;
+  for (const d of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, d.name);
+    max = Math.max(max, d.isDirectory() ? newestMtime(p) : statSync(p).mtimeMs);
+  }
+  return max;
+}
+/**
+ * Requirements claimed by two or more active changes' delta specs, as
+ * [{ cap, req, claims: [{ change, kind }] }]. ADDED / MODIFIED / REMOVED claims come from the
+ * requirement headings; RENAMED claims from the `- FROM:` lines. Computed once per process.
+ */
+const RENAMED_FROM_RE = /^-\s*FROM:\s*`?### Requirement:\s*(.+?)`?\s*$/gm;
+let overlapCache = null;
+function overlapIndex() {
+  if (overlapCache) return overlapCache;
+  const claims = new Map(); // `<cap>/<req>` -> { cap, req, claims: [{ change, kind }] }
+  const claim = (cap, req, change, kind) => {
+    const key = `${cap}/${req}`; // capability names never contain '/'
+    if (!claims.has(key)) claims.set(key, { cap, req, claims: [] });
+    claims.get(key).claims.push({ change, kind });
+  };
+  for (const change of listChanges()) {
+    const deltaRoot = join(CHANGES, change, 'specs');
+    if (!existsSync(deltaRoot)) continue;
+    for (const cap of readdirSync(deltaRoot)) {
+      const delta = read(join(deltaRoot, cap, 'spec.md'));
+      if (!delta) continue;
+      for (const kind of ['ADDED', 'MODIFIED', 'REMOVED']) {
+        for (const req of splitRequirements(sectionBody(delta, `${kind} Requirements`)).blocks.keys()) claim(cap, req, change, kind);
+      }
+      for (const m of sectionBody(delta, 'RENAMED Requirements').matchAll(RENAMED_FROM_RE)) claim(cap, m[1].trim(), change, 'RENAMED');
+    }
+  }
+  overlapCache = [...claims.values()].filter((o) => new Set(o.claims.map((c) => c.change)).size >= 2);
+  return overlapCache;
+}
+function overlapText({ cap, req, claims }) {
+  const parts = claims.map((c) => `${c.change} (${c.kind})`);
+  const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0];
+  return `overlap: ${cap} "${req}" in changes ${list}`;
+}
+/**
+ * Audit nudges, derived from changes/archive/ alone. For each capability under specs/: sort the
+ * archive by name (chronological across days), restart the count at every audit anchor
+ * (`^<date>-(?:.*-)?audit-<cap>(?:-abandoned)?$`, so an abandoned audit still records that an
+ * audit happened), and count the later directories that carry specs/<cap>/spec.md and do not end
+ * in `-abandoned` (their deltas were never merged).
+ */
+function auditNudges(every) {
+  const nudges = [];
+  if (!existsSync(SPECS)) return nudges;
+  const archiveDir = join(CHANGES, 'archive');
+  const archived = existsSync(archiveDir)
+    ? readdirSync(archiveDir, { withFileTypes: true })
+        .filter((d) => d.isDirectory())
+        .map((d) => d.name)
+        .sort()
+    : [];
+  const caps = readdirSync(SPECS, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && /^[a-z0-9][a-z0-9-]*$/.test(d.name))
+    .map((d) => d.name);
+  for (const cap of caps) {
+    const anchor = new RegExp(`^\\d{4}-\\d{2}-\\d{2}-(?:.*-)?audit-${cap}(?:-abandoned)?$`);
+    let count = 0;
+    for (const d of archived) {
+      if (anchor.test(d)) count = 0;
+      else if (!d.endsWith('-abandoned') && existsSync(join(archiveDir, d, 'specs', cap, 'spec.md'))) count++;
+    }
+    if (count >= every) nudges.push(`audit suggested: ${cap} (${count} merges since last audit)`);
+  }
+  return nudges;
+}
 function setState(change, stage) {
   const state = { change, stage, updated: new Date().toISOString() };
   mkdirSync(dirname(STATE), { recursive: true });
@@ -103,19 +194,39 @@ if (cmd === 'status' || cmd === undefined) {
       return null;
     }
   })();
+  const STALE_DAYS = numOpt('--stale-days', 'MY_FLOW_STALE_DAYS', 14);
+  const now = Date.now();
   const names = name ? [name] : listChanges();
-  const rows = names.map((n) => {
+  const rowFor = (n) => {
     const dir = join(CHANGES, n);
     if (!existsSync(dir)) return { name: n, missing: true };
+    const t = tasks(dir);
+    const finished = !!t && t.total > 0 && t.done === t.total; // waiting for archive is not rot
+    const mtime = newestMtime(dir);
+    const ageDays = Math.max(0, Math.floor((now - mtime) / 86_400_000));
     return {
       name: n,
       current: current?.change === n,
       stage: current?.change === n ? current.stage : undefined,
-      tasks: tasks(dir),
+      tasks: t,
       artifacts: Object.fromEntries(['proposal.md', 'design.md', 'tasks.md'].map((f) => [f.replace('.md', ''), artifactState(dir, f)])),
       deltaSpecs: existsSync(join(dir, 'specs')) ? readdirSync(join(dir, 'specs')).length : 0,
+      stale: !finished && ageDays >= STALE_DAYS,
+      staleDays: ageDays,
+      lastModified: new Date(mtime).toISOString(),
     };
-  });
+  };
+  const rows = names.map(rowFor);
+  // Warnings: printed after the rows, and returned verbatim in JSON `warnings`.
+  const warnings = [];
+  if (current?.change && current.stage !== 'archived') {
+    const cur = rows.find((r) => r.name === current.change) ?? rowFor(current.change);
+    const simple = existsSync(join(root, 'docs', 'changes', `${current.change}.md`));
+    if (cur.missing && !simple) warnings.push(`state: current change "${current.change}" no longer exists under changes/`);
+    else if (cur.stale) warnings.push(`state: current change "${current.change}" is stale [${cur.staleDays}d]`);
+  }
+  for (const o of overlapIndex()) warnings.push(overlapText(o));
+  warnings.push(...auditNudges(numOpt(null, 'MY_FLOW_AUDIT_EVERY', 5)));
   const text = rows.length
     ? rows
         .map((r) =>
@@ -123,11 +234,12 @@ if (cmd === 'status' || cmd === undefined) {
             ? `${r.name}: (missing)`
             : `${r.name}${r.current ? ` <- current (${r.stage})` : ''}: ${r.tasks ? `${r.tasks.done}/${r.tasks.total} tasks` : 'no tasks.md'}; ` +
               Object.entries(r.artifacts).map(([k, v]) => `${k}=${v}`).join(' ') +
-              (r.deltaSpecs ? `; ${r.deltaSpecs} delta spec(s)` : '')
+              (r.deltaSpecs ? `; ${r.deltaSpecs} delta spec(s)` : '') +
+              (r.stale ? ` [stale ${r.staleDays}d]` : '')
         )
         .join('\n')
     : 'no active changes (changes/ is empty or missing)';
-  out({ root, current, changes: rows }, text);
+  out({ root, current, changes: rows, warnings }, [text, ...warnings].join('\n'));
   process.exit(0);
 }
 
@@ -204,6 +316,8 @@ function validateChange(n) {
       errors.push(...r.errors);
       warnings.push(...r.warnings);
     }
+    // overlaps with other active changes are reported, never resolved (warnings only)
+    for (const o of overlapIndex()) if (o.claims.some((c) => c.change === n)) warnings.push(overlapText(o));
   }
   return { name: n, errors, warnings };
 }
@@ -239,7 +353,7 @@ function validateDeltaAgainstMain(n, cap, deltaText) {
   }
   const renamed = sectionBody(deltaText, 'RENAMED Requirements');
   if (renamed.trim()) {
-    for (const m of renamed.matchAll(/^-\s*FROM:\s*`?### Requirement:\s*(.+?)`?\s*$/gm)) {
+    for (const m of renamed.matchAll(RENAMED_FROM_RE)) {
       if (!mainNames.has(m[1].trim())) errors.push(`${where}: RENAMED FROM "${m[1].trim()}" is not in specs/${cap}/spec.md`);
     }
     warnings.push(`${where}: RENAMED requirements are not merged automatically by "spec archive"; apply the rename by hand`);
@@ -286,7 +400,18 @@ function sectionBody(text, header) {
   const next = /^## /m.exec(rest);
   return next ? rest.slice(0, next.index) : rest;
 }
-function mergeDelta(cap, deltaText, log) {
+/**
+ * Provenance marker: one `<!-- via: <date>-<change> -->` line directly after the requirement
+ * heading. Every existing marker anywhere in the block is dropped first (a MODIFIED delta is
+ * often a copy of the current block, old marker included), so a merged block carries exactly one.
+ */
+const VIA_LINE_RE = /^<!-- via: .+ -->\s*$/;
+function stampVia(block, via) {
+  const lines = block.split('\n').filter((l) => !VIA_LINE_RE.test(l));
+  lines.splice(1, 0, `<!-- via: ${via} -->`);
+  return lines.join('\n');
+}
+function mergeDelta(cap, deltaText, log, via) {
   const target = join(SPECS, cap, 'spec.md');
   let current = read(target);
   if (current === null) {
@@ -300,11 +425,11 @@ function mergeDelta(cap, deltaText, log) {
   for (const [, b] of splitRequirements(sectionBody(deltaText, 'ADDED Requirements')).blocks) {
     const n = /^### Requirement:\s*(.+)$/m.exec(b)[1].trim();
     if (blocks.has(n)) log.push(`warn: ${cap}: ADDED requirement "${n}" already exists; replaced`);
-    blocks.set(n, b);
+    blocks.set(n, stampVia(b, via));
   }
   for (const [n, b] of splitRequirements(sectionBody(deltaText, 'MODIFIED Requirements')).blocks) {
     if (!blocks.has(n)) log.push(`warn: ${cap}: MODIFIED requirement "${n}" not found; appended`);
-    blocks.set(n, b);
+    blocks.set(n, stampVia(b, via));
   }
   for (const [n] of splitRequirements(sectionBody(deltaText, 'REMOVED Requirements')).blocks) {
     if (blocks.delete(n)) log.push(`${cap}: removed requirement "${n}"`);
@@ -334,20 +459,52 @@ if (cmd === 'archive') {
   if (existsSync(deltaRoot)) {
     for (const cap of readdirSync(deltaRoot)) {
       const d = read(join(deltaRoot, cap, 'spec.md'));
-      if (d) mergeDelta(cap, d, log);
+      if (d) mergeDelta(cap, d, log, `${today()}-${name}`);
     }
   }
-  const dest = join(CHANGES, 'archive', `${today()}-${name}`);
+  const dest = moveToArchive(name, '', log);
+  out({ archived: name, dest, log }, log.join('\n'));
+  process.exit(0);
+}
+/** Moves changes/<name> to changes/archive/<date>-<name><suffix>; state becomes `archived` only when that change was current. */
+function moveToArchive(name, suffix, log) {
+  const base = `${today()}-${name}${suffix}`;
+  const dest = join(CHANGES, 'archive', base);
   mkdirSync(dirname(dest), { recursive: true });
-  renameSync(dir, dest);
-  log.push(`moved changes/${name} -> changes/archive/${today()}-${name}`);
+  renameSync(join(CHANGES, name), dest);
+  log.push(`moved changes/${name} -> changes/archive/${base}`);
   try {
     const cur = JSON.parse(read(STATE) ?? 'null');
     if (cur?.change === name) setState(name, 'archived');
   } catch {
     /* ignore */
   }
-  out({ archived: name, dest, log }, log.join('\n'));
+  return dest;
+}
+
+// ---------------------------------------------------------------- abandon
+if (cmd === 'abandon') {
+  if (!name) fail('usage: spec.mjs abandon <name> [--reason "..."] [--force]');
+  const dir = join(CHANGES, name);
+  if (!existsSync(dir)) fail(`changes/${name} does not exist`);
+  const proposalPath = join(dir, 'proposal.md');
+  let proposal = read(proposalPath) ?? '';
+  const reasonLine = () => /^\*\*Reason\*\*:?.*$/m.exec(sectionBody(proposal, 'Abandoned'))?.[0];
+  if (opts['--reason'] && !reasonLine()) {
+    proposal = `${proposal.trimEnd()}\n\n## Abandoned\n\n**Reason**: ${opts['--reason']}\n`;
+    writeFileSync(proposalPath, proposal, 'utf8');
+  }
+  if (!reasonLine()) {
+    fail(`refusing to abandon: changes/${name}/proposal.md has no "## Abandoned" section with a "**Reason**:" line (add one, or pass --reason "...")`);
+  }
+  const t = tasks(dir);
+  if (!FORCE && t && t.total > 0 && t.done === t.total) {
+    fail(`refusing to abandon: every task in changes/${name}/tasks.md is ticked; this is an archive, not an abandonment (run "spec archive ${name}", or use --force)`);
+  }
+  // Delta specs are deliberately never read: nothing from an abandoned change reaches specs/.
+  const log = [`abandoned changes/${name} (${reasonLine()})`];
+  const dest = moveToArchive(name, '-abandoned', log);
+  out({ abandoned: name, dest, log }, log.join('\n'));
   process.exit(0);
 }
 
@@ -363,4 +520,6 @@ if (cmd === 'stage') {
   process.exit(0);
 }
 
-fail('usage: spec.mjs <new <name> | status [name] | validate [name] | archive <name> | stage <name> <stage>> [--json] [--root dir]');
+fail(
+  'usage: spec.mjs <new <name> | status [name] [--stale-days n] | validate [name] | archive <name> | abandon <name> [--reason "..."] | stage <name> <stage>> [--json] [--force] [--root dir]'
+);

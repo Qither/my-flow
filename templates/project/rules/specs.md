@@ -16,4 +16,6 @@ paths:
 - Spec files use `### Requirement:` with at least one `#### Scenario:` (exactly four hashes)
   containing `- **WHEN**` / `- **THEN**` lines. Delta specs under `changes/<name>/specs/` use
   `## ADDED|MODIFIED|REMOVED Requirements`; MODIFIED carries the full requirement block.
-- Never edit files under `changes/archive/`. `specs/` changes only through `spec archive`.
+- Never edit files under `changes/archive/`. `specs/` changes only through `spec archive`;
+  abandoned changes (`spec abandon`, archived as `<date>-<name>-abandoned/`) never merge.
+  Keep the `<!-- via: ... -->` line under each requirement; `spec archive` maintains it.

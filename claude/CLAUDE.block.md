@@ -39,14 +39,14 @@ Rules:
   go back.
 - `mf-verify` runs in a separate context from the one that wrote the code.
 - Skills: /my-flow:interview, /my-flow:mf-plan, /my-flow:execute, /my-flow:mf-verify, /my-flow:ask,
-  /my-flow:learn, /my-flow:spec. When the user says "interview me", "plan this change",
-  "run the change", "verify the change", "ask codex/claude", or "make this a skill", use the
-  matching my-flow skill (not the built-in `/plan`, `run`, or `verify`).
+  /my-flow:learn, /my-flow:spec, /my-flow:mf-audit. When the user says "interview me", "plan this
+  change", "run the change", "verify the change", "ask codex/claude", "make this a skill", or
+  "audit the spec", use the matching my-flow skill (not the built-in `/plan`, `run`, or `verify`).
 
 ## 3. The intent layer (specs/ and changes/)
 
 Structure borrowed from OpenSpec; no external tool is involved. /my-flow:spec handles
-`new / status / validate / archive / stage`.
+`new / status / validate / abandon / archive / stage`.
 
 - `specs/<capability>/spec.md` is the current truth about behavior (requirements with
   WHEN / THEN scenarios).
