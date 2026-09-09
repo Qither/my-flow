@@ -132,7 +132,7 @@ Todos los comandos son scripts de Node puro. `node scripts/cli.mjs <command>` (o
 | `init [--simple] [--tools claude,codex] [dir]` | Crea `specs/`, `changes/` (con `.templates/` y `archive/`), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`, y añade un bloque al `CLAUDE.md` / `AGENTS.md` del proyecto | `--simple` cambia a un único `docs/changes/<name>.md` por cambio |
 | `spec new <name>` | Crea `changes/<name>/{proposal,design,tasks}.md` a partir de las plantillas y lo marca como actual | nombres en kebab-case |
 | `spec status [name] [--json]` | Tareas marcadas / totales, estado de los artefactos (missing / empty / done), número de delta specs | Las plantillas sin modificar cuentan como vacías |
-| `spec validate [name] [--json]` | Comprobaciones estructurales: secciones obligatorias, formato de las líneas de tarea, formato de los escenarios, secciones delta | Sale con 1 si hay errores |
+| `spec validate [name] [--json]` | Comprobaciones estructurales: secciones obligatorias, formato de las líneas de tarea, formato de los escenarios, secciones delta; los requisitos MODIFIED / REMOVED se comprueban contra la spec principal | Sale con 1 si hay errores |
 | `spec archive <name> [--force]` | Requiere que todas las casillas estén marcadas y un informe PASS bajo `.my-flow/verify/`; fusiona los delta specs en `specs/` y mueve el cambio a `changes/archive/` | `--force` omite la puerta de control |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Ejecuta la otra CLI en modo de solo lectura como asesor; escribe un artefacto en `.my-flow/ask/` | El prompt pasa por stdin; una salida vacía cuenta como fallo |
 

@@ -132,7 +132,7 @@ Toutes les commandes sont de simples scripts Node. `node scripts/cli.mjs <comman
 | `init [--simple] [--tools claude,codex] [dir]` | Crée `specs/`, `changes/` (avec `.templates/` et `archive/`), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`, et ajoute un bloc au `CLAUDE.md` / `AGENTS.md` du projet | `--simple` bascule vers un seul `docs/changes/<name>.md` par changement |
 | `spec new <name>` | Crée `changes/<name>/{proposal,design,tasks}.md` à partir des modèles et le marque comme courant | noms en kebab-case |
 | `spec status [name] [--json]` | Tâches cochées / totales, état des artefacts (missing / empty / done), nombre de delta specs | Les modèles non modifiés comptent comme vides |
-| `spec validate [name] [--json]` | Vérifications structurelles : sections requises, format des lignes de tâches, format des scénarios, sections delta | Code de sortie 1 en cas d'erreur |
+| `spec validate [name] [--json]` | Vérifications structurelles : sections requises, format des lignes de tâches, format des scénarios, sections delta ; les exigences MODIFIED / REMOVED sont vérifiées par rapport à la spec principale | Code de sortie 1 en cas d'erreur |
 | `spec archive <name> [--force]` | Exige que toutes les cases soient cochées et qu'un rapport PASS existe sous `.my-flow/verify/` ; fusionne les delta specs dans `specs/` et déplace le changement vers `changes/archive/` | `--force` contourne la barrière |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Exécute l'autre CLI en lecture seule comme conseiller ; écrit un artefact dans `.my-flow/ask/` | Le prompt passe par stdin ; une sortie vide compte comme un échec |
 

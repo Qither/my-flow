@@ -132,7 +132,7 @@ Claude Code는 대화형 작업을 수행하고 루프를 실행합니다. Codex
 | `init [--simple] [--tools claude,codex] [dir]` | `specs/`, `changes/`(`.templates/`와 `archive/` 포함), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`를 생성하고 프로젝트의 `CLAUDE.md` / `AGENTS.md`에 블록을 덧붙입니다 | `--simple`은 변경 사항마다 하나의 `docs/changes/<name>.md`를 쓰는 방식으로 전환합니다 |
 | `spec new <name>` | 템플릿으로부터 `changes/<name>/{proposal,design,tasks}.md`를 생성하고 현재 변경 사항으로 표시합니다 | kebab-case 이름 |
 | `spec status [name] [--json]` | 체크됨 / 전체 태스크 수, 산출물 상태(missing / empty / done), delta spec 개수 | 손대지 않은 템플릿은 empty로 계산됩니다 |
-| `spec validate [name] [--json]` | 구조 검사: 필수 섹션, 태스크 줄 형식, 시나리오 형식, delta 섹션 | 오류 시 종료 코드 1 |
+| `spec validate [name] [--json]` | 구조 검사: 필수 섹션, 태스크 줄 형식, 시나리오 형식, delta 섹션. MODIFIED / REMOVED 요구사항은 메인 spec과 대조합니다 | 오류 시 종료 코드 1 |
 | `spec archive <name> [--force]` | 모든 체크박스가 체크되어 있고 `.my-flow/verify/` 아래에 PASS 보고서가 있어야 합니다. delta spec을 `specs/`에 병합하고 변경 사항을 `changes/archive/`로 옮깁니다 | `--force`는 게이트를 건너뜁니다 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 다른 CLI를 어드바이저로 읽기 전용 실행하고, 산출물을 `.my-flow/ask/`에 기록합니다 | 프롬프트는 stdin으로 전달됩니다. 출력이 비어 있으면 실패로 간주합니다 |
 

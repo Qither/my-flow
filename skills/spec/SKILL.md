@@ -35,6 +35,10 @@ Structural checks, exit 1 on errors:
 - tasks lines match `- [ ] N.M ... and verify ...`.
 - spec files: every `### Requirement:` has a `#### Scenario:` (four hashes) with WHEN / THEN;
   delta files have an ADDED / MODIFIED / REMOVED section.
+- delta vs main spec: MODIFIED and REMOVED requirements must exist in `specs/<capability>/spec.md`
+  (error); REMOVED needs a `**Reason**:` line (error) and a `**Migration**:` line (warning);
+  ADDED must not already exist (warning: use MODIFIED); RENAMED FROM must exist and is never
+  merged automatically.
 Fix every error before handing off; report warnings.
 
 ## archive <name>

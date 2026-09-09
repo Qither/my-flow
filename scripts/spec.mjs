@@ -129,18 +129,20 @@ if (cmd === 'status' || cmd === undefined) {
 }
 
 // ---------------------------------------------------------------- validate
-function validateSpecFile(path, isDelta) {
+function validateSpecFile(absPath, isDelta) {
   const errors = [];
-  const t = read(path);
+  const t = read(absPath);
   if (t === null) return errors;
+  const path = absPath.startsWith(root) ? absPath.slice(root.length + 1).replace(/\\/g, '/') : absPath;
   const lines = t.split('\n');
   if (isDelta && !/^## (ADDED|MODIFIED|REMOVED|RENAMED) Requirements/m.test(t)) {
     errors.push(`${path}: delta spec needs at least one "## ADDED|MODIFIED|REMOVED Requirements" section`);
   }
   let req = null;
   let scenarios = 0;
+  let needsScenarios = true; // false inside REMOVED / RENAMED sections (name + Reason only)
   const flush = () => {
-    if (req && scenarios === 0) errors.push(`${path}: requirement "${req}" has no "#### Scenario:"`);
+    if (req && needsScenarios && scenarios === 0) errors.push(`${path}: requirement "${req}" has no "#### Scenario:"`);
   };
   lines.forEach((line, i) => {
     if (/^### Requirement:/.test(line)) {
@@ -158,6 +160,7 @@ function validateSpecFile(path, isDelta) {
     } else if (/^## /.test(line)) {
       flush();
       req = null;
+      needsScenarios = !/^## (REMOVED|RENAMED) Requirements/.test(line);
     }
   });
   flush();
@@ -191,9 +194,54 @@ function validateChange(n) {
   });
   const deltaRoot = join(dir, 'specs');
   if (existsSync(deltaRoot)) {
-    for (const cap of readdirSync(deltaRoot)) errors.push(...validateSpecFile(join(deltaRoot, cap, 'spec.md'), true));
+    for (const cap of readdirSync(deltaRoot)) {
+      const deltaPath = join(deltaRoot, cap, 'spec.md');
+      errors.push(...validateSpecFile(deltaPath, true));
+      const r = validateDeltaAgainstMain(n, cap, read(deltaPath));
+      errors.push(...r.errors);
+      warnings.push(...r.warnings);
+    }
   }
   return { name: n, errors, warnings };
+}
+
+/**
+ * Cross-check a delta spec against the main spec it will be merged into:
+ *   MODIFIED  -> requirement must exist in specs/<cap>/spec.md
+ *   REMOVED   -> requirement must exist, and the entry must carry a **Reason** (Migration is advisory)
+ *   RENAMED   -> FROM must exist; archive does not merge renames automatically
+ *   ADDED     -> requirement must NOT already exist (otherwise it should be MODIFIED)
+ */
+function validateDeltaAgainstMain(n, cap, deltaText) {
+  const errors = [];
+  const warnings = [];
+  if (!deltaText) return { errors, warnings };
+  const where = `changes/${n}/specs/${cap}/spec.md`;
+  const mainText = read(join(SPECS, cap, 'spec.md'));
+  const mainNames = mainText ? new Set(splitRequirements(mainText).blocks.keys()) : new Set();
+  const names = (header) => [...splitRequirements(sectionBody(deltaText, header)).blocks.entries()];
+
+  for (const [req] of names('MODIFIED Requirements')) {
+    if (!mainText) errors.push(`${where}: MODIFIED "${req}" but specs/${cap}/spec.md does not exist`);
+    else if (!mainNames.has(req)) errors.push(`${where}: MODIFIED "${req}" is not in specs/${cap}/spec.md (use ADDED, or fix the name)`);
+  }
+  for (const [req, block] of names('REMOVED Requirements')) {
+    if (!mainText) errors.push(`${where}: REMOVED "${req}" but specs/${cap}/spec.md does not exist`);
+    else if (!mainNames.has(req)) errors.push(`${where}: REMOVED "${req}" is not in specs/${cap}/spec.md`);
+    if (!/\*\*Reason\*\*/.test(block)) errors.push(`${where}: REMOVED "${req}" needs a "**Reason**:" line`);
+    if (!/\*\*Migration\*\*/.test(block)) warnings.push(`${where}: REMOVED "${req}" has no "**Migration**:" line`);
+  }
+  for (const [req] of names('ADDED Requirements')) {
+    if (mainNames.has(req)) warnings.push(`${where}: ADDED "${req}" already exists in specs/${cap}/spec.md; use MODIFIED to replace it`);
+  }
+  const renamed = sectionBody(deltaText, 'RENAMED Requirements');
+  if (renamed.trim()) {
+    for (const m of renamed.matchAll(/^-\s*FROM:\s*`?### Requirement:\s*(.+?)`?\s*$/gm)) {
+      if (!mainNames.has(m[1].trim())) errors.push(`${where}: RENAMED FROM "${m[1].trim()}" is not in specs/${cap}/spec.md`);
+    }
+    warnings.push(`${where}: RENAMED requirements are not merged automatically by "spec archive"; apply the rename by hand`);
+  }
+  return { errors, warnings };
 }
 if (cmd === 'validate') {
   const names = name ? [name] : listChanges();

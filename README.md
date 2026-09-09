@@ -132,7 +132,7 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | `init [--simple] [--tools claude,codex] [dir]` | Creates `specs/`, `changes/` (with `.templates/` and `archive/`), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`, and appends a block to the project `CLAUDE.md` / `AGENTS.md` | `--simple` switches to one `docs/changes/<name>.md` per change |
 | `spec new <name>` | Creates `changes/<name>/{proposal,design,tasks}.md` from templates and marks it current | kebab-case names |
 | `spec status [name] [--json]` | Ticked / total tasks, artifact state (missing / empty / done), delta spec count | Untouched templates count as empty |
-| `spec validate [name] [--json]` | Structural checks: required sections, task line format, scenario format, delta sections | Exit 1 on errors |
+| `spec validate [name] [--json]` | Structural checks: required sections, task line format, scenario format, delta sections; MODIFIED / REMOVED requirements are checked against the main spec | Exit 1 on errors |
 | `spec archive <name> [--force]` | Requires all boxes ticked and a PASS report under `.my-flow/verify/`; merges delta specs into `specs/` and moves the change to `changes/archive/` | `--force` skips the gate |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Runs the other CLI read-only as an advisor; writes an artifact to `.my-flow/ask/` | Prompt goes through stdin; empty output counts as failure |
 

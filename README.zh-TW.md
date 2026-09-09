@@ -132,7 +132,7 @@ Claude Code 負責互動式工作並執行迴圈。Codex 負責審查、規劃�
 | `init [--simple] [--tools claude,codex] [dir]` | 建立 `specs/`、`changes/`（含 `.templates/` 與 `archive/`）、`specs/README.md`、`.claude/rules/specs.md`、`.my-flow/`，並在專案的 `CLAUDE.md` / `AGENTS.md` 末尾附加一段內容 | `--simple` 切換為每個變更一個 `docs/changes/<name>.md` |
 | `spec new <name>` | 從範本建立 `changes/<name>/{proposal,design,tasks}.md` 並將其標記為目前變更 | 名稱使用 kebab-case |
 | `spec status [name] [--json]` | 已勾選 / 總任務數、產出物狀態（missing / empty / done）、delta spec 數量 | 未修改過的範本計為 empty |
-| `spec validate [name] [--json]` | 結構檢查：必要章節、任務行格式、情境格式、delta 章節 | 有錯誤時以結束代碼 1 結束 |
+| `spec validate [name] [--json]` | 結構檢查：必要章節、任務行格式、情境格式、delta 章節；MODIFIED / REMOVED 的需求會對照主 spec 檢查 | 有錯誤時以結束代碼 1 結束 |
 | `spec archive <name> [--force]` | 要求所有核取方塊已勾選且 `.my-flow/verify/` 下存在 PASS 報告；將 delta spec 合併到 `specs/` 並把變更移到 `changes/archive/` | `--force` 跳過該關卡 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以唯讀方式執行另一個 CLI 作為顧問；將產出物寫入 `.my-flow/ask/` | 提示詞透過 stdin 傳入；輸出為空視為失敗 |
 

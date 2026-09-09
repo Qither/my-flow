@@ -132,7 +132,7 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | `init [--simple] [--tools claude,codex] [dir]` | `specs/`、`changes/`(`.templates/` と `archive/` を含む)、`specs/README.md`、`.claude/rules/specs.md`、`.my-flow/` を作成し、プロジェクトの `CLAUDE.md` / `AGENTS.md` にブロックを追記します | `--simple` は変更ごとにひとつの `docs/changes/<name>.md` を使う方式に切り替えます |
 | `spec new <name>` | テンプレートから `changes/<name>/{proposal,design,tasks}.md` を作成し、それを現在の変更としてマークします | kebab-case の名前 |
 | `spec status [name] [--json]` | チェック済み / 全タスク数、成果物の状態(missing / empty / done)、delta spec の数 | 未編集のテンプレートは empty として数えられます |
-| `spec validate [name] [--json]` | 構造チェック: 必須セクション、タスク行の形式、シナリオの形式、delta セクション | エラー時は終了コード 1 |
+| `spec validate [name] [--json]` | 構造チェック: 必須セクション、タスク行の形式、シナリオの形式、delta セクション。MODIFIED / REMOVED の要件はメイン spec と照合します | エラー時は終了コード 1 |
 | `spec archive <name> [--force]` | すべてのチェックボックスがチェック済みで、`.my-flow/verify/` 配下に PASS レポートがあることを要求します。delta spec を `specs/` にマージし、変更を `changes/archive/` に移動します | `--force` はゲートをスキップします |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | もう一方の CLI をアドバイザーとして読み取り専用で実行し、成果物を `.my-flow/ask/` に書き込みます | プロンプトは stdin 経由で渡されます。出力が空の場合は失敗として扱われます |
 
