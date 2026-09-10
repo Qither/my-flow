@@ -48,6 +48,21 @@ test('execute-guard does not block a message without a completion claim', { skip
   assert.deepEqual(runHook(root, { last_assistant_message: NO_CLAIM }), {});
 });
 
+test('execute-guard allows the /goal handoff message although it contains completion words', { skip }, (t) => {
+  const root = project(t);
+  const handoff =
+    'Paste this to keep the session on task, then say "continue":\n' +
+    '/goal Complete every unchecked task in changes/demo/tasks.md. Done only when every box is ticked.';
+  assert.deepEqual(runHook(root, { last_assistant_message: handoff }), {});
+});
+
+test('execute-guard still blocks a claim that only mentions /goal mid-sentence', { skip }, (t) => {
+  const root = project(t);
+  const out = runHook(root, { last_assistant_message: 'All tasks are done; the /goal was active throughout.' });
+  assert.equal(out.decision, 'block');
+  assert.match(out.reason, /^\[my-flow execute-guard\]/);
+});
+
 test('execute-guard reads the claim from the transcript when last_assistant_message is absent', { skip }, (t) => {
   const root = project(t);
   const transcript = write(

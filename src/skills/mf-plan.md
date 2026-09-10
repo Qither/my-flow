@@ -92,22 +92,21 @@ Same artifacts and the same downstream flow, with the review cut to one pass. In
 
 ## Continue into execute (--go)
 
-Valid only with `--fast` and only after the handoff has been printed. Run
-`{{CALL:spec}} stage <name> execute`. Print the execute goal statement once, as a standing
-instruction for the rest of the run, without stopping for it. `--team` and `--worktree` are
-unavailable here: if the user wants either, stop after the handoff and point at
-`{{CALL:execute}} <name>` instead. End with execute's Run report.
+Valid only with `--fast` and only after the handoff has been printed. Continue into
+`{{CALL:execute}} <name>` for the same change: it composes the goal, hands it off as it
+always does, arms the execute-guard before task 1, and ends with its Run report. `--team`
+and `--worktree` are unavailable here: if the user wants either, stop after the handoff and
+point at `{{CALL:execute}} <name>` instead.
 
 <!-- MY-FLOW:CLAUDE -->
-Invoke `my-flow:execute <name>` with the Skill tool and follow the loaded text: its Load step
-4 is the stage call just made, its section 2 goal stop is skipped (entering from
-`--fast --go` counts as the user declining the goal), and the Stop-hook execute-guard is the
-backstop. Never paraphrase the execute skill from memory. Record the hand-over with one line:
-`Continuing into execute (--go): goal stop skipped, execute-guard armed.`
+Invoke `my-flow:execute <name>` with the Skill tool and follow the loaded text, including
+its section 2 goal stop (print the `/goal` block once and wait for the user's reply). Never
+paraphrase the execute skill from memory. Record the hand-over with one line:
+`Continuing into execute (--go): goal handoff applies.`
 <!-- /MY-FLOW:CLAUDE -->
 <!-- MY-FLOW:CODEX -->
-Follow `{{CALL:execute}} <name>` by reference: its Load steps 1-3, then the task loop, then
-the final gate, with `get_goal` / `create_goal` running normally.
+Follow `{{CALL:execute}} <name>` by reference from its Load steps through the final gate,
+with `get_goal` / `create_goal` running normally.
 <!-- /MY-FLOW:CODEX -->
 
 ## Required content

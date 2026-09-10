@@ -85,14 +85,14 @@ Same artifacts and the same downstream flow, with the review cut to one pass. In
 
 ## Continue into execute (--go)
 
-Valid only with `--fast` and only after the handoff has been printed. Run
-`$my-flow-spec stage <name> execute`. Print the execute goal statement once, as a standing
-instruction for the rest of the run, without stopping for it. `--team` and `--worktree` are
-unavailable here: if the user wants either, stop after the handoff and point at
-`$my-flow-execute <name>` instead. End with execute's Run report.
+Valid only with `--fast` and only after the handoff has been printed. Continue into
+`$my-flow-execute <name>` for the same change: it composes the goal, hands it off as it
+always does, arms the execute-guard before task 1, and ends with its Run report. `--team`
+and `--worktree` are unavailable here: if the user wants either, stop after the handoff and
+point at `$my-flow-execute <name>` instead.
 
-Follow `$my-flow-execute <name>` by reference: its Load steps 1-3, then the task loop, then
-the final gate, with `get_goal` / `create_goal` running normally.
+Follow `$my-flow-execute <name>` by reference from its Load steps through the final gate,
+with `get_goal` / `create_goal` running normally.
 
 ## Required content
 

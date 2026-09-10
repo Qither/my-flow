@@ -115,7 +115,7 @@ Claude Code には組み込みの `/plan`(プランモード)と、`run` およ�
 
 ### セッションごとにループの権限はひとつ
 
-Claude Code では、セッションごとに `/goal` は最大 1 つ、エージェントチームも最大 1 つです。`execute` は貼り付け用の `/goal` 文を出力します(スキル自身は設定できません)。Stop フックはあくまでバックストップで、`execute` 中に未チェックのタスクを残したまま完了を宣言した場合のみ、しかも `spec stage` が書いた状態が新しい間だけブロックします。Codex ではスレッドごとに goal は 1 つで、`execute` はアクティブな goal がない場合にのみ `create_goal` を呼び出します。 例外: `mf-plan --fast --go` から入った実行は `/goal` の停止をスキップし、Stop フックの保険だけに頼ります。
+Claude Code では、セッションごとに `/goal` は最大 1 つ、エージェントチームも最大 1 つです。`execute` は貼り付け用の `/goal` 文を出力します(スキル自身は設定できません)。Stop フックはあくまでバックストップで、`execute` 中に未チェックのタスクを残したまま完了を宣言した場合のみ、しかも `spec stage` が書いた状態が新しい間だけブロックします。Codex ではスレッドごとに goal は 1 つで、`execute` はアクティブな goal がない場合にのみ `create_goal` を呼び出します。 `mf-plan --fast --go` から入った実行も、`/goal` の貼り付けのために一度停止します。
 
 ### Claude と Codex のそれぞれの役割
 
@@ -150,7 +150,7 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 曖昧なリクエストで、受け入れ基準がない | 1 ラウンドにつき 1 つの質問、詳細より意図を優先。曖昧さをスコアリングし、Non-Goals と Decision Boundaries が明示されたら終了します | `changes/<name>/proposal.md`、トランスクリプトは `.my-flow/interviews/` |
 | `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 複数ファイルの変更。ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れるもの. `--fast` では成果物を自分で書き、critic のレビューを 1 回だけ行い、planner も architect も使いません。高リスクのカテゴリ（および `--deliberate` との併用）では拒否され、`--go` はそのまま execute に進みます | planner が下書き → architect がレビュー(`CLEAR / WATCH / BLOCK`)→ critic がレビュー(`OKAY / REJECT`)、最大 3 ラウンド | `design.md`(Do-Not-Touch と Rebuild / Re-run を含む必要があります)、`tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md` に未チェックの項目がある | goal 文を組み立て、タスクごとに実装・検証・チェックを行い、固定の最終ゲートを実行します. `mf-plan --fast --go` から入ることもでき、その場合は `/goal` の停止をスキップします | Claude: 貼り付け用の `/goal …` を表示。Codex: `create_goal` |
+| `execute <name> [--team] [--worktree]` | `tasks.md` に未チェックの項目がある | goal 文を組み立て、タスクごとに実装・検証・チェックを行い、固定の最終ゲートを実行します. `mf-plan --fast --go` から入ることもでき、その場合も `/goal` の貼り付けのために一度停止します | Claude: 貼り付け用の `/goal …` を表示。Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | 「完了」を宣言する前に必ず | 読み取り専用の verifier に委譲し、verifier 自身がチェックを実行して基準ごとに報告します | PASS / FAIL / INCOMPLETE を含む `.my-flow/verify/<name>-<time>.md` |
 | `mf-audit <capability \| all>` | `spec status` が `audit suggested` を表示したとき、またはユーザーが「audit the spec」と言ったとき | 読み取り専用の architect が `specs/<cap>/spec.md` をコードとテストと照合: 未実装の要件、文書化されていない挙動、矛盾、置き場所の違う要件を報告。`specs/` は決して編集しない | `Status: CLEAN / DRIFT / BROKEN` と `audit-<cap>` で終わる提案 change 名を含む `.my-flow/verify/audit-<cap>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 設計へのセカンドオピニオン、最終ゲート前の diff レビュー、計画が行き詰まったときの裁定 | `ask` スクリプトをラップし、要約し、同意するかどうかを述べます | `.my-flow/ask/` |

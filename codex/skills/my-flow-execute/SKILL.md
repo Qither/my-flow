@@ -18,8 +18,6 @@ Input: {{ARGUMENTS}}
    the whole run.
 3. `git status --short --branch`. If the tree is dirty with unrelated work, tell the user
    before continuing.
-4. Run `$my-flow-spec stage <name> execute`. This writes `.my-flow/state/current-change.json`
-   with a fresh `updated` timestamp; never edit that file by hand.
 
 ## 2. Goal statement
 
@@ -42,6 +40,10 @@ workflow is advisor, not executor. `--team` is not supported here; suggest runni
 change in Claude Code instead.
 
 ## 3. Task loop
+
+Run `$my-flow-spec stage <name> execute` once before task 1; this writes
+`.my-flow/state/current-change.json` with a fresh `updated` timestamp and arms the Stop-hook
+execute-guard. Never edit that file by hand.
 
 For each pending task, in order:
 

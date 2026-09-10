@@ -115,7 +115,7 @@ Claude Code에는 내장 `/plan`(플랜 모드)과 `run`, `verify`라는 이름�
 
 ### 세션당 하나의 루프 권한
 
-Claude Code에서는 세션당 `/goal`은 최대 하나, 에이전트 팀도 최대 하나입니다. `execute`는 붙여넣을 수 있도록 `/goal` 문을 출력합니다(스킬은 스스로 설정할 수 없습니다). Stop 훅은 백스톱일 뿐이며, `execute` 중에 체크되지 않은 작업을 남긴 완료 주장만, 그것도 `spec stage`가 쓴 상태가 신선한 동안에만 차단합니다. Codex에서는 스레드당 goal이 하나이며, `execute`는 활성 goal이 없을 때만 `create_goal`을 호출합니다. 예외: `mf-plan --fast --go`에서 진입한 실행은 `/goal` 정지를 건너뛰고 Stop 훅 안전장치에만 의존합니다.
+Claude Code에서는 세션당 `/goal`은 최대 하나, 에이전트 팀도 최대 하나입니다. `execute`는 붙여넣을 수 있도록 `/goal` 문을 출력합니다(스킬은 스스로 설정할 수 없습니다). Stop 훅은 백스톱일 뿐이며, `execute` 중에 체크되지 않은 작업을 남긴 완료 주장만, 그것도 `spec stage`가 쓴 상태가 신선한 동안에만 차단합니다. Codex에서는 스레드당 goal이 하나이며, `execute`는 활성 goal이 없을 때만 `create_goal`을 호출합니다. `mf-plan --fast --go`에서 진입한 실행도 `/goal` 붙여넣기를 위해 한 번 멈춥니다.
 
 ### Claude와 Codex가 각각 하는 일
 
@@ -150,7 +150,7 @@ Claude에서는 `/my-flow:<name>`으로, Codex에서는 `$my-flow-<name>`으로 
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 모호한 요청, 인수 기준 없음 | 한 라운드에 하나의 질문, 세부 사항보다 의도 우선. 모호성을 점수화하고 Non-Goals와 Decision Boundaries가 명시되면 종료합니다 | `changes/<name>/proposal.md`, 대화 기록은 `.my-flow/interviews/` |
 | `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 여러 파일에 걸친 변경. 빌드 설정, 셰이더, 엔진 모듈, 마이그레이션, 인증을 건드리는 모든 것. `--fast`에서는 산출물을 직접 작성하고 critic 검토를 한 번만 거치며 planner와 architect는 쓰지 않습니다. 고위험 범주(및 `--deliberate`와의 병용)에서는 거부되고, `--go`는 바로 execute로 이어집니다 | planner가 초안 작성 → architect가 검토(`CLEAR / WATCH / BLOCK`) → critic이 검토(`OKAY / REJECT`), 최대 3라운드 | `design.md`(Do-Not-Touch와 Rebuild / Re-run을 반드시 포함), `tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md`에 체크되지 않은 항목이 있음 | goal 문을 구성하고, 태스크 하나씩 구현·검증·체크하며, 고정된 최종 게이트를 실행합니다. `mf-plan --fast --go`에서 진입할 수도 있으며, 이때는 `/goal` 정지를 건너뜁니다 | Claude: 붙여넣을 `/goal …`을 출력. Codex: `create_goal` |
+| `execute <name> [--team] [--worktree]` | `tasks.md`에 체크되지 않은 항목이 있음 | goal 문을 구성하고, 태스크 하나씩 구현·검증·체크하며, 고정된 최종 게이트를 실행합니다. `mf-plan --fast --go`에서 진입할 수도 있으며, 이때도 `/goal` 붙여넣기를 위해 한 번 멈춥니다 | Claude: 붙여넣을 `/goal …`을 출력. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | "완료"를 주장하기 전에 항상 | 읽기 전용 verifier에 위임하며, verifier가 직접 검사를 실행하고 기준별로 보고합니다 | PASS / FAIL / INCOMPLETE가 담긴 `.my-flow/verify/<name>-<time>.md` |
 | `mf-audit <capability \| all>` | `spec status`가 `audit suggested`를 출력할 때, 또는 사용자가 "audit the spec"이라고 말할 때 | 읽기 전용 architect가 `specs/<cap>/spec.md`를 코드와 테스트에 대조: 미구현 요구사항, 문서화되지 않은 동작, 모순, 잘못 배치된 요구사항. `specs/`는 절대 편집하지 않음 | `Status: CLEAN / DRIFT / BROKEN`과 `audit-<cap>`으로 끝나는 제안 change 이름이 담긴 `.my-flow/verify/audit-<cap>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 설계에 대한 2차 의견, 최종 게이트 전 diff 검토, 계획이 막혔을 때의 결정 | `ask` 스크립트를 감싸고, 요약하며, 동의 여부를 밝힙니다 | `.my-flow/ask/` |

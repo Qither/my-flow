@@ -115,7 +115,7 @@ Claude Code 內建了 `/plan`（計畫模式）以及名為 `run` 與 `verify` �
 
 ### 每個工作階段只有一個迴圈主導權
 
-在 Claude Code 中，每個工作階段最多只有一個 `/goal` 與最多一個 agent team。`execute` 會印出 `/goal` 敘述供你貼上（技能本身無法設定它）；Stop 掛鉤只是後備機制，在 `execute` 階段攔截仍留有未勾選任務的完成宣稱，且僅在 `spec stage` 寫入的狀態仍新鮮時生效。在 Codex 中，每個執行緒一個 goal；`execute` 僅在沒有進行中的 goal 時才呼叫 `create_goal`。 例外：由 `mf-plan --fast --go` 進入的執行會跳過 `/goal` 停點，只靠 Stop hook 後盾。
+在 Claude Code 中，每個工作階段最多只有一個 `/goal` 與最多一個 agent team。`execute` 會印出 `/goal` 敘述供你貼上（技能本身無法設定它）；Stop 掛鉤只是後備機制，在 `execute` 階段攔截仍留有未勾選任務的完成宣稱，且僅在 `spec stage` 寫入的狀態仍新鮮時生效。在 Codex 中，每個執行緒一個 goal；`execute` 僅在沒有進行中的 goal 時才呼叫 `create_goal`。 由 `mf-plan --fast --go` 進入的執行同樣會停一次，等你貼上 `/goal`。
 
 ### Claude 與 Codex 各自負責什麼
 
@@ -150,7 +150,7 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 需求模糊、沒有驗收標準 | 每回合一個問題，先意圖後細節；對模糊程度評分；當 Non-Goals 與 Decision Boundaries 明確後結束 | `changes/<name>/proposal.md`，逐字記錄保存在 `.my-flow/interviews/` |
 | `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 多檔案變更；任何涉及建置設定、著色器、引擎模組、資料遷移、身分驗證的改動. 使用 `--fast` 時由你自己撰寫產物，只經 critic 審一次，不用 planner 與 architect；高風險類別（以及與 `--deliberate` 同用）會被拒絕；`--go` 直接接入 execute | planner 起草 → architect 審查（`CLEAR / WATCH / BLOCK`）→ critic 審查（`OKAY / REJECT`），最多三回合 | `design.md`（必須包含 Do-Not-Touch 與 Rebuild / Re-run）、`tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md` 中還有未勾選的核取方塊 | 組織 goal 敘述；逐一任務實作、驗證、勾選；執行固定的最終關卡. 也可由 `mf-plan --fast --go` 進入，此時跳過 `/goal` 停點 | Claude：印出 `/goal …` 供你貼上。Codex：`create_goal` |
+| `execute <name> [--team] [--worktree]` | `tasks.md` 中還有未勾選的核取方塊 | 組織 goal 敘述；逐一任務實作、驗證、勾選；執行固定的最終關卡. 也可由 `mf-plan --fast --go` 進入，此時同樣會停一次等你貼上 `/goal` | Claude：印出 `/goal …` 供你貼上。Codex：`create_goal` |
 | `mf-verify <name \| criteria>` | 在任何「已完成」宣告之前 | 委派給唯讀的 verifier，由它自行執行檢查並逐條標準回報 | `.my-flow/verify/<name>-<time>.md`，包含 PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` 輸出 `audit suggested`，或使用者說「audit the spec」時 | 唯讀的 architect 將 `specs/<cap>/spec.md` 與程式碼和測試對照：未實作的需求、未記錄的行為、互相矛盾、放錯能力的需求；絕不編輯 `specs/` | `.my-flow/verify/audit-<cap>-<time>.md`，含 `Status: CLEAN / DRIFT / BROKEN` 與以 `audit-<cap>` 結尾的建議變更名 |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 對設計尋求第二意見、最終關卡前的 diff 審查、規劃停滯時的裁決 | 封裝 `ask` 腳本，做摘要並說明是否同意 | `.my-flow/ask/` |

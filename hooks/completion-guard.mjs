@@ -2,7 +2,9 @@
 /**
  * Stop hook (Claude Code + Codex). Both rules fire only when the last assistant message
  * claims completion ("done", "implemented", "ready for review", ...); a plain answer or a
- * question to the user is never blocked.
+ * question to the user is never blocked. A message that hands off the session goal (a line
+ * starting with `/goal `) matches GOAL_HANDOFF_RE and is never treated as a completion claim,
+ * even though the goal statement itself contains words like "Complete" and "Done".
  *
  *  1. execute-guard: while the current change is in stage `execute` and its tasks.md still
  *     has unticked tasks that are not marked "blocked:", block the completion claim and list
@@ -41,6 +43,8 @@ const cwd = typeof input.cwd === 'string' && input.cwd ? input.cwd : process.cwd
 // ---- precondition for both rules: the last message claims completion ----
 const COMPLETION_CLAIM_RE =
   /\b(?:done|complete[sd]?|finished|implemented|fixed|resolved|all set|ready\s+(?:for\s+(?:review|merge|release|qa|testing)|to\s+(?:merge|ship|release|submit)))\b/i;
+// The execute skill's "/goal <statement>" handoff quotes the goal, not a result.
+const GOAL_HANDOFF_RE = /^\s*\/goal\s+\S/m;
 
 function lastAssistantMessage() {
   if (typeof input.last_assistant_message === 'string') return input.last_assistant_message;
@@ -73,7 +77,7 @@ function lastAssistantMessage() {
 }
 
 const message = lastAssistantMessage();
-if (!message || !COMPLETION_CLAIM_RE.test(message)) allow();
+if (!message || GOAL_HANDOFF_RE.test(message) || !COMPLETION_CLAIM_RE.test(message)) allow();
 
 // ---- rule 1: execute-guard ----
 const DEFAULT_TTL_HOURS = 12;

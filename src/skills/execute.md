@@ -18,8 +18,6 @@ Input: {{ARGS}}
    the whole run.
 3. `git status --short --branch`. If the tree is dirty with unrelated work, tell the user
    before continuing.
-4. Run `{{CALL:spec}} stage <name> execute`. This writes `.my-flow/state/current-change.json`
-   with a fresh `updated` timestamp; never edit that file by hand.
 
 ## 2. Goal statement
 
@@ -43,10 +41,9 @@ Paste this to keep the session on task, then say "continue":
 
 Then STOP and wait. Do not start task 1 until the user replies. If the user says a `/goal`
 is already active for this change, or explicitly declines ("skip the goal"), continue
-without it. Keep one loop authority per session: never ask for a second `/goal`.
-Entering from `{{CALL:mf-plan}} --fast --go` in the same conversation counts as the user
-declining the goal: do not print the block, do not stop, start task 1 at once; the stage
-written in step 1.4 keeps the Stop-hook execute-guard armed.
+without it. Keep one loop authority per session: never ask for a second `/goal`. This
+handoff is the default for every entry into `execute`, including a run that arrived from
+`{{CALL:mf-plan}} --fast --go`; it pauses once for the paste.
 
 Backstop: while the change is in stage `execute`, the my-flow Stop hook blocks a message
 that claims completion ("done", "implemented", ...) while `tasks.md` still has unticked,
@@ -75,6 +72,10 @@ change in Claude Code instead.
 <!-- /MY-FLOW:CODEX -->
 
 ## 3. Task loop
+
+Run `{{CALL:spec}} stage <name> execute` once before task 1; this writes
+`.my-flow/state/current-change.json` with a fresh `updated` timestamp and arms the Stop-hook
+execute-guard. Never edit that file by hand.
 
 For each pending task, in order:
 
