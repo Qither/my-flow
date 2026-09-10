@@ -32,11 +32,12 @@ oh-my-claudecode と oh-my-codex がラップしていたもの(エージェン�
 7. [サブエージェントの役割](#サブエージェントの役割)
 8. [フック](#フック)
 9. [クロスモデルアドバイザー](#クロスモデルアドバイザー)
-10. [インテントレイヤー](#インテントレイヤー)
-11. [リポジトリ構成と単一ソースでの執筆](#リポジトリ構成と単一ソースでの執筆)
-12. [Codex へのインストール](#codex-へのインストール)
-13. [トラブルシューティング](#トラブルシューティング)
-14. [ライセンス](#ライセンス)
+10. [ダッシュボード](#ダッシュボード)
+11. [インテントレイヤー](#インテントレイヤー)
+12. [リポジトリ構成と単一ソースでの執筆](#リポジトリ構成と単一ソースでの執筆)
+13. [Codex へのインストール](#codex-へのインストール)
+14. [トラブルシューティング](#トラブルシューティング)
+15. [ライセンス](#ライセンス)
 
 ## 位置づけ
 
@@ -137,6 +138,7 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | `spec abandon <name> --reason "..." [--force]` | 完了させない change の第 3 の出口。`proposal.md` に `**Reason**:` 行を持つ `## Abandoned` 節が必要(`--reason` で追記)。change を `changes/archive/<date>-<name>-abandoned/` へ移動し、何もマージしない | すべてチェック済みの change は拒否(`archive` を使う)。クリーンな監査の記録にも使う: `spec new audit-<cap>` の後に `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | 新しい `updated` タイムスタンプ付きで `.my-flow/state/current-change.json` を書き込みます(`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`) | execute-guard はこのファイルが 12 時間以内の場合にのみ作動します |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | もう一方の CLI をアドバイザーとして読み取り専用で実行し、成果物を `.my-flow/ask/` に書き込みます | プロンプトは stdin 経由で渡されます。出力が空の場合は失敗として扱われます |
+| `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | `specs/`、`changes/`、`.my-flow/` を見るローカル Web ダッシュボード。即時更新と保護付き編集。`stop` は記録されたプロセスを確認してから終了させます | ループバックのみ、既定ポート 4321、依存なし |
 
 ## スキル
 
@@ -152,6 +154,7 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 | `ask <codex\|claude> [--diff] [--files] <question>` | 設計へのセカンドオピニオン、最終ゲート前の diff レビュー、計画が行き詰まったときの裁定 | `ask` スクリプトをラップし、要約し、同意するかどうかを述べます | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | セッションでプロジェクト固有の難しい問題を解決した | 3 つの質問による品質ゲートの後、SKILL.md を抽出します | `.claude/skills/` と `.agents/skills/` の両方に書き込まれます |
 | `spec new\|status\|validate\|abandon\|archive\|stage` | インテントレイヤーの管理 | `spec` スクリプトをラップし、その出力を解釈します | スクリプトと同じ |
+| `dashboard start\|stop\|status` | change をブラウザで追う、提案や spec をターミナル外で編集する | `dashboard` スクリプトを包みます。切り離して起動し URL を表示するか、停止します | `.my-flow/state/dashboard.json` |
 
 `learn` には `disable-model-invocation` が設定されています。呼び出せるのはあなただけです。
 
@@ -192,6 +195,30 @@ node scripts/ask.mjs claude --files src/a.ts,src/b.ts "Is this abstraction justi
 - 成果物は `.my-flow/ask/<time>-<provider>-<slug>.md` に置かれ、Original task / Final prompt / Raw output / Summary / Action items のセクションを持ちます。
 - モデルは `--model` または環境変数 `MY_FLOW_CODEX_MODEL` / `MY_FLOW_CLAUDE_MODEL` で選択します(Codex 設定のモデルが、インストール済み CLI が対応するものより新しい場合に便利です。例: `--model gpt-5.5`)。
 - 意見の不一致は証拠またはあなたの判断で解決します。多数決では決して解決しません。
+
+## ダッシュボード
+
+```bash
+node scripts/cli.mjs dashboard start                     # http://127.0.0.1:4321/
+node scripts/cli.mjs dashboard start --port 4400 --root /path/to/project
+node scripts/cli.mjs dashboard status
+node scripts/cli.mjs dashboard stop
+```
+
+インテントレイヤーをブラウザで見るためのローカル Web ビューです。依存パッケージはゼロで、サーバーは Node の組み込みモジュールのみ、ブラウザ側は手書きの HTML / CSS / JavaScript で、ネットワークからは何も取得しません。`127.0.0.1` にのみバインドし、`Host` や `Origin` が自分自身でないリクエストを拒否するため、他のマシンからも他の Web ページからも到達できません。
+
+- **Changes**: アクティブな change ごとのステージ、タスク進捗、成果物の状態、stale / overlap の警告。各 change は `proposal.md`、`design.md`、`tasks.md` と delta spec を一覧します。
+- **Specs**: `specs/<capability>/spec.md` とその要件。`<!-- via: ... -->` マーカーは、その要件を生んだアーカイブ済み change へのリンクになります。
+- **Archive**: アーカイブ済み / 放棄済みの change(読み取り専用)。
+- **Scratch**: `.my-flow/ask/`、`.my-flow/verify/`、`.my-flow/interviews/`(読み取り専用)。
+
+`specs/`、`changes/`、`.my-flow/` 配下のファイルが変わると、ページは Server-Sent Events で即時に更新されます。ターミナルでタスクをチェックすると、再読み込みなしでブラウザに反映されます。`specs/` 配下とアクティブな `changes/<name>/` 配下の markdown はページ内で編集できます。読み込み後にディスク上のファイルが変わっていた場合、保存は拒否され、ページは新しい内容を表示して「再読み込み」か「上書き」を選ばせます。ファイルの改行コードは保持されます。編集はエージェントが書き込んでいないステージ間の合間を想定しています。
+
+- **テーマ**: サイドバーのテーマドロップダウンはシステムの配色設定を上書きします。選択はブラウザに保存されます。
+- **execute 中のロック**: 現在の change がステージ `execute` にある間は、すべての保存が拒否され(HTTP 423)、エディタは Save の代わりに理由を表示します。エージェントが書き込み中だからです。`spec stage` で change が先に進めばロックは自動的に外れます。
+- **Diff**: プロジェクトルートが git の作業ツリーであれば、`Diff` 項目が作業ツリーと `HEAD` の差分(ステージ済み、未ステージ、未追跡)をツリーまたはフラットな一覧で示し、選んだファイルのパッチを読み取り専用で表示します。自動更新されるのは `specs/`、`changes/`、`.my-flow/` 配下の編集だけなので、それ以外を編集した後は Refresh ボタンを使ってください。git がなければこの項目は表示されません。最後に変更されたファイルには印が付き、`j` / `k` でファイル間を移動し、`.` でそのファイルへ移動します。
+
+`start` はサーバーを切り離して起動し、`.my-flow/state/dashboard.json` に記録します。`stop` は記録されたプロセスがダッシュボード本体であること(生存しており、`/api/health` が同じ pid と root を返すこと)を確認してから終了させ、古くなった記録は何もシグナルを送らずに片付けます。スキル `/my-flow:dashboard start | stop | status`(Codex: `$my-flow-dashboard`)は同じコマンドを包んでいます。
 
 ## インテントレイヤー
 

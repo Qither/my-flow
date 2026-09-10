@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>my-flow dashboard</title>
+  <script>try{var t=localStorage.getItem('my-flow.theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="shell">
+    <nav class="sidebar" aria-label="Primary">
+      <div class="brand">
+        <span class="brand-name">my-flow</span>
+        <span class="brand-sub mono" id="root-label" title="project root">loading</span>
+      </div>
+      <ul class="nav-list">
+        <li><a href="#/changes" data-nav="changes">Changes</a></li>
+        <li><a href="#/specs" data-nav="specs">Specs</a></li>
+        <li><a href="#/archive" data-nav="archive">Archive</a></li>
+        <li><a href="#/scratch" data-nav="scratch">Scratch</a></li>
+        <li id="nav-diff" hidden><a href="#/diff" data-nav="diff">Diff</a></li>
+      </ul>
+      <div class="theme">
+        <label class="theme-label" for="theme-select">Theme</label>
+        <span class="select-wrap">
+          <select id="theme-select" title="follow or override the system colour scheme">
+            <option value="system">Auto (system)</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </span>
+      </div>
+      <div class="conn mono" id="conn" data-state="connecting" title="live update connection">
+        <span class="conn-dot" aria-hidden="true"></span>
+        <span id="conn-text">connecting</span>
+      </div>
+    </nav>
+    <main id="view" class="content" aria-live="polite">
+      <p class="muted">Loading</p>
+    </main>
+  </div>
+  <script type="module" src="/app.mjs"></script>
+</body>
+</html>

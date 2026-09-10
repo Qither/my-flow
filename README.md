@@ -32,11 +32,12 @@ Everything that oh-my-claudecode and oh-my-codex used to wrap (agent teams, `/go
 7. [Subagent roles](#subagent-roles)
 8. [Hooks](#hooks)
 9. [Cross-model advisor](#cross-model-advisor)
-10. [The intent layer](#the-intent-layer)
-11. [Repository layout and single-source authoring](#repository-layout-and-single-source-authoring)
-12. [Installing into Codex](#installing-into-codex)
-13. [Troubleshooting](#troubleshooting)
-14. [License](#license)
+10. [Dashboard](#dashboard)
+11. [The intent layer](#the-intent-layer)
+12. [Repository layout and single-source authoring](#repository-layout-and-single-source-authoring)
+13. [Installing into Codex](#installing-into-codex)
+14. [Troubleshooting](#troubleshooting)
+15. [License](#license)
 
 ## Positioning
 
@@ -137,6 +138,7 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | `spec abandon <name> --reason "..." [--force]` | Third exit for a change that will not be finished: requires an `## Abandoned` section with a `**Reason**:` line (`--reason` appends it), moves the change to `changes/archive/<date>-<name>-abandoned/`, merges nothing | Refuses a fully ticked change (use `archive`). Also records a clean audit: `spec new audit-<cap>` then `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | Writes `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) with a fresh `updated` timestamp | The execute-guard only fires while this file is younger than 12 h |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Runs the other CLI read-only as an advisor; writes an artifact to `.my-flow/ask/` | Prompt goes through stdin; empty output counts as failure |
+| `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Local web dashboard over `specs/`, `changes/` and `.my-flow/`: live updates, guarded editing; `stop` verifies the recorded process before terminating it | Loopback only, default port 4321, no dependencies |
 
 ## Skills
 
@@ -152,6 +154,7 @@ Claude invokes them as `/my-flow:<name>`, Codex as `$my-flow-<name>`.
 | `ask <codex\|claude> [--diff] [--files] <question>` | Second opinion on a design, diff review before the final gate, tie-break when planning stalls | Wraps the `ask` script, summarizes, and states whether it agrees | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | The session solved something project-specific and hard | Three-question quality gate, then extracts a SKILL.md | Written to both `.claude/skills/` and `.agents/skills/` |
 | `spec new\|status\|validate\|abandon\|archive\|stage` | Managing the intent layer | Wraps the `spec` script and interprets its output | same as the script |
+| `dashboard start\|stop\|status` | Watching a change in a browser, editing a proposal or spec outside the terminal | Wraps the `dashboard` script: starts it detached and prints the URL, or stops it | `.my-flow/state/dashboard.json` |
 
 `learn` has `disable-model-invocation`; only you can call it.
 
@@ -192,6 +195,30 @@ node scripts/ask.mjs claude --files src/a.ts,src/b.ts "Is this abstraction justi
 - Artifacts land in `.my-flow/ask/<time>-<provider>-<slug>.md` with sections Original task / Final prompt / Raw output / Summary / Action items.
 - Pick the model with `--model` or the environment variables `MY_FLOW_CODEX_MODEL` / `MY_FLOW_CLAUDE_MODEL` (useful when the model in your Codex config is newer than the installed CLI supports, e.g. `--model gpt-5.5`).
 - Disagreements are resolved by evidence or by you, never by majority.
+
+## Dashboard
+
+```bash
+node scripts/cli.mjs dashboard start                     # http://127.0.0.1:4321/
+node scripts/cli.mjs dashboard start --port 4400 --root /path/to/project
+node scripts/cli.mjs dashboard status
+node scripts/cli.mjs dashboard stop
+```
+
+A local web view over the intent layer, with zero dependencies: Node built-ins on the server, hand-written HTML, CSS and JavaScript in the browser, nothing fetched from the network. It binds `127.0.0.1` only and refuses requests whose `Host` or `Origin` is not its own, so neither other machines nor other web pages can reach it.
+
+- **Changes**: every active change with its stage, task progress, artifact state, stale and overlap warnings; each change lists its `proposal.md`, `design.md`, `tasks.md` and delta specs.
+- **Specs**: `specs/<capability>/spec.md` with its requirements; a `<!-- via: ... -->` marker links back to the archived change that produced the requirement.
+- **Archive**: archived and abandoned changes, read-only.
+- **Scratch**: `.my-flow/ask/`, `.my-flow/verify/`, `.my-flow/interviews/`, read-only.
+
+Pages update live over Server-Sent Events whenever a file under `specs/`, `changes/` or `.my-flow/` changes, so a task ticked in the terminal shows up in the browser without a reload. Markdown under `specs/` and under an active `changes/<name>/` can be edited in the page. A save is refused when the file changed on disk since it was loaded; the page then shows the newer content and offers Reload or Overwrite. The file's line endings are preserved. Editing is meant for the gaps between stages, while no agent is writing.
+
+- **Theme**: the theme dropdown in the sidebar overrides the system colour scheme; the choice is kept in the browser.
+- **Execute lock**: while the current change is at stage `execute`, every save is refused (HTTP 423) and the editor states the reason instead of offering Save, because an agent is writing. The lock lifts as soon as `spec stage` moves the change on.
+- **Diff**: when the project root is a git work tree, a `Diff` entry lists the working tree's changes against `HEAD` (staged, unstaged and untracked) as a tree or a flat list and renders the selected file's patch, read-only. It refreshes itself only for edits under `specs/`, `changes/` and `.my-flow/`; use its Refresh button after edits elsewhere. Without git the entry is absent. The most recently modified file is marked, and `j` / `k` move between files while `.` jumps to that file.
+
+`start` detaches the server and records it in `.my-flow/state/dashboard.json`; `stop` confirms that the recorded process is the dashboard (alive, and answering `/api/health` with the same pid and root) before terminating it, and reclaims a stale entry without signalling anything. The skill `/my-flow:dashboard start | stop | status` (Codex: `$my-flow-dashboard`) wraps the same commands.
 
 ## The intent layer
 

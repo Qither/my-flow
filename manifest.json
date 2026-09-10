@@ -26,6 +26,9 @@
     },
     "spec": {
       "claude": { "allowed-tools": "Read Grep Glob Bash(node:*) Write" }
+    },
+    "dashboard": {
+      "claude": { "allowed-tools": "Read Bash(node:*)" }
     }
   },
   "agents": {

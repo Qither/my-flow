@@ -32,11 +32,12 @@ Alles, was oh-my-claudecode und oh-my-codex früher gekapselt haben (Agent-Teams
 7. [Subagent-Rollen](#subagent-rollen)
 8. [Hooks](#hooks)
 9. [Modellübergreifender Berater](#modellübergreifender-berater)
-10. [Die Intent-Ebene](#die-intent-ebene)
-11. [Repository-Struktur und Single-Source-Authoring](#repository-struktur-und-single-source-authoring)
-12. [Installation in Codex](#installation-in-codex)
-13. [Fehlerbehebung](#fehlerbehebung)
-14. [Lizenz](#lizenz)
+10. [Dashboard](#dashboard)
+11. [Die Intent-Ebene](#die-intent-ebene)
+12. [Repository-Struktur und Single-Source-Authoring](#repository-struktur-und-single-source-authoring)
+13. [Installation in Codex](#installation-in-codex)
+14. [Fehlerbehebung](#fehlerbehebung)
+15. [Lizenz](#lizenz)
 
 ## Positionierung
 
@@ -137,6 +138,7 @@ Alle Befehle sind einfache Node-Skripte. `node scripts/cli.mjs <command>` (oder 
 | `spec abandon <name> --reason "..." [--force]` | Dritter Ausgang für einen Change, der nicht fertiggestellt wird: erfordert einen Abschnitt `## Abandoned` mit einer `**Reason**:`-Zeile (`--reason` fügt sie an), verschiebt den Change nach `changes/archive/<date>-<name>-abandoned/`, merged nichts | Verweigert einen vollständig abgehakten Change (dann `archive`). Protokolliert auch ein sauberes Audit: `spec new audit-<cap>`, dann `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | Schreibt `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) mit einem frischen `updated`-Zeitstempel | Der execute-guard greift nur, solange diese Datei jünger als 12 h ist |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Führt die andere CLI nur lesend als Berater aus; schreibt ein Artefakt nach `.my-flow/ask/` | Der Prompt geht über stdin; leere Ausgabe zählt als Fehlschlag |
+| `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Lokales Web-Dashboard über `specs/`, `changes/` und `.my-flow/`: Live-Updates, abgesichertes Bearbeiten; `stop` prüft den eingetragenen Prozess, bevor es ihn beendet | Nur Loopback, Standardport 4321, keine Abhängigkeiten |
 
 ## Skills
 
@@ -152,6 +154,7 @@ Claude ruft sie als `/my-flow:<name>` auf, Codex als `$my-flow-<name>`.
 | `ask <codex\|claude> [--diff] [--files] <question>` | Zweitmeinung zu einem Design, Diff-Review vor der Abschlussprüfung, Entscheidung bei festgefahrener Planung | Kapselt das `ask`-Skript, fasst zusammen und gibt an, ob es zustimmt | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | Die Sitzung hat etwas Projektspezifisches und Schwieriges gelöst | Qualitätsprüfung mit drei Fragen, dann Extraktion einer SKILL.md | Wird sowohl nach `.claude/skills/` als auch nach `.agents/skills/` geschrieben |
 | `spec new\|status\|validate\|abandon\|archive\|stage` | Verwaltung der Intent-Ebene | Kapselt das `spec`-Skript und interpretiert dessen Ausgabe | wie das Skript |
+| `dashboard start\|stop\|status` | Einen Change im Browser verfolgen, ein Proposal oder eine Spec außerhalb des Terminals bearbeiten | Kapselt das `dashboard`-Skript: startet es losgelöst und gibt die URL aus, oder stoppt es | `.my-flow/state/dashboard.json` |
 
 `learn` trägt `disable-model-invocation`; nur Sie können es aufrufen.
 
@@ -192,6 +195,30 @@ node scripts/ask.mjs claude --files src/a.ts,src/b.ts "Is this abstraction justi
 - Artefakte landen in `.my-flow/ask/<time>-<provider>-<slug>.md` mit den Abschnitten Original task / Final prompt / Raw output / Summary / Action items.
 - Wählen Sie das Modell mit `--model` oder den Umgebungsvariablen `MY_FLOW_CODEX_MODEL` / `MY_FLOW_CLAUDE_MODEL` (nützlich, wenn das Modell in Ihrer Codex-Konfiguration neuer ist, als die installierte CLI unterstützt, z. B. `--model gpt-5.5`).
 - Meinungsverschiedenheiten werden durch Belege oder durch Sie entschieden, nie per Mehrheit.
+
+## Dashboard
+
+```bash
+node scripts/cli.mjs dashboard start                     # http://127.0.0.1:4321/
+node scripts/cli.mjs dashboard start --port 4400 --root /path/to/project
+node scripts/cli.mjs dashboard status
+node scripts/cli.mjs dashboard stop
+```
+
+Eine lokale Web-Ansicht der Intent-Ebene ohne Abhängigkeiten: Node-Bordmittel auf dem Server, handgeschriebenes HTML, CSS und JavaScript im Browser, nichts wird aus dem Netz geladen. Der Server bindet nur `127.0.0.1` und lehnt Anfragen ab, deren `Host` oder `Origin` nicht sein eigener ist; weder andere Rechner noch andere Webseiten erreichen ihn.
+
+- **Changes**: jeder aktive Change mit Stage, Aufgabenfortschritt, Artefaktzustand, Stale- und Overlap-Warnungen; jeder Change listet `proposal.md`, `design.md`, `tasks.md` und seine Delta-Specs.
+- **Specs**: `specs/<capability>/spec.md` mit seinen Anforderungen; ein `<!-- via: ... -->`-Marker verweist auf den archivierten Change, der die Anforderung erzeugt hat.
+- **Archive**: archivierte und aufgegebene Changes, nur lesend.
+- **Scratch**: `.my-flow/ask/`, `.my-flow/verify/`, `.my-flow/interviews/`, nur lesend.
+
+Die Seiten aktualisieren sich live über Server-Sent Events, sobald sich eine Datei unter `specs/`, `changes/` oder `.my-flow/` ändert; eine im Terminal abgehakte Aufgabe erscheint ohne Neuladen im Browser. Markdown unter `specs/` und unter einem aktiven `changes/<name>/` lässt sich in der Seite bearbeiten. Ein Speichern wird abgelehnt, wenn sich die Datei seit dem Laden auf der Platte geändert hat; die Seite zeigt dann den neueren Inhalt und bietet Neu laden oder Überschreiben an. Die Zeilenenden der Datei bleiben erhalten. Das Bearbeiten ist für die Pausen zwischen den Stages gedacht, wenn kein Agent schreibt.
+
+- **Theme**: Das Theme-Dropdown in der Seitenleiste überstimmt das Farbschema des Systems; die Wahl bleibt im Browser gespeichert.
+- **Sperre während execute**: Solange der aktuelle Change in der Stage `execute` ist, wird jedes Speichern abgelehnt (HTTP 423) und der Editor zeigt statt Save den Grund an, weil ein Agent gerade schreibt. Die Sperre fällt, sobald `spec stage` den Change weiterschaltet.
+- **Diff**: Ist das Projektverzeichnis ein Git-Arbeitsbaum, listet ein Eintrag `Diff` die Änderungen des Arbeitsbaums gegenüber `HEAD` (gestaged, ungestaged und unversioniert) als Baum oder flache Liste und rendert den Patch der gewählten Datei, nur lesend. Er aktualisiert sich nur bei Änderungen unter `specs/`, `changes/` und `.my-flow/`; nach anderen Änderungen die Schaltfläche Refresh benutzen. Ohne Git fehlt der Eintrag. Die zuletzt geänderte Datei ist markiert; `j` / `k` wechseln zwischen den Dateien und `.` springt zu dieser Datei.
+
+`start` löst den Server vom Terminal und trägt ihn in `.my-flow/state/dashboard.json` ein; `stop` prüft, dass der eingetragene Prozess wirklich das Dashboard ist (lebt und `/api/health` mit derselben pid und demselben root beantwortet), bevor es ihn beendet, und räumt einen veralteten Eintrag auf, ohne irgendetwas zu signalisieren. Der Skill `/my-flow:dashboard start | stop | status` (Codex: `$my-flow-dashboard`) kapselt dieselben Befehle.
 
 ## Die Intent-Ebene
 

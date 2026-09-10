@@ -32,11 +32,12 @@ oh-my-claudecode 與 oh-my-codex 過去所封裝的一切（agent teams、`/goal
 7. [子代理角色](#子代理角色)
 8. [掛鉤](#掛鉤)
 9. [跨模型顧問](#跨模型顧問)
-10. [意圖層](#意圖層)
-11. [儲存庫結構與單一來源撰寫](#儲存庫結構與單一來源撰寫)
-12. [安裝到 Codex](#安裝到-codex)
-13. [疑難排解](#疑難排解)
-14. [授權條款](#授權條款)
+10. [儀表板](#儀表板)
+11. [意圖層](#意圖層)
+12. [儲存庫結構與單一來源撰寫](#儲存庫結構與單一來源撰寫)
+13. [安裝到 Codex](#安裝到-codex)
+14. [疑難排解](#疑難排解)
+15. [授權條款](#授權條款)
 
 ## 定位
 
@@ -137,6 +138,7 @@ Claude Code 負責互動式工作並執行迴圈。Codex 負責審查、規劃�
 | `spec abandon <name> --reason "..." [--force]` | 不會完成的變更的第三個出口：要求 `proposal.md` 有帶 `**Reason**:` 行的 `## Abandoned` 節（`--reason` 會附加），把變更移到 `changes/archive/<date>-<name>-abandoned/`，不合併任何內容 | 拒絕已全部勾選的變更（請用 `archive`）。也用於記錄一次無發現的稽核：`spec new audit-<cap>` 然後 `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | 以新的 `updated` 時間戳寫入 `.my-flow/state/current-change.json`（`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`） | execute-guard 只在此檔案未超過 12 小時時才會觸發 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以唯讀方式執行另一個 CLI 作為顧問；將產出物寫入 `.my-flow/ask/` | 提示詞透過 stdin 傳入；輸出為空視為失敗 |
+| `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | 查看 `specs/`、`changes/`、`.my-flow/` 的本機 Web 儀表板：即時更新、受保護的編輯；`stop` 會先核實記錄的程序再終止它 | 僅 loopback，預設連接埠 4321，零依賴 |
 
 ## 技能
 
@@ -152,6 +154,7 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 | `ask <codex\|claude> [--diff] [--files] <question>` | 對設計尋求第二意見、最終關卡前的 diff 審查、規劃停滯時的裁決 | 封裝 `ask` 腳本，做摘要並說明是否同意 | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | 本次工作階段解決了某個專案特有且困難的問題 | 三問式品質關卡，然後萃取出一個 SKILL.md | 同時寫入 `.claude/skills/` 與 `.agents/skills/` |
 | `spec new\|status\|validate\|abandon\|archive\|stage` | 管理意圖層 | 封裝 `spec` 腳本並解讀其輸出 | 與腳本相同 |
+| `dashboard start\|stop\|status` | 在瀏覽器裡追蹤一個變更，在終端機之外編輯提案或 spec | 包裝 `dashboard` 指令碼：分離啟動並印出 URL，或停止它 | `.my-flow/state/dashboard.json` |
 
 `learn` 設定了 `disable-model-invocation`；只有你才能呼叫它。
 
@@ -192,6 +195,30 @@ node scripts/ask.mjs claude --files src/a.ts,src/b.ts "Is this abstraction justi
 - 產出物保存在 `.my-flow/ask/<time>-<provider>-<slug>.md`，包含 Original task / Final prompt / Raw output / Summary / Action items 幾個章節。
 - 透過 `--model` 或環境變數 `MY_FLOW_CODEX_MODEL` / `MY_FLOW_CLAUDE_MODEL` 選擇模型（當 Codex 設定中的模型比已安裝 CLI 所支援的更新時很有用，例如 `--model gpt-5.5`）。
 - 分歧由證據或由你來裁決，絕不靠多數決。
+
+## 儀表板
+
+```bash
+node scripts/cli.mjs dashboard start                     # http://127.0.0.1:4321/
+node scripts/cli.mjs dashboard start --port 4400 --root /path/to/project
+node scripts/cli.mjs dashboard status
+node scripts/cli.mjs dashboard stop
+```
+
+在瀏覽器裡查看意圖層的本機 Web 檢視，零依賴：伺服端只用 Node 內建模組，瀏覽器端是手寫的 HTML / CSS / JavaScript，不從網路取得任何資源。它只綁定 `127.0.0.1`，並拒絕 `Host` 或 `Origin` 不是它自己的請求，因此其他機器和其他網頁都無法存取。
+
+- **Changes**：每個進行中變更的階段、任務進度、產出物狀態、stale / overlap 警告；每個變更列出它的 `proposal.md`、`design.md`、`tasks.md` 與 delta spec。
+- **Specs**：`specs/<capability>/spec.md` 及其需求；`<!-- via: ... -->` 標記連回產生該需求的已歸檔變更。
+- **Archive**：已歸檔與已放棄的變更，唯讀。
+- **Scratch**：`.my-flow/ask/`、`.my-flow/verify/`、`.my-flow/interviews/`，唯讀。
+
+只要 `specs/`、`changes/` 或 `.my-flow/` 下的檔案有變動，頁面就會透過 Server-Sent Events 即時更新，在終端機勾掉一個任務不必重新整理就能在瀏覽器看到。`specs/` 下以及進行中 `changes/<name>/` 下的 markdown 可以在頁面裡編輯。如果檔案在載入後已在磁碟上被改動，儲存會被拒絕，頁面會顯示較新的內容並提供「重新載入」或「覆寫」。檔案的換行風格會被保留。編輯是為階段之間、沒有 agent 在寫入的空檔準備的。
+
+- **主題**：側欄的主題下拉選單會覆寫系統配色，選擇保存在瀏覽器裡。
+- **execute 期間鎖定**：目前變更處於 `execute` 階段時，所有儲存都會被拒絕（HTTP 423），編輯器以原因說明取代 Save 按鈕，因為有 agent 正在寫入。`spec stage` 把變更推進到下一階段後鎖定自動解除。
+- **Diff**：當專案根目錄是 git 工作樹時，會出現 `Diff` 項目，以樹狀或扁平清單列出工作樹相對 `HEAD` 的變動（已暫存、未暫存與未追蹤），並唯讀地呈現所選檔案的補丁。它只對 `specs/`、`changes/`、`.my-flow/` 下的編輯自動更新，其他位置改動後請按 Refresh。沒有 git 時不顯示該項目。最近修改的檔案會被標記，`j` / `k` 在檔案間移動，`.` 跳到該檔案。
+
+`start` 以分離方式啟動伺服器並記錄到 `.my-flow/state/dashboard.json`；`stop` 會先確認記錄的程序確實是儀表板（存活，且 `/api/health` 回傳相同的 pid 與 root）再終止它，對過期的記錄只清理、不送出任何訊號。技能 `/my-flow:dashboard start | stop | status`（Codex：`$my-flow-dashboard`）包裝了同樣的指令。
 
 ## 意圖層
 

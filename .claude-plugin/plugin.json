@@ -22,7 +22,8 @@
     "./skills/mf-audit/",
     "./skills/ask/",
     "./skills/learn/",
-    "./skills/spec/"
+    "./skills/spec/",
+    "./skills/dashboard/"
   ],
   "agents": [
     "./agents/planner.md",

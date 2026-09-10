@@ -32,11 +32,12 @@ oh-my-claudecode와 oh-my-codex가 감싸던 모든 것(에이전트 팀, `/goal
 7. [서브에이전트 역할](#서브에이전트-역할)
 8. [훅](#훅)
 9. [크로스 모델 어드바이저](#크로스-모델-어드바이저)
-10. [인텐트 레이어](#인텐트-레이어)
-11. [저장소 구조와 단일 소스 작성](#저장소-구조와-단일-소스-작성)
-12. [Codex에 설치하기](#codex에-설치하기)
-13. [문제 해결](#문제-해결)
-14. [라이선스](#라이선스)
+10. [대시보드](#대시보드)
+11. [인텐트 레이어](#인텐트-레이어)
+12. [저장소 구조와 단일 소스 작성](#저장소-구조와-단일-소스-작성)
+13. [Codex에 설치하기](#codex에-설치하기)
+14. [문제 해결](#문제-해결)
+15. [라이선스](#라이선스)
 
 ## 포지셔닝
 
@@ -137,6 +138,7 @@ Claude Code는 대화형 작업을 수행하고 루프를 실행합니다. Codex
 | `spec abandon <name> --reason "..." [--force]` | 끝내지 않을 change의 세 번째 출구. `proposal.md`에 `**Reason**:` 줄이 있는 `## Abandoned` 섹션이 필요(`--reason`으로 추가). change를 `changes/archive/<date>-<name>-abandoned/`로 옮기고 아무것도 머지하지 않음 | 모든 체크박스가 체크된 change는 거부(`archive` 사용). 깨끗한 감사 기록에도 사용: `spec new audit-<cap>` 후 `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | 새 `updated` 타임스탬프와 함께 `.my-flow/state/current-change.json`을 씁니다(`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) | execute-guard는 이 파일이 12시간 이내일 때만 작동합니다 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 다른 CLI를 어드바이저로 읽기 전용 실행하고, 산출물을 `.my-flow/ask/`에 기록합니다 | 프롬프트는 stdin으로 전달됩니다. 출력이 비어 있으면 실패로 간주합니다 |
+| `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | `specs/`, `changes/`, `.my-flow/`를 보는 로컬 웹 대시보드. 즉시 갱신과 보호된 편집. `stop`은 기록된 프로세스를 확인한 뒤 종료합니다 | 루프백 전용, 기본 포트 4321, 의존성 없음 |
 
 ## 스킬
 
@@ -152,6 +154,7 @@ Claude에서는 `/my-flow:<name>`으로, Codex에서는 `$my-flow-<name>`으로 
 | `ask <codex\|claude> [--diff] [--files] <question>` | 설계에 대한 2차 의견, 최종 게이트 전 diff 검토, 계획이 막혔을 때의 결정 | `ask` 스크립트를 감싸고, 요약하며, 동의 여부를 밝힙니다 | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | 세션에서 프로젝트 고유의 어려운 문제를 해결했음 | 세 가지 질문의 품질 게이트를 거친 뒤 SKILL.md를 추출합니다 | `.claude/skills/`와 `.agents/skills/` 모두에 기록됩니다 |
 | `spec new\|status\|validate\|abandon\|archive\|stage` | 인텐트 레이어 관리 | `spec` 스크립트를 감싸고 그 출력을 해석합니다 | 스크립트와 동일 |
+| `dashboard start\|stop\|status` | change를 브라우저에서 지켜보기, 제안이나 spec을 터미널 밖에서 편집하기 | `dashboard` 스크립트를 감쌉니다. 분리해서 띄우고 URL을 출력하거나, 멈춥니다 | `.my-flow/state/dashboard.json` |
 
 `learn`에는 `disable-model-invocation`이 설정되어 있습니다. 오직 사용자만 호출할 수 있습니다.
 
@@ -192,6 +195,30 @@ node scripts/ask.mjs claude --files src/a.ts,src/b.ts "Is this abstraction justi
 - 산출물은 `.my-flow/ask/<time>-<provider>-<slug>.md`에 저장되며 Original task / Final prompt / Raw output / Summary / Action items 섹션을 갖습니다.
 - 모델은 `--model` 또는 환경 변수 `MY_FLOW_CODEX_MODEL` / `MY_FLOW_CLAUDE_MODEL`로 선택합니다(Codex 설정의 모델이 설치된 CLI가 지원하는 것보다 새로울 때 유용합니다. 예: `--model gpt-5.5`).
 - 의견 불일치는 증거 또는 사용자의 판단으로 해결하며, 다수결로는 절대 해결하지 않습니다.
+
+## 대시보드
+
+```bash
+node scripts/cli.mjs dashboard start                     # http://127.0.0.1:4321/
+node scripts/cli.mjs dashboard start --port 4400 --root /path/to/project
+node scripts/cli.mjs dashboard status
+node scripts/cli.mjs dashboard stop
+```
+
+인텐트 레이어를 브라우저에서 보는 로컬 웹 뷰입니다. 의존성은 없습니다. 서버는 Node 내장 모듈만 쓰고, 브라우저 쪽은 손으로 작성한 HTML / CSS / JavaScript이며 네트워크에서 아무것도 받아오지 않습니다. `127.0.0.1`에만 바인딩하고 `Host`나 `Origin`이 자기 자신이 아닌 요청은 거부하므로, 다른 머신도 다른 웹 페이지도 접근할 수 없습니다.
+
+- **Changes**: 활성 change마다 스테이지, 태스크 진행률, 산출물 상태, stale / overlap 경고. 각 change는 `proposal.md`, `design.md`, `tasks.md`와 delta spec을 나열합니다.
+- **Specs**: `specs/<capability>/spec.md`와 그 요구사항. `<!-- via: ... -->` 마커는 그 요구사항을 만든 아카이브된 change로 연결됩니다.
+- **Archive**: 아카이브된 change와 포기된 change(읽기 전용).
+- **Scratch**: `.my-flow/ask/`, `.my-flow/verify/`, `.my-flow/interviews/`(읽기 전용).
+
+`specs/`, `changes/`, `.my-flow/` 아래의 파일이 바뀌면 페이지는 Server-Sent Events로 즉시 갱신됩니다. 터미널에서 태스크를 체크하면 새로고침 없이 브라우저에 나타납니다. `specs/` 아래와 활성 `changes/<name>/` 아래의 markdown은 페이지에서 편집할 수 있습니다. 불러온 뒤 디스크의 파일이 바뀌었으면 저장이 거부되고, 페이지는 새 내용을 보여주며 다시 불러오기 또는 덮어쓰기를 제안합니다. 파일의 줄 끝 문자는 그대로 유지됩니다. 편집은 에이전트가 쓰지 않는 스테이지 사이의 틈을 위한 것입니다.
+
+- **테마**: 사이드바의 테마 드롭다운이 시스템 색상 구성을 덮어씁니다. 선택은 브라우저에 저장됩니다.
+- **execute 중 잠금**: 현재 change가 `execute` 스테이지에 있는 동안에는 모든 저장이 거부되고(HTTP 423) 에디터는 Save 대신 이유를 보여줍니다. 에이전트가 쓰고 있기 때문입니다. `spec stage`로 change가 다음 단계로 넘어가면 잠금은 바로 풀립니다.
+- **Diff**: 프로젝트 루트가 git 작업 트리이면 `Diff` 항목이 작업 트리와 `HEAD`의 차이(스테이징됨, 스테이징 안 됨, 추적 안 됨)를 트리 또는 평면 목록으로 나열하고 선택한 파일의 패치를 읽기 전용으로 보여줍니다. `specs/`, `changes/`, `.my-flow/` 아래의 편집에만 자동으로 갱신되므로, 다른 곳을 편집한 뒤에는 Refresh 버튼을 누르세요. git이 없으면 이 항목은 나타나지 않습니다. 가장 최근에 수정된 파일에는 표시가 붙고, `j` / `k`로 파일 사이를 이동하며 `.`로 그 파일로 건너뜁니다.
+
+`start`는 서버를 분리해 띄우고 `.my-flow/state/dashboard.json`에 기록합니다. `stop`은 기록된 프로세스가 정말 대시보드인지(살아 있고 `/api/health`가 같은 pid와 root로 응답하는지) 확인한 뒤 종료하며, 오래된 기록은 아무 시그널도 보내지 않고 정리합니다. 스킬 `/my-flow:dashboard start | stop | status`(Codex: `$my-flow-dashboard`)는 같은 명령을 감쌉니다.
 
 ## 인텐트 레이어
 
