@@ -23,15 +23,19 @@
         <li id="nav-diff" hidden><a href="#/diff" data-nav="diff">Diff</a></li>
       </ul>
       <div class="theme">
-        <label class="theme-label" for="theme-select">Theme</label>
-        <span class="select-wrap">
-          <select id="theme-select" title="follow or override the system colour scheme">
-            <option value="system">Auto (system)</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </span>
+        <span class="theme-label" id="theme-label">Theme</span>
+        <div class="listbox" id="theme-listbox" data-value="system">
+          <button type="button" class="listbox-trigger" id="theme-trigger" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="theme-menu" aria-labelledby="theme-label theme-trigger" title="follow or override the system colour scheme">
+            <span class="listbox-value">Auto (system)</span><span class="listbox-caret" aria-hidden="true">&#9662;</span>
+          </button>
+          <ul class="listbox-menu" id="theme-menu" role="listbox" aria-labelledby="theme-label" hidden>
+            <li class="listbox-option" role="option" id="theme-opt-system" data-value="system" aria-selected="true">Auto (system)</li>
+            <li class="listbox-option" role="option" id="theme-opt-light" data-value="light">Light</li>
+            <li class="listbox-option" role="option" id="theme-opt-dark" data-value="dark">Dark</li>
+          </ul>
+        </div>
       </div>
+      <a href="#/styleguide" data-nav="styleguide" class="sg-link">Styleguide</a>
       <div class="conn mono" id="conn" data-state="connecting" title="live update connection">
         <span class="conn-dot" aria-hidden="true"></span>
         <span id="conn-text">connecting</span>

@@ -91,6 +91,7 @@ Codex 측은 선택 사항입니다. [Codex에 설치하기](#codex에-설치하
 |---|---|
 | 구체적이고, 단일 파일이며, 인수 기준이 명확함 | `execute`만(또는 바로 수행) |
 | 구체적이지만 여러 파일 또는 여러 모듈에 걸침 | `mf-plan → execute → mf-verify` |
+| 구체적, 여러 파일, 설계는 이미 명확 | `mf-plan --fast [--go] → execute → mf-verify` |
 | 모호하고, 인수 기준이 없으며, "~해야 할까요" 같은 질문 | `interview → mf-plan → execute → mf-verify` |
 | 빌드 설정, 셰이더, 엔진 모듈, 마이그레이션, 인증을 건드림 | `mf-plan`과 `mf-verify`를 절대 건너뛰지 않음 |
 
@@ -114,7 +115,7 @@ Claude Code에는 내장 `/plan`(플랜 모드)과 `run`, `verify`라는 이름�
 
 ### 세션당 하나의 루프 권한
 
-Claude Code에서는 세션당 `/goal`은 최대 하나, 에이전트 팀도 최대 하나입니다. `execute`는 붙여넣을 수 있도록 `/goal` 문을 출력합니다(스킬은 스스로 설정할 수 없습니다). Stop 훅은 백스톱일 뿐이며, `execute` 중에 체크되지 않은 작업을 남긴 완료 주장만, 그것도 `spec stage`가 쓴 상태가 신선한 동안에만 차단합니다. Codex에서는 스레드당 goal이 하나이며, `execute`는 활성 goal이 없을 때만 `create_goal`을 호출합니다.
+Claude Code에서는 세션당 `/goal`은 최대 하나, 에이전트 팀도 최대 하나입니다. `execute`는 붙여넣을 수 있도록 `/goal` 문을 출력합니다(스킬은 스스로 설정할 수 없습니다). Stop 훅은 백스톱일 뿐이며, `execute` 중에 체크되지 않은 작업을 남긴 완료 주장만, 그것도 `spec stage`가 쓴 상태가 신선한 동안에만 차단합니다. Codex에서는 스레드당 goal이 하나이며, `execute`는 활성 goal이 없을 때만 `create_goal`을 호출합니다. 예외: `mf-plan --fast --go`에서 진입한 실행은 `/goal` 정지를 건너뛰고 Stop 훅 안전장치에만 의존합니다.
 
 ### Claude와 Codex가 각각 하는 일
 
@@ -127,9 +128,9 @@ Claude Code는 대화형 작업을 수행하고 루프를 실행합니다. Codex
 | 명령 | 하는 일 | 비고 |
 |---|---|---|
 | `build [--check]` | `src/`를 Claude 플러그인과 Codex 서피스로 렌더링합니다 | `src/`를 편집한 후 실행합니다. `--check`는 비교만 수행하며 출력이 오래되었으면 종료 코드 1로 종료합니다 |
-| `install claude [--dry-run]` | `~/.claude/settings.json`을 백업하고, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`을 설정하며, 작업 협약을 `~/.claude/CLAUDE.md`에 upsert합니다 | 플러그인 설치 명령을 출력하지만 실행하지는 않습니다 |
-| `install codex [--link] [--dry-run]` | 백업 후 스킬과 에이전트 TOML을 복사하고, PowerShell 심을 작성하고, `hooks.json`을 병합하고, 신뢰 해시를 `config.toml`에 기록하고, `~/.codex/AGENTS.md`를 upsert합니다 | `--link`는 복사 대신 정션을 사용합니다 |
-| `uninstall codex [--dry-run]` | `install codex`를 되돌리며, `~/.codex`의 나머지는 모두 보존합니다 | |
+| `install claude [--dry-run]` | `~/.claude/settings.json`을 백업하고, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`을 설정하며, 작업 협약을 `~/.claude/CLAUDE.md`에 upsert합니다. Windows에서는 예약 작업 `my-flow-models-check`(`conhost.exe --headless node scripts/models.mjs check --quiet --home <MY_FLOW_HOME>`)도 등록하고 도구 홈을 `~/.my-flow/config.json`에 기록합니다 | 플러그인 설치 명령을 출력하지만 실행하지는 않습니다 |
+| `install codex [--link] [--dry-run]` | 백업 후 스킬과 에이전트 TOML을 복사하고, PowerShell 심을 작성하고, `hooks.json`을 병합하고, 신뢰 해시를 `config.toml`에 기록하고, `~/.codex/AGENTS.md`를 upsert합니다. Windows에서는 예약 작업 `my-flow-models-check`도 등록하고 도구 홈과 에이전트 디렉터리를 `~/.my-flow/config.json`에 기록합니다 | `--link`는 복사 대신 정션을 사용합니다 |
+| `uninstall codex [--dry-run]` | `install codex`를 되돌리며, `~/.codex`의 나머지는 모두 보존합니다. `~/.my-flow/config.json`에서 Codex 홈을 제거합니다. 다른 표면이 남아 있지 않을 때만 예약 작업 `my-flow-models-check`를 삭제합니다 |  |
 | `init [--simple] [--tools claude,codex] [dir]` | `specs/`, `changes/`(`.templates/`와 `archive/` 포함), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`를 생성하고 프로젝트의 `CLAUDE.md` / `AGENTS.md`에 블록을 덧붙입니다 | `--simple`은 변경 사항마다 하나의 `docs/changes/<name>.md`를 쓰는 방식으로 전환합니다 |
 | `spec new <name>` | 템플릿으로부터 `changes/<name>/{proposal,design,tasks}.md`를 생성하고 현재 변경 사항으로 표시합니다 | kebab-case 이름 |
 | `spec status [name] [--json]` | 체크됨 / 전체 태스크 수, 산출물 상태(missing / empty / done), delta spec 개수; 14일 동안 손대지 않은 미완료 change에 `[stale Nd]` 표시(`--stale-days`, `MY_FLOW_STALE_DAYS`), 두 change가 같은 요구사항을 주장하면 `overlap:`, capability에 5회 머지되면 `audit suggested:`(`MY_FLOW_AUDIT_EVERY`) | 손대지 않은 템플릿은 empty로 계산됩니다 |
@@ -139,6 +140,7 @@ Claude Code는 대화형 작업을 수행하고 루프를 실행합니다. Codex
 | `spec stage <name> <stage>` | 새 `updated` 타임스탬프와 함께 `.my-flow/state/current-change.json`을 씁니다(`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) | execute-guard는 이 파일이 12시간 이내일 때만 작동합니다 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 다른 CLI를 어드바이저로 읽기 전용 실행하고, 산출물을 `.my-flow/ask/`에 기록합니다 | 프롬프트는 stdin으로 전달됩니다. 출력이 비어 있으면 실패로 간주합니다 |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | `specs/`, `changes/`, `.my-flow/`를 보는 로컬 웹 대시보드. 즉시 갱신과 보호된 편집. `stop`은 기록된 프로세스를 확인한 뒤 종료합니다 | 루프백 전용, 기본 포트 4321, 의존성 없음 |
+| `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | 서브에이전트 모델 라우팅: `status`는 기록된 CLI 버전, 로컬 덮어쓰기(또는 없음), 설치된 에이전트 파일에서 읽어 온 값을 보여줍니다. `analyze`는 사용 가능한 가장 강한 CLI에 역할 -> 모델 / effort 매핑을 요청해 검증하고 적용합니다. `apply`는 `~/.my-flow/models.json`으로 설치된 파일을 다시 렌더링하고, `reset`은 덮어쓰기를 삭제해 `inherit` 기준선으로 되돌립니다 | `~/.my-flow/`(`MY_FLOW_HOME`), `~/.codex/agents/`, 설치된 Claude 플러그인의 `agents/`에만 씁니다. 저장소에는 쓰지 않습니다 |
 
 ## 스킬
 
@@ -147,8 +149,8 @@ Claude에서는 `/my-flow:<name>`으로, Codex에서는 `$my-flow-<name>`으로 
 | 스킬 | 언제 | 하는 일 | 출력 |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 모호한 요청, 인수 기준 없음 | 한 라운드에 하나의 질문, 세부 사항보다 의도 우선. 모호성을 점수화하고 Non-Goals와 Decision Boundaries가 명시되면 종료합니다 | `changes/<name>/proposal.md`, 대화 기록은 `.my-flow/interviews/` |
-| `mf-plan <name \| text> [--deliberate]` | 여러 파일에 걸친 변경. 빌드 설정, 셰이더, 엔진 모듈, 마이그레이션, 인증을 건드리는 모든 것 | planner가 초안 작성 → architect가 검토(`CLEAR / WATCH / BLOCK`) → critic이 검토(`OKAY / REJECT`), 최대 3라운드 | `design.md`(Do-Not-Touch와 Rebuild / Re-run을 반드시 포함), `tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md`에 체크되지 않은 항목이 있음 | goal 문을 구성하고, 태스크 하나씩 구현·검증·체크하며, 고정된 최종 게이트를 실행합니다 | Claude: 붙여넣을 `/goal …`을 출력. Codex: `create_goal` |
+| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 여러 파일에 걸친 변경. 빌드 설정, 셰이더, 엔진 모듈, 마이그레이션, 인증을 건드리는 모든 것. `--fast`에서는 산출물을 직접 작성하고 critic 검토를 한 번만 거치며 planner와 architect는 쓰지 않습니다. 고위험 범주(및 `--deliberate`와의 병용)에서는 거부되고, `--go`는 바로 execute로 이어집니다 | planner가 초안 작성 → architect가 검토(`CLEAR / WATCH / BLOCK`) → critic이 검토(`OKAY / REJECT`), 최대 3라운드 | `design.md`(Do-Not-Touch와 Rebuild / Re-run을 반드시 포함), `tasks.md` |
+| `execute <name> [--team] [--worktree]` | `tasks.md`에 체크되지 않은 항목이 있음 | goal 문을 구성하고, 태스크 하나씩 구현·검증·체크하며, 고정된 최종 게이트를 실행합니다. `mf-plan --fast --go`에서 진입할 수도 있으며, 이때는 `/goal` 정지를 건너뜁니다 | Claude: 붙여넣을 `/goal …`을 출력. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | "완료"를 주장하기 전에 항상 | 읽기 전용 verifier에 위임하며, verifier가 직접 검사를 실행하고 기준별로 보고합니다 | PASS / FAIL / INCOMPLETE가 담긴 `.my-flow/verify/<name>-<time>.md` |
 | `mf-audit <capability \| all>` | `spec status`가 `audit suggested`를 출력할 때, 또는 사용자가 "audit the spec"이라고 말할 때 | 읽기 전용 architect가 `specs/<cap>/spec.md`를 코드와 테스트에 대조: 미구현 요구사항, 문서화되지 않은 동작, 모순, 잘못 배치된 요구사항. `specs/`는 절대 편집하지 않음 | `Status: CLEAN / DRIFT / BROKEN`과 `audit-<cap>`으로 끝나는 제안 change 이름이 담긴 `.my-flow/verify/audit-<cap>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 설계에 대한 2차 의견, 최종 게이트 전 diff 검토, 계획이 막혔을 때의 결정 | `ask` 스크립트를 감싸고, 요약하며, 동의 여부를 밝힙니다 | `.my-flow/ask/` |
@@ -160,18 +162,20 @@ Claude에서는 `/my-flow:<name>`으로, Codex에서는 `$my-flow-<name>`으로 
 
 ### 세 플로 스킬이 내장 기능과 다른 점
 
-- **`/plan` vs `mf-plan`**: 플랜 모드는 읽기 전용 권한 모드로, 프로젝트 밖에 플랜 파일 하나를 작성하고 승인을 요청합니다. `mf-plan`은 세 역할이 순서대로 검토한, 커밋되는 산출물(`design.md`, `tasks.md`)을 만들어내며, 필수 섹션과 이후 `execute` 및 `mf-verify`를 구동하는 태스크 형식을 갖춥니다. 탐색을 위해 먼저 `/plan`에 들어가는 것은 여전히 가능합니다.
+- **`/plan` vs `mf-plan`**: 플랜 모드는 읽기 전용 권한 모드로, 프로젝트 밖에 플랜 파일 하나를 작성하고 승인을 요청합니다. `mf-plan`은 세 역할이 순서대로 검토한, 커밋되는 산출물(`design.md`, `tasks.md`)을 만들어내며, 필수 섹션과 이후 `execute` 및 `mf-verify`를 구동하는 태스크 형식을 갖춥니다. 탐색을 위해 먼저 `/plan`에 들어가는 것은 여전히 가능합니다. 빠른 경로 `mf-plan --fast`는 그 중간에 있습니다. 커밋되는 산출물과 후속 흐름은 같지만, 세 역할의 합의 대신 critic 검토 한 번만 거칩니다.
 - **`run` vs `execute`**: 내장 `run`은 프로젝트의 앱을 실행합니다. `execute`는 Do-Not-Touch와 Rebuild 규칙 아래에서 `tasks.md`를 순회하는 태스크 루프로, 네이티브 goal로 감싸지며 고정된 최종 게이트(verify → cleanup → re-verify → independent review → done)로 끝납니다.
 - **`verify` vs `mf-verify`**: `mf-verify`는 항상 컨텍스트를 전환하고(읽기 전용 verifier 서브에이전트), `tasks.md`, spec 시나리오, `design.md`에서 기준을 도출하며, diff를 Do-Not-Touch와 대조하고, Rebuild 단계가 실행되었는지 확인하고, 거짓 완료 패턴을 스캔하며, `spec archive`가 요구하는 보고서를 작성합니다.
 
 ## 서브에이전트 역할
 
-| 역할 | 핵심 | Claude 모델 | Codex effort | 거부되는 도구 |
-|---|---|---|---|---|
-| `planner` | 제안을 근거에 기반한 설계와 태스크 목록으로 바꿉니다. 코드를 직접 읽으며, 모든 태스크에 검증 방법을 명시합니다 | opus | high | 없음(`changes/<name>/` 아래에만 씁니다) |
-| `architect` | 읽기 전용 설계 검토자: 반론, 긴장, 종합. `CLEAR / WATCH / BLOCK` | opus | high | Write, Edit |
-| `critic` | 추측 없이 계획을 실행할 수 있는지 판단합니다. 두세 개의 태스크를 시뮬레이션하고, 최대 다섯 개의 수정 사항과 함께 `OKAY / REJECT`를 냅니다 | sonnet | medium | Write, Edit |
-| `verifier` | 새로운 증거만 사용합니다. 검사를 직접 실행하고, 기준별 상태를 냅니다. 자기 컨텍스트의 작업은 절대 승인하지 않습니다 | sonnet | medium | Write, Edit |
+| 역할 | 핵심 | 모델 | Codex effort | Codex 샌드박스 | 거부되는 도구 |
+|---|---|---|---|---|---|
+| `planner` | 제안을 근거에 기반한 설계와 태스크 목록으로 바꿉니다. 코드를 직접 읽으며, 모든 태스크에 검증 방법을 명시합니다 | inherit | high | 없음 | 없음(`changes/<name>/` 아래에만 씁니다) |
+| `architect` | 읽기 전용 설계 검토자: 반론, 긴장, 종합. `CLEAR / WATCH / BLOCK` | inherit | high | read-only | Write, Edit |
+| `critic` | 추측 없이 계획을 실행할 수 있는지 판단합니다. 두세 개의 태스크를 시뮬레이션하고, 최대 다섯 개의 수정 사항과 함께 `OKAY / REJECT`를 냅니다 | inherit | medium | read-only | Write, Edit |
+| `verifier` | 새로운 증거만 사용합니다. 검사를 직접 실행하고, 기준별 상태를 냅니다. 자기 컨텍스트의 작업은 절대 승인하지 않습니다 | inherit | medium | 없음(테스트를 실행할 수 있도록 프롬프트로만 읽기 전용을 유지) | Write, Edit |
+
+두 CLI 모두 역할은 메인 세션의 모델을 상속합니다(Claude는 `model: inherit`, Codex는 `model`을 생략하므로 부모 세션의 모델이 적용됩니다). `models` 명령(CLI 명령 절)으로 역할별로 로컬에서 덮어쓸 수 있으며, `models status`가 실제 적용된 값을 보여줍니다.
 
 Claude에서는 `my-flow:planner` 등으로 지정합니다. Codex는 `~/.codex/agents/<name>.toml`에서 로드합니다. TOML에는 도구 허용 목록이 없으므로 읽기 전용은 문장(그리고 헤드리스일 때는 `-s read-only`)으로 강제됩니다.
 
@@ -179,7 +183,7 @@ Claude에서는 `my-flow:planner` 등으로 지정합니다. Codex는 `~/.codex/
 
 | 이벤트 | 스크립트 | 동작 |
 |---|---|---|
-| SessionStart | `hooks/session-context.mjs` | 프로젝트에 `changes/`가 있으면 활성 변경 사항을 체크됨 / 전체 태스크 수와 산출물 상태와 함께 나열합니다. 항상 종료 코드 0으로 종료합니다 |
+| SessionStart | `hooks/session-context.mjs` | 프로젝트에 `changes/`가 있으면 활성 변경 사항을 체크됨 / 전체 태스크 수와 산출물 상태와 함께 나열합니다. 항상 종료 코드 0으로 종료합니다. 또한 보류 중인 모델 라우팅 요약을 한 줄, 한 번만 출력하고, `MY_FLOW_MODELS_CHECK_HOURS`(기본 1, `0` = 매 시작)마다 최대 한 번 분리된 `models check`를 띄웁니다. 이 검사는 CLI 버전을 조사하고 바뀐 경우에만 백그라운드에서 분석을 실행합니다. 훅 자체는 모델을 호출하지 않습니다. 라우팅 부분은 `MY_FLOW_SKIP_HOOKS=model-routing`으로 끌 수 있습니다. Windows에서는 `install claude` / `install codex`가 등록한 예약 작업 `my-flow-models-check`를 통해 검사를 시작합니다(작업 스케줄러가 훅의 잡 오브젝트 밖에서 실행하므로 Codex가 잡을 정리해도 살아남습니다). 작업이 없거나 `schtasks /run`이 실패하면 분리된 자식 프로세스로 대체합니다 |
 | Stop | `hooks/completion-guard.mjs` | 마지막 메시지가 완료를 주장하지만 diff에 여전히 `test.skip`, `.only`, 자리표시자 TODO, 스텁 return이 들어 있으면 차단하고 이유를 설명합니다. `execute` 단계에서는 tasks.md에 체크되지 않았고 blocked 표시도 없는 작업이 남아 있으면 완료 주장도 차단하지만, 상태 파일이 12시간 이내(`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`)일 때만 그렇습니다. 완료 주장이 없는 메시지는 절대 차단되지 않습니다 |
 
 두 스크립트 모두 Claude(플러그인의 `hooks/hooks.json` 경유)와 Codex(PowerShell 심 경유)가 공유합니다. `MY_FLOW_SKIP_HOOKS=completion-guard` 또는 `execute-guard`(또는 `all`)로 비활성화할 수 있습니다. execute-guard의 TTL은 기본 12시간이며 `MY_FLOW_EXECUTE_GUARD_TTL_HOURS`로 재정의할 수 있습니다.
@@ -310,6 +314,8 @@ oh-my-codex가 설치되어 있다면 먼저 다음 순서로 제거하세요.
 | `spec archive`가 거부함 | 모든 체크박스가 체크되어 있어야 하고 `Verdict: PASS`를 포함한 보고서가 `.my-flow/verify/` 아래에 있어야 합니다. 먼저 `mf-verify`를 실행하거나, `--force`를 사용하고 그 사실을 밝히세요 |
 | Codex가 훅을 신뢰할지 물어봄 | `/hooks`에서 한 번 승인하세요. 신뢰 해시 형식이 업스트림에서 바뀌었을 수 있습니다 |
 | Windows에서의 분할 창 팀 | Claude Code에서 지원하지 않습니다. 팀은 프로세스 내에서 실행됩니다. tmux 창을 요청하지 마세요 |
+| Codex에서 검사가 끝나지 않거나 `check start`가 나타나지 않음 | `schtasks /query /tn my-flow-models-check`를 실행하세요. 작업이 없거나 `node scripts/cli.mjs models status`에 런처 루트나 Node가 존재하지 않는다고 나오면(체크아웃 이동 또는 Node 업그레이드) `node scripts/install.mjs claude` 또는 `codex`를 다시 실행해 재등록합니다. Codex에서는 my-flow 훅을 `/hooks`에서 한 번 신뢰해야 합니다 |
+| 서브에이전트가 예상과 다른 모델로 실행됨 | `node scripts/cli.mjs models status`를 실행하세요. 덮어쓰기(있다면)와 설치된 에이전트 파일에서 읽어 온 `model:` / effort 값을 보여줍니다. `models reset`은 `inherit` 기준선을 복원하고, `~/.my-flow/`의 `models.log`에 모든 검사와 분석이 기록됩니다. 개발용 체크아웃(`claude --plugin-dir`)은 절대 다시 쓰지 않으며 설치된 플러그인 캐시만 대상입니다 |
 
 ## 라이선스
 

@@ -91,6 +91,7 @@ The Codex side is optional; see [Installing into Codex](#installing-into-codex).
 |---|---|
 | Concrete, single file, clear acceptance | `execute` only (or just do it) |
 | Concrete but multi-file or multi-module | `mf-plan → execute → mf-verify` |
+| Concrete, multi-file, design already clear | `mf-plan --fast [--go] → execute → mf-verify` |
 | Vague, no acceptance criteria, "should we..." | `interview → mf-plan → execute → mf-verify` |
 | Touches build config, shaders, engine modules, migrations, auth | never skip `mf-plan` and `mf-verify` |
 
@@ -114,7 +115,7 @@ Claude Code has a built-in `/plan` (plan mode) and bundled skills named `run` an
 
 ### One loop authority per session
 
-In Claude Code, at most one `/goal` and at most one agent team per session. `execute` prints the `/goal` statement and waits for you to paste it (skills cannot set it themselves); the Stop hook is only a backstop that blocks completion claims leaving unticked tasks during `execute`, and only while the state written by `spec stage` is fresh. In Codex, one goal per thread; `execute` calls `create_goal` only when none is active.
+In Claude Code, at most one `/goal` and at most one agent team per session. `execute` prints the `/goal` statement and waits for you to paste it (skills cannot set it themselves); the Stop hook is only a backstop that blocks completion claims leaving unticked tasks during `execute`, and only while the state written by `spec stage` is fresh. In Codex, one goal per thread; `execute` calls `create_goal` only when none is active. Exception: a run entered from `mf-plan --fast --go` skips the `/goal` stop and relies on the Stop-hook backstop alone.
 
 ### What Claude and Codex each do
 
@@ -127,9 +128,9 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | Command | What it does | Notes |
 |---|---|---|
 | `build [--check]` | Renders `src/` into the Claude plugin and the Codex surface | Run after editing `src/`. `--check` only compares and exits 1 when outputs are stale |
-| `install claude [--dry-run]` | Backs up `~/.claude/settings.json`, sets `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, upserts the working agreement into `~/.claude/CLAUDE.md` | Prints the plugin install commands, does not run them |
-| `install codex [--link] [--dry-run]` | Backs up, then copies skills and agent TOMLs, writes the PowerShell shim, merges `hooks.json`, writes trusted hashes into `config.toml`, upserts `~/.codex/AGENTS.md` | `--link` uses junctions instead of copies |
-| `uninstall codex [--dry-run]` | Reverses `install codex`, preserving everything else in `~/.codex` | |
+| `install claude [--dry-run]` | Backs up `~/.claude/settings.json`, sets `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, upserts the working agreement into `~/.claude/CLAUDE.md`. On Windows also registers the scheduled task `my-flow-models-check` (`conhost.exe --headless node scripts/models.mjs check --quiet --home <MY_FLOW_HOME>`) and records the tool home in `~/.my-flow/config.json` | Prints the plugin install commands, does not run them |
+| `install codex [--link] [--dry-run]` | Backs up, then copies skills and agent TOMLs, writes the PowerShell shim, merges `hooks.json`, writes trusted hashes into `config.toml`, upserts `~/.codex/AGENTS.md`. On Windows also registers the scheduled task `my-flow-models-check` and records the tool home and agents directory in `~/.my-flow/config.json` | `--link` uses junctions instead of copies |
+| `uninstall codex [--dry-run]` | Reverses `install codex`, preserving everything else in `~/.codex`. Removes the Codex home from `~/.my-flow/config.json`; deletes the scheduled task `my-flow-models-check` only when no other surface remains |  |
 | `init [--simple] [--tools claude,codex] [dir]` | Creates `specs/`, `changes/` (with `.templates/` and `archive/`), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/`, and appends a block to the project `CLAUDE.md` / `AGENTS.md` | `--simple` switches to one `docs/changes/<name>.md` per change |
 | `spec new <name>` | Creates `changes/<name>/{proposal,design,tasks}.md` from templates and marks it current | kebab-case names |
 | `spec status [name] [--json]` | Ticked / total tasks, artifact state (missing / empty / done), delta spec count; flags `[stale Nd]` on unfinished changes untouched for 14 days (`--stale-days`, `MY_FLOW_STALE_DAYS`), `overlap:` when two changes claim one requirement, `audit suggested:` after 5 merges into a capability (`MY_FLOW_AUDIT_EVERY`) | Untouched templates count as empty |
@@ -139,6 +140,7 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | `spec stage <name> <stage>` | Writes `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) with a fresh `updated` timestamp | The execute-guard only fires while this file is younger than 12 h |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Runs the other CLI read-only as an advisor; writes an artifact to `.my-flow/ask/` | Prompt goes through stdin; empty output counts as failure |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Local web dashboard over `specs/`, `changes/` and `.my-flow/`: live updates, guarded editing; `stop` verifies the recorded process before terminating it | Loopback only, default port 4321, no dependencies |
+| `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | Subagent model routing: `status` shows the recorded CLI versions, the local override (or none) and the values read back from the installed agent files; `analyze` asks the strongest available CLI for a role -> model / effort map, validates it and applies it; `apply` re-renders the installed files from `~/.my-flow/models.json`; `reset` deletes the override and restores the inherit baseline | Writes only under `~/.my-flow/` (`MY_FLOW_HOME`), `~/.codex/agents/` and the installed Claude plugin `agents/`; never the repository |
 
 ## Skills
 
@@ -147,8 +149,8 @@ Claude invokes them as `/my-flow:<name>`, Codex as `$my-flow-<name>`.
 | Skill | When | What it does | Output |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | Vague request, no acceptance criteria | One question per round, intent before detail; scores ambiguity; exits when Non-Goals and Decision Boundaries are explicit | `changes/<name>/proposal.md`, transcript in `.my-flow/interviews/` |
-| `mf-plan <name \| text> [--deliberate]` | Multi-file changes; anything touching build config, shaders, engine modules, migrations, auth | planner drafts → architect reviews (`CLEAR / WATCH / BLOCK`) → critic reviews (`OKAY / REJECT`), up to three rounds | `design.md` (must contain Do-Not-Touch and Rebuild / Re-run), `tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md` has unticked boxes | Composes the goal statement; implements task by task, verifies, ticks; runs the fixed final gate | Claude: prints `/goal …` for you to paste. Codex: `create_goal` |
+| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | Multi-file changes; anything touching build config, shaders, engine modules, migrations, auth. With `--fast` you write the artifacts yourself, one critic pass, no planner or architect; refused for the high-risk categories (and together with `--deliberate`); `--go` continues straight into execute | planner drafts → architect reviews (`CLEAR / WATCH / BLOCK`) → critic reviews (`OKAY / REJECT`), up to three rounds | `design.md` (must contain Do-Not-Touch and Rebuild / Re-run), `tasks.md` |
+| `execute <name> [--team] [--worktree]` | `tasks.md` has unticked boxes | Composes the goal statement; implements task by task, verifies, ticks; runs the fixed final gate. Can also be entered from `mf-plan --fast --go`, which skips the `/goal` stop | Claude: prints `/goal …` for you to paste. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | Before any "done" claim | Delegates to the read-only verifier, which runs the checks itself and reports per criterion | `.my-flow/verify/<name>-<time>.md` with PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` prints `audit suggested`, or the user says "audit the spec" | Read-only architect pass comparing `specs/<cap>/spec.md` with code and tests: unimplemented requirements, undocumented behavior, contradictions, misplaced requirements; never edits `specs/` | `.my-flow/verify/audit-<cap>-<time>.md` with `Status: CLEAN / DRIFT / BROKEN` and a suggested change name ending in `audit-<cap>` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | Second opinion on a design, diff review before the final gate, tie-break when planning stalls | Wraps the `ask` script, summarizes, and states whether it agrees | `.my-flow/ask/` |
@@ -160,29 +162,37 @@ Claude invokes them as `/my-flow:<name>`, Codex as `$my-flow-<name>`.
 
 ### How the three flow skills differ from the built-ins
 
-- **`/plan` vs `mf-plan`**: plan mode is a read-only permission mode that writes one plan file outside the project and asks for approval. `mf-plan` produces committed artifacts (`design.md`, `tasks.md`) reviewed by three roles in sequence, with required sections and a task format that later drives `execute` and `mf-verify`. You can still enter `/plan` first to explore.
+- **`/plan` vs `mf-plan`**: plan mode is a read-only permission mode that writes one plan file outside the project and asks for approval. `mf-plan` produces committed artifacts (`design.md`, `tasks.md`) reviewed by three roles in sequence, with required sections and a task format that later drives `execute` and `mf-verify`. You can still enter `/plan` first to explore. The fast lane `mf-plan --fast` sits between the two: same committed artifacts and downstream flow, but only one critic pass instead of the three-role consensus.
 - **`run` vs `execute`**: the built-in `run` launches the project's app. `execute` is a task loop over `tasks.md` under the Do-Not-Touch and Rebuild rules, wrapped in a native goal, ending with the fixed final gate (verify → cleanup → re-verify → independent review → done).
 - **`verify` vs `mf-verify`**: `mf-verify` always changes context (read-only verifier subagent), derives its criteria from `tasks.md`, spec scenarios and `design.md`, checks the diff against Do-Not-Touch, checks that Rebuild steps ran, scans for fake-completion patterns, and writes a report that `spec archive` requires.
 
 ## Subagent roles
 
-| Role | Essence | Claude model | Codex effort | Tools denied |
-|---|---|---|---|---|
-| `planner` | Turns a proposal into an evidence-grounded design and task list; reads the code itself; every task names its verification | opus | high | none (writes only under `changes/<name>/`) |
-| `architect` | Read-only design reviewer: antithesis, tension, synthesis; `CLEAR / WATCH / BLOCK` | opus | high | Write, Edit |
-| `critic` | Decides whether the plan is executable without guessing; simulates two or three tasks; `OKAY / REJECT` with at most five fixes | sonnet | medium | Write, Edit |
-| `verifier` | Fresh evidence only; runs the checks itself; per-criterion status; never approves work from its own context | sonnet | medium | Write, Edit |
+| Role | Essence | Model | Codex effort | Codex sandbox | Tools denied |
+|---|---|---|---|---|---|
+| `planner` | Turns a proposal into an evidence-grounded design and task list; reads the code itself; every task names its verification | inherit | high | none | none (writes only under `changes/<name>/`) |
+| `architect` | Read-only design reviewer: antithesis, tension, synthesis; `CLEAR / WATCH / BLOCK` | inherit | high | read-only | Write, Edit |
+| `critic` | Decides whether the plan is executable without guessing; simulates two or three tasks; `OKAY / REJECT` with at most five fixes | inherit | medium | read-only | Write, Edit |
+| `verifier` | Fresh evidence only; runs the checks itself; per-criterion status; never approves work from its own context | inherit | medium | none (stays prompt-enforced so it can run tests) | Write, Edit |
 
-Claude addresses them as `my-flow:planner` etc. Codex loads them from `~/.codex/agents/<name>.toml`; TOML has no tool allow-list, so read-only is enforced by prose (and by `-s read-only` when headless).
+On both CLIs the roles inherit the main session's model (Claude `model: inherit`; Codex omits `model`, so the parent session's model applies), and the `models` command (section CLI commands) can override that locally per role; `models status` shows the effective values. Claude addresses them as `my-flow:planner` etc. Codex loads them from `~/.codex/agents/<name>.toml`; architect and critic run under `sandbox_mode = "read-only"`, the others are read-only by prose (and by `-s read-only` when headless).
+
+### Model routing
+
+The shipped baseline is `inherit` on both CLIs, so a CLI or model upgrade needs no edit. On top of that, a per-user override can route each role to a different model or effort:
+
+- `~/.my-flow/models.json` (`MY_FLOW_HOME` overrides the directory) holds the override: one entry per role with a Claude model (`inherit`, an alias, or the main model) and a Codex model (`null` = inherit, or a model listed in `~/.codex/models_cache.json`) plus reasoning effort. `config.json` records the tool homes written by `install` and a `knownModels` list per CLI that extends the allowed set; `models-state.json` and `models.log` record what the hook and the background check did.
+- The SessionStart hook only schedules: at most once per `MY_FLOW_MODELS_CHECK_HOURS` it spawns a detached `models check` that probes `claude --version` / `codex --version` and the main models. Only when they changed does the check run one read-only analysis through `ask.mjs`, validate the answer against the allowed sets (unknown models or unsupported efforts reject the whole answer), write the override and re-render the installed agent files. Failures keep the baseline; the next session start prints one `model routing ...` line.
+- `node scripts/cli.mjs models status|analyze|apply|reset` exposes the same mechanism by hand. The repository files are never written by any of this.
 
 ## Hooks
 
 | Event | Script | Behavior |
 |---|---|---|
-| SessionStart | `hooks/session-context.mjs` | If the project has `changes/`, lists active changes with ticked / total tasks and artifact state. Always exits 0 |
+| SessionStart | `hooks/session-context.mjs` | If the project has `changes/`, lists active changes with ticked / total tasks and artifact state. Also prints the pending model-routing summary (one line, once) and, at most once per `MY_FLOW_MODELS_CHECK_HOURS` (default 1, `0` = every start), spawns a detached `models check` that probes the CLI versions and, only when they changed, runs the analysis in the background. The hook itself never calls a model and returns in well under a second. Disable the routing part with `MY_FLOW_SKIP_HOOKS=model-routing`. Always exits 0. On Windows the check is started through the scheduled task `my-flow-models-check` registered by `install claude` / `install codex` (Task Scheduler runs it outside the hook's job object, which Codex tears down); without the task, or when `schtasks /run` fails, it falls back to a detached child |
 | Stop | `hooks/completion-guard.mjs` | If the last message claims completion but the diff still contains `test.skip`, `.only`, placeholder TODOs or stub returns, blocks and explains why; during `execute` it also blocks a completion claim while tasks.md still has unticked tasks not marked blocked, as long as the state file is younger than 12 h (`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`). Messages without a completion claim are never blocked |
 
-Both scripts are shared by Claude (via `hooks/hooks.json` in the plugin) and Codex (via the PowerShell shim). Disable with `MY_FLOW_SKIP_HOOKS=completion-guard` or `execute-guard` (or `all`). The execute-guard TTL defaults to 12 hours; override it with `MY_FLOW_EXECUTE_GUARD_TTL_HOURS`.
+Both scripts are shared by Claude (via `hooks/hooks.json` in the plugin) and Codex (via the PowerShell shim). Disable with `MY_FLOW_SKIP_HOOKS=completion-guard`, `execute-guard` or `model-routing` (or `all`). The execute-guard TTL defaults to 12 hours; override it with `MY_FLOW_EXECUTE_GUARD_TTL_HOURS`.
 
 ## Cross-model advisor
 
@@ -194,6 +204,7 @@ node scripts/ask.mjs claude --files src/a.ts,src/b.ts "Is this abstraction justi
 - The prompt always goes through stdin (never argv), the other CLI runs read-only (`codex exec -s read-only`, `claude -p --permission-mode plan`), with a timeout; exit 0 with empty output counts as failure.
 - Artifacts land in `.my-flow/ask/<time>-<provider>-<slug>.md` with sections Original task / Final prompt / Raw output / Summary / Action items.
 - Pick the model with `--model` or the environment variables `MY_FLOW_CODEX_MODEL` / `MY_FLOW_CLAUDE_MODEL` (useful when the model in your Codex config is newer than the installed CLI supports, e.g. `--model gpt-5.5`).
+- `--cwd <dir>` sets the working directory and `--ask-dir <dir>` the artifact directory (the model-routing analysis uses it to keep its prompts under `~/.my-flow/ask/`).
 - Disagreements are resolved by evidence or by you, never by majority.
 
 ## Dashboard
@@ -260,7 +271,7 @@ The two required `design.md` sections exist because autonomous loops make a wron
 
 ```
 src/            single source of truth (English): core/core.md, skills/*.md, agents/*.md, rules/*.md
-scripts/        build / install / init / spec / ask / cli
+scripts/        build / install / init / spec / ask / models / dashboard / cli; scripts/lib/ shared helpers (spawn, intent, models)
 hooks/          the two Node hooks + the Codex PowerShell shim
 templates/      project blocks (CLAUDE.md / AGENTS.md), change templates, specs README, simple-mode file
 skills/ agents/ .claude-plugin/plugin.json   generated: Claude plugin surface
@@ -275,7 +286,7 @@ Source conventions:
 - `{{ARGS}}` → Claude `$ARGUMENTS` / Codex `{{ARGUMENTS}}`
 - `{{CALL:mf-plan}}` → Claude `/my-flow:mf-plan` / Codex `$my-flow-mf-plan`
 - `<!-- MY-FLOW:CLAUDE --> … <!-- /MY-FLOW:CLAUDE -->` is kept only in the Claude rendering; `CODEX` likewise
-- tool allow-lists per skill and model tiers per agent live in `manifest.json`
+- tool allow-lists per skill and the per-agent model (`inherit`), Codex reasoning effort and sandbox live in `manifest.json`
 - `src/rules/*.md` are rule fragments (coding style, testing, git) you can paste into a project's `CLAUDE.md` / `AGENTS.md`; they are not installed automatically
 
 ## Installing into Codex
@@ -310,6 +321,8 @@ The installer skips any `~/.codex/agents/<name>.toml` it did not create, so agen
 | `spec archive` refuses | All boxes must be ticked and a report containing `Verdict: PASS` must exist under `.my-flow/verify/`. Run `mf-verify` first, or use `--force` and say so |
 | Codex asks to trust the hooks | Approve once in `/hooks`; the trusted hash format may have changed upstream |
 | Split-pane teams on Windows | Not supported by Claude Code; teams run in-process. Do not ask for tmux panes |
+| The check never completes under Codex, or `check start` never appears | Run `schtasks /query /tn my-flow-models-check`; if the task is missing, or `node scripts/cli.mjs models status` shows the launcher root or node as not existing (the checkout moved or Node was upgraded), re-run `node scripts/install.mjs claude` or `codex` to re-register it. Under Codex, also make sure the my-flow hooks are trusted once in `/hooks` |
+| Subagents run an unexpected model | Run `node scripts/cli.mjs models status`: it shows the override (if any) and the `model:` / effort values read back from the installed agent files. `models reset` restores the inherit baseline; `models.log` under `~/.my-flow/` records every check and analysis. A development checkout (`claude --plugin-dir`) is never rewritten, only the installed plugin cache |
 
 ## License
 

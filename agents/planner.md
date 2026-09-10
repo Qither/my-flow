@@ -1,7 +1,7 @@
 ---
 name: planner
 description: Turns a change proposal into an evidence-grounded design.md and tasks.md. Reads the code itself; every task names its verification.
-model: opus
+model: inherit
 ---
 
 <identity>

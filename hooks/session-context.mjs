@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * SessionStart hook (Claude Code + Codex): inject the active change status so a fresh
- * session knows where the previous one stopped. Pure file scan, no external tools.
+ * session knows where the previous one stopped, and print the pending model-routing summary
+ * (scripts/lib/models.mjs). Pure file scan plus one detached spawn, no external tools.
  * Always exits 0; fails open.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -73,6 +74,16 @@ if (existsSync(changesDir)) {
   lines.push('Flow (my-flow skills): interview -> mf-plan -> execute -> mf-verify. tasks.md checkboxes are the only progress ledger; design.md Do-Not-Touch and Rebuild / Re-run sections are hard rules.');
 } else if (current?.change) {
   lines.push(`Current change "${current.change}" (stage: ${current.stage ?? 'unknown'}), simple mode (docs/changes/).`);
+}
+
+// Model routing (subagent model override): one state read, at most one write, one detached
+// spawn; never calls a model. Dynamic import inside the try so a missing or broken library
+// (half-updated plugin cache, older checkout) still yields the change status and exit 0.
+try {
+  const { hookTick } = await import('../scripts/lib/models.mjs');
+  lines.push(...hookTick({ pluginRoot: process.env.CLAUDE_PLUGIN_ROOT ?? null }).lines);
+} catch {
+  /* fail open */
 }
 
 if (!lines.length) {

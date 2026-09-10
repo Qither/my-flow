@@ -29,6 +29,7 @@ artifact. (The mf- prefixed skills are deliberately distinct from the built-in `
 |---|---|
 | Concrete, single file, clear acceptance | `execute` only (or just do it) |
 | Concrete, multi-file or multi-module | `mf-plan -> execute -> mf-verify` |
+| Concrete, multi-file, design already clear | `mf-plan --fast [--go] -> execute -> mf-verify` |
 | Vague, no acceptance criteria, or "should we..." | `interview -> mf-plan -> execute -> mf-verify` |
 | Touches build config, shaders, engine modules, migrations, auth | never skip `mf-plan` and `mf-verify` |
 
@@ -37,6 +38,8 @@ Rules:
   are explicit. Do not re-open the interview inside `mf-plan`.
 - `mf-plan` never implements. `execute` never redesigns; if the design is wrong, stop and
   go back.
+- `mf-plan --fast` is a fast lane the user asks for (one critic pass, no planner or
+  architect); the model never selects it, and it is never used for the high-risk row.
 - `mf-verify` runs in a separate context from the one that wrote the code.
 - Skills: /my-flow:interview, /my-flow:mf-plan, /my-flow:execute, /my-flow:mf-verify, /my-flow:ask,
   /my-flow:learn, /my-flow:spec, /my-flow:mf-audit. When the user says "interview me", "plan this

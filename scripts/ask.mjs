@@ -5,6 +5,7 @@
  *
  *   node scripts/ask.mjs codex  [--diff] [--files a,b] [--timeout ms] [--model m] <question...>
  *   node scripts/ask.mjs claude --prompt-file .my-flow/ask/<ts>-prompt.md
+ *   --cwd <dir> sets the working directory, --ask-dir <dir> the artifact directory.
  *
  * Model: --model, else env MY_FLOW_CODEX_MODEL / MY_FLOW_CLAUDE_MODEL, else the CLI default.
  *
@@ -20,7 +21,7 @@ import { spawnCli } from './lib/spawn.mjs';
 const argv = process.argv.slice(2);
 const provider = argv.shift();
 if (!['codex', 'claude'].includes(provider)) {
-  console.error('usage: ask.mjs <codex|claude> [--diff] [--files a,b] [--timeout ms] [--prompt-file f] <question...>');
+  console.error('usage: ask.mjs <codex|claude> [--diff] [--files a,b] [--timeout ms] [--prompt-file f] [--cwd dir] [--ask-dir dir] <question...>');
   process.exit(2);
 }
 
@@ -30,6 +31,7 @@ const opts = {
   timeout: 300000,
   promptFile: null,
   cwd: process.cwd(),
+  askDir: null, // --ask-dir: where prompt/result artifacts land (default <cwd>/.my-flow/ask)
   // Model override: --model, else MY_FLOW_CODEX_MODEL / MY_FLOW_CLAUDE_MODEL, else the CLI default.
   model: process.env[provider === 'codex' ? 'MY_FLOW_CODEX_MODEL' : 'MY_FLOW_CLAUDE_MODEL'] || null,
 };
@@ -42,11 +44,12 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--prompt-file') opts.promptFile = argv[++i];
   else if (a === '--model') opts.model = argv[++i] ?? null;
   else if (a === '--cwd') opts.cwd = resolve(argv[++i]);
+  else if (a === '--ask-dir') opts.askDir = resolve(argv[++i]);
   else words.push(a);
 }
 
 const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-const askDir = join(opts.cwd, '.my-flow', 'ask');
+const askDir = opts.askDir ?? join(opts.cwd, '.my-flow', 'ask');
 mkdirSync(askDir, { recursive: true });
 
 function git(args) {

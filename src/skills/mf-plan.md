@@ -1,7 +1,7 @@
 ---
 name: mf-plan
 description: Consensus planning for a change - planner drafts design.md and tasks.md, architect and critic review in sequence until approved. Use for multi-file changes, anything touching build config, shaders, engine modules, migrations, or auth, or when the user says "plan this change". (Distinct from the built-in /plan mode.)
-argument-hint: "<change-name | free text> [--deliberate]"
+argument-hint: "<change-name | free text> [--deliberate] [--fast [--go]]"
 ---
 
 # mf-plan (consensus plan)
@@ -19,8 +19,22 @@ Input: {{ARGS}}
   Criteria). Do not start an interview here; if the text is too vague to write those
   sections, stop and suggest {{CALL:interview}}.
 - `--deliberate`: add a three-scenario pre-mortem and an explicit test plan
-  (unit / integration / end-to-end / observability). Auto-enable for auth, migrations,
-  destructive operations, public API changes, build or shader pipeline changes.
+  (unit / integration / end-to-end / observability). Auto-enabled for the
+  `High-risk categories` section below.
+- `--fast`: the fast lane (`## Fast lane (--fast)` below): same artifacts, one critic pass,
+  no drafting role, no architect. Only the user passes it; the model never selects it and may
+  only suggest it in a handoff. Refused for the `High-risk categories`, and refused
+  together with `--deliberate` (`--deliberate` wins).
+- `--go`: only together with `--fast`; after the handoff, continue straight into the execute
+  flow (`## Continue into execute (--go)` below). `--go requires --fast`: without it, print
+  one line `--go requires --fast; planning in full mode.` and continue in full mode.
+
+## High-risk categories
+
+auth, migrations, destructive operations, public API changes, build config or shader
+pipeline changes, engine modules. Judged from the proposal text and the paths it names (a
+judgement call, no keyword matcher). This single list drives both `--deliberate` (auto-enabled)
+and the `--fast` guard (refused), so adding or removing a category moves both flags together.
 
 ## Boundary
 
@@ -56,6 +70,46 @@ Delegation: spawn the native subagents `planner`, `architect`, `critic` one at a
 that order; each reviewer must see the previous output. Never batch them in parallel.
 <!-- /MY-FLOW:CODEX -->
 
+## Fast lane (--fast)
+
+Same artifacts and the same downstream flow, with the review cut to one pass. In order:
+
+1. Guard. If the proposal or free text touches a `High-risk categories` entry, print one
+   line `--fast refused: <category>; planning in full mode.` and continue at `## Steps`. If
+   `--deliberate` was also given, print `--fast refused: --deliberate wins; planning in full
+   mode.` and continue at `## Steps` with `--deliberate`.
+2. Author in this context. Read the files the proposal names and cite `path:line`. For free
+   text, write `proposal.md` inline as `## Inputs` requires. Write `design.md` with the
+   required sections and, as the first line under `## Context`, exactly
+   `Plan mode: fast (one critic pass, no architect).` Write `tasks.md` in the strict format.
+   No PLAN-DR header, no drafting delegation, no second reviewer.
+3. One review. Delegate once to the read-only `critic` role with the draft. Expected:
+   `OKAY | REJECT`, simulated tasks, at most five fixes. Wait for it to finish.
+4. On `REJECT`: apply the fixes yourself, once. There is no second review; list every finding
+   you did not fix under `Remaining findings:` in the handoff.
+5. Delta specs, `{{CALL:spec}} validate <name>` and `{{CALL:spec}} stage <name> mf-plan`
+   exactly as in steps 6-7 of the full mode.
+
+## Continue into execute (--go)
+
+Valid only with `--fast` and only after the handoff has been printed. Run
+`{{CALL:spec}} stage <name> execute`. Print the execute goal statement once, as a standing
+instruction for the rest of the run, without stopping for it. `--team` and `--worktree` are
+unavailable here: if the user wants either, stop after the handoff and point at
+`{{CALL:execute}} <name>` instead. End with execute's Run report.
+
+<!-- MY-FLOW:CLAUDE -->
+Invoke `my-flow:execute <name>` with the Skill tool and follow the loaded text: its Load step
+4 is the stage call just made, its section 2 goal stop is skipped (entering from
+`--fast --go` counts as the user declining the goal), and the Stop-hook execute-guard is the
+backstop. Never paraphrase the execute skill from memory. Record the hand-over with one line:
+`Continuing into execute (--go): goal stop skipped, execute-guard armed.`
+<!-- /MY-FLOW:CLAUDE -->
+<!-- MY-FLOW:CODEX -->
+Follow `{{CALL:execute}} <name>` by reference: its Load steps 1-3, then the task loop, then
+the final gate, with `get_goal` / `create_goal` running normally.
+<!-- /MY-FLOW:CODEX -->
+
 ## Required content
 
 `design.md` sections: `## Context`, `## Goals / Non-Goals`, `## Decisions`,
@@ -75,6 +129,9 @@ that order; each reviewer must see the previous output. Never batch them in para
 ```
 ## Handoff
 Change: changes/<name>   Review: architect CLEAR|WATCH, critic OKAY (iteration n)
+Remaining findings: <fast lane only, and only when a critic finding was left unfixed>
 Rebuild / Re-run: <echo the list from design.md>
 Next: {{CALL:execute}} <name>
 ```
+
+In the fast lane the `Review:` field reads `Review: fast (critic OKAY|REJECT-fixed, no architect)`.

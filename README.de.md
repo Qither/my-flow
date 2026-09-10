@@ -91,6 +91,7 @@ Die Codex-Seite ist optional; siehe [Installation in Codex](#installation-in-cod
 |---|---|
 | Konkret, eine einzelne Datei, klare Abnahme | nur `execute` (oder einfach direkt umsetzen) |
 | Konkret, aber mehrere Dateien oder Module | `mf-plan → execute → mf-verify` |
+| Konkret, mehrere Dateien, Design bereits klar | `mf-plan --fast [--go] → execute → mf-verify` |
 | Vage, keine Abnahmekriterien, „sollten wir...“ | `interview → mf-plan → execute → mf-verify` |
 | Berührt Build-Konfiguration, Shader, Engine-Module, Migrationen, Authentifizierung | `mf-plan` und `mf-verify` niemals überspringen |
 
@@ -114,7 +115,7 @@ Claude Code hat ein eingebautes `/plan` (Plan-Modus) sowie mitgelieferte Skills 
 
 ### Eine Schleifenautorität pro Sitzung
 
-In Claude Code gibt es höchstens ein `/goal` und höchstens ein Agent-Team pro Sitzung. `execute` gibt die `/goal`-Anweisung aus, die Sie einfügen (Skills können sie nicht selbst setzen); der Stop-Hook ist nur eine Absicherung, die während `execute` Fertigstellungsbehauptungen mit unerledigten Aufgaben blockiert, und das nur, solange der von `spec stage` geschriebene Zustand frisch ist. In Codex gilt ein Goal pro Thread; `execute` ruft `create_goal` nur auf, wenn keines aktiv ist.
+In Claude Code gibt es höchstens ein `/goal` und höchstens ein Agent-Team pro Sitzung. `execute` gibt die `/goal`-Anweisung aus, die Sie einfügen (Skills können sie nicht selbst setzen); der Stop-Hook ist nur eine Absicherung, die während `execute` Fertigstellungsbehauptungen mit unerledigten Aufgaben blockiert, und das nur, solange der von `spec stage` geschriebene Zustand frisch ist. In Codex gilt ein Goal pro Thread; `execute` ruft `create_goal` nur auf, wenn keines aktiv ist. Ausnahme: ein aus `mf-plan --fast --go` gestarteter Lauf überspringt den `/goal`-Stopp und verlässt sich allein auf die Stop-Hook-Absicherung.
 
 ### Was Claude und Codex jeweils tun
 
@@ -127,9 +128,9 @@ Alle Befehle sind einfache Node-Skripte. `node scripts/cli.mjs <command>` (oder 
 | Befehl | Was er tut | Hinweise |
 |---|---|---|
 | `build [--check]` | Rendert `src/` in das Claude-Plugin und die Codex-Oberfläche | Nach dem Bearbeiten von `src/` ausführen. `--check` vergleicht nur und beendet sich mit Exit-Code 1, wenn die Ausgaben veraltet sind |
-| `install claude [--dry-run]` | Sichert `~/.claude/settings.json`, setzt `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, fügt die Arbeitsvereinbarung in `~/.claude/CLAUDE.md` ein bzw. aktualisiert sie | Gibt die Installationsbefehle für das Plugin aus, führt sie aber nicht aus |
-| `install codex [--link] [--dry-run]` | Sichert, kopiert dann Skills und Agent-TOMLs, schreibt das PowerShell-Shim, führt `hooks.json` zusammen, schreibt vertrauenswürdige Hashes in `config.toml`, fügt `~/.codex/AGENTS.md` ein bzw. aktualisiert sie | `--link` verwendet Junctions statt Kopien |
-| `uninstall codex [--dry-run]` | Macht `install codex` rückgängig und bewahrt alles andere in `~/.codex` | |
+| `install claude [--dry-run]` | Sichert `~/.claude/settings.json`, setzt `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, fügt die Arbeitsvereinbarung in `~/.claude/CLAUDE.md` ein bzw. aktualisiert sie. Registriert unter Windows außerdem die geplante Aufgabe `my-flow-models-check` (`conhost.exe --headless node scripts/models.mjs check --quiet --home <MY_FLOW_HOME>`) und trägt das Tool-Home in `~/.my-flow/config.json` ein | Gibt die Installationsbefehle für das Plugin aus, führt sie aber nicht aus |
+| `install codex [--link] [--dry-run]` | Sichert, kopiert dann Skills und Agent-TOMLs, schreibt das PowerShell-Shim, führt `hooks.json` zusammen, schreibt vertrauenswürdige Hashes in `config.toml`, fügt `~/.codex/AGENTS.md` ein bzw. aktualisiert sie. Registriert unter Windows außerdem die geplante Aufgabe `my-flow-models-check` und trägt Tool-Home und Agent-Verzeichnis in `~/.my-flow/config.json` ein | `--link` verwendet Junctions statt Kopien |
+| `uninstall codex [--dry-run]` | Macht `install codex` rückgängig und bewahrt alles andere in `~/.codex`. Entfernt das Codex-Home aus `~/.my-flow/config.json`; löscht die geplante Aufgabe `my-flow-models-check` nur, wenn keine andere Oberfläche mehr übrig ist |  |
 | `init [--simple] [--tools claude,codex] [dir]` | Erstellt `specs/`, `changes/` (mit `.templates/` und `archive/`), `specs/README.md`, `.claude/rules/specs.md`, `.my-flow/` und hängt einen Block an die `CLAUDE.md` / `AGENTS.md` des Projekts an | `--simple` wechselt zu einer einzelnen `docs/changes/<name>.md` pro Change |
 | `spec new <name>` | Erstellt `changes/<name>/{proposal,design,tasks}.md` aus Vorlagen und markiert den Change als aktuell | Namen in kebab-case |
 | `spec status [name] [--json]` | Abgehakte / gesamte Aufgaben, Artefaktzustand (missing / empty / done), Anzahl der Delta-Specs; markiert unfertige Changes, die 14 Tage unberührt blieben, mit `[stale Nd]` (`--stale-days`, `MY_FLOW_STALE_DAYS`), `overlap:` wenn zwei Changes dieselbe Anforderung beanspruchen, `audit suggested:` nach 5 Merges in eine Capability (`MY_FLOW_AUDIT_EVERY`) | Unveränderte Vorlagen zählen als leer |
@@ -139,6 +140,7 @@ Alle Befehle sind einfache Node-Skripte. `node scripts/cli.mjs <command>` (oder 
 | `spec stage <name> <stage>` | Schreibt `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) mit einem frischen `updated`-Zeitstempel | Der execute-guard greift nur, solange diese Datei jünger als 12 h ist |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Führt die andere CLI nur lesend als Berater aus; schreibt ein Artefakt nach `.my-flow/ask/` | Der Prompt geht über stdin; leere Ausgabe zählt als Fehlschlag |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Lokales Web-Dashboard über `specs/`, `changes/` und `.my-flow/`: Live-Updates, abgesichertes Bearbeiten; `stop` prüft den eingetragenen Prozess, bevor es ihn beendet | Nur Loopback, Standardport 4321, keine Abhängigkeiten |
+| `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | Modell-Routing der Subagenten: `status` zeigt die aufgezeichneten CLI-Versionen, den lokalen Override (oder keinen) und die aus den installierten Agent-Dateien zurückgelesenen Werte; `analyze` bittet die stärkste verfügbare CLI um eine Zuordnung Rolle -> Modell / Effort, validiert sie und wendet sie an; `apply` rendert die installierten Dateien aus `~/.my-flow/models.json` neu; `reset` löscht den Override und stellt die `inherit`-Basis wieder her | Schreibt nur unter `~/.my-flow/` (`MY_FLOW_HOME`), `~/.codex/agents/` und im installierten Claude-Plugin `agents/`; nie im Repository |
 
 ## Skills
 
@@ -147,8 +149,8 @@ Claude ruft sie als `/my-flow:<name>` auf, Codex als `$my-flow-<name>`.
 | Skill | Wann | Was er tut | Ausgabe |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | Vage Anfrage, keine Abnahmekriterien | Eine Frage pro Runde, Absicht vor Detail; bewertet Mehrdeutigkeit; endet, wenn Non-Goals und Decision Boundaries explizit sind | `changes/<name>/proposal.md`, Transkript in `.my-flow/interviews/` |
-| `mf-plan <name \| text> [--deliberate]` | Änderungen über mehrere Dateien; alles, was Build-Konfiguration, Shader, Engine-Module, Migrationen oder Authentifizierung berührt | planner entwirft → architect begutachtet (`CLEAR / WATCH / BLOCK`) → critic begutachtet (`OKAY / REJECT`), bis zu drei Runden | `design.md` (muss Do-Not-Touch und Rebuild / Re-run enthalten), `tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md` enthält nicht abgehakte Boxen | Formuliert die Goal-Anweisung; implementiert Aufgabe für Aufgabe, verifiziert, hakt ab; führt die feste Abschlussprüfung aus | Claude: gibt `/goal …` zum Einfügen aus. Codex: `create_goal` |
+| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | Änderungen über mehrere Dateien; alles, was Build-Konfiguration, Shader, Engine-Module, Migrationen oder Authentifizierung berührt. Mit `--fast` schreibst du die Artefakte selbst, ein Critic-Durchgang, kein Planner und kein Architect; abgelehnt für die Hochrisiko-Kategorien (und zusammen mit `--deliberate`); `--go` geht direkt in execute weiter | planner entwirft → architect begutachtet (`CLEAR / WATCH / BLOCK`) → critic begutachtet (`OKAY / REJECT`), bis zu drei Runden | `design.md` (muss Do-Not-Touch und Rebuild / Re-run enthalten), `tasks.md` |
+| `execute <name> [--team] [--worktree]` | `tasks.md` enthält nicht abgehakte Boxen | Formuliert die Goal-Anweisung; implementiert Aufgabe für Aufgabe, verifiziert, hakt ab; führt die feste Abschlussprüfung aus. Kann auch aus `mf-plan --fast --go` heraus betreten werden, was den `/goal`-Stopp überspringt | Claude: gibt `/goal …` zum Einfügen aus. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | Vor jeder „fertig“-Behauptung | Delegiert an den nur lesenden verifier, der die Prüfungen selbst ausführt und pro Kriterium berichtet | `.my-flow/verify/<name>-<time>.md` mit PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` meldet `audit suggested`, oder der Nutzer sagt „audit the spec“ | Nur lesender architect-Durchlauf, der `specs/<cap>/spec.md` mit Code und Tests vergleicht: nicht umgesetzte Anforderungen, undokumentiertes Verhalten, Widersprüche, falsch einsortierte Anforderungen; bearbeitet `specs/` nie | `.my-flow/verify/audit-<cap>-<time>.md` mit `Status: CLEAN / DRIFT / BROKEN` und einem vorgeschlagenen Change-Namen, der auf `audit-<cap>` endet |
 | `ask <codex\|claude> [--diff] [--files] <question>` | Zweitmeinung zu einem Design, Diff-Review vor der Abschlussprüfung, Entscheidung bei festgefahrener Planung | Kapselt das `ask`-Skript, fasst zusammen und gibt an, ob es zustimmt | `.my-flow/ask/` |
@@ -160,18 +162,20 @@ Claude ruft sie als `/my-flow:<name>` auf, Codex als `$my-flow-<name>`.
 
 ### Wie sich die drei Ablauf-Skills von den eingebauten unterscheiden
 
-- **`/plan` vs. `mf-plan`**: Der Plan-Modus ist ein nur lesender Berechtigungsmodus, der eine einzelne Plandatei außerhalb des Projekts schreibt und um Freigabe bittet. `mf-plan` erzeugt committete Artefakte (`design.md`, `tasks.md`), die nacheinander von drei Rollen begutachtet werden, mit erforderlichen Abschnitten und einem Aufgabenformat, das später `execute` und `mf-verify` steuert. Sie können weiterhin zuerst `/plan` betreten, um zu erkunden.
+- **`/plan` vs. `mf-plan`**: Der Plan-Modus ist ein nur lesender Berechtigungsmodus, der eine einzelne Plandatei außerhalb des Projekts schreibt und um Freigabe bittet. `mf-plan` erzeugt committete Artefakte (`design.md`, `tasks.md`), die nacheinander von drei Rollen begutachtet werden, mit erforderlichen Abschnitten und einem Aufgabenformat, das später `execute` und `mf-verify` steuert. Sie können weiterhin zuerst `/plan` betreten, um zu erkunden. Die Schnellspur `mf-plan --fast` liegt dazwischen: dieselben committeten Artefakte und derselbe Folgeablauf, aber nur ein Critic-Durchgang statt des Drei-Rollen-Konsenses.
 - **`run` vs. `execute`**: Das eingebaute `run` startet die App des Projekts. `execute` ist eine Aufgabenschleife über `tasks.md` unter den Regeln Do-Not-Touch und Rebuild, eingebettet in ein natives Goal, und endet mit der festen Abschlussprüfung (verifizieren → aufräumen → erneut verifizieren → unabhängiges Review → fertig).
 - **`verify` vs. `mf-verify`**: `mf-verify` wechselt immer den Kontext (nur lesender verifier-Subagent), leitet seine Kriterien aus `tasks.md`, den Spec-Szenarien und `design.md` ab, prüft das Diff gegen Do-Not-Touch, prüft, ob die Rebuild-Schritte ausgeführt wurden, sucht nach Mustern vorgetäuschter Fertigstellung und schreibt einen Bericht, den `spec archive` verlangt.
 
 ## Subagent-Rollen
 
-| Rolle | Kern | Claude-Modell | Codex-Effort | Verweigerte Werkzeuge |
-|---|---|---|---|---|
-| `planner` | Verwandelt einen Vorschlag in ein evidenzbasiertes Design und eine Aufgabenliste; liest den Code selbst; jede Aufgabe benennt ihre Verifikation | opus | high | keine (schreibt nur unter `changes/<name>/`) |
-| `architect` | Nur lesender Design-Gutachter: Antithese, Spannung, Synthese; `CLEAR / WATCH / BLOCK` | opus | high | Write, Edit |
-| `critic` | Entscheidet, ob der Plan ohne Raten ausführbar ist; simuliert zwei oder drei Aufgaben; `OKAY / REJECT` mit höchstens fünf Korrekturen | sonnet | medium | Write, Edit |
-| `verifier` | Nur frische Belege; führt die Prüfungen selbst aus; Status pro Kriterium; billigt nie Arbeit aus dem eigenen Kontext | sonnet | medium | Write, Edit |
+| Rolle | Kern | Modell | Codex-Effort | Codex-Sandbox | Verweigerte Werkzeuge |
+|---|---|---|---|---|---|
+| `planner` | Verwandelt einen Vorschlag in ein evidenzbasiertes Design und eine Aufgabenliste; liest den Code selbst; jede Aufgabe benennt ihre Verifikation | inherit | high | keine | keine (schreibt nur unter `changes/<name>/`) |
+| `architect` | Nur lesender Design-Gutachter: Antithese, Spannung, Synthese; `CLEAR / WATCH / BLOCK` | inherit | high | read-only | Write, Edit |
+| `critic` | Entscheidet, ob der Plan ohne Raten ausführbar ist; simuliert zwei oder drei Aufgaben; `OKAY / REJECT` mit höchstens fünf Korrekturen | inherit | medium | read-only | Write, Edit |
+| `verifier` | Nur frische Belege; führt die Prüfungen selbst aus; Status pro Kriterium; billigt nie Arbeit aus dem eigenen Kontext | inherit | medium | keine (bleibt per Prompt nur lesend, damit er Tests ausführen kann) | Write, Edit |
+
+Auf beiden CLIs erben die Rollen das Modell der Hauptsitzung (Claude `model: inherit`; Codex lässt `model` weg, also gilt das Modell der Elternsitzung). Der Befehl `models` (Abschnitt CLI-Befehle) kann das lokal pro Rolle überschreiben; `models status` zeigt die effektiven Werte.
 
 Claude spricht sie als `my-flow:planner` usw. an. Codex lädt sie aus `~/.codex/agents/<name>.toml`; TOML kennt keine Werkzeug-Allowlist, daher wird der Nur-Lese-Modus durch Prosa durchgesetzt (und headless durch `-s read-only`).
 
@@ -179,7 +183,7 @@ Claude spricht sie als `my-flow:planner` usw. an. Codex lädt sie aus `~/.codex/
 
 | Ereignis | Skript | Verhalten |
 |---|---|---|
-| SessionStart | `hooks/session-context.mjs` | Wenn das Projekt `changes/` enthält, listet es die aktiven Changes mit abgehakten / gesamten Aufgaben und Artefaktzustand auf. Beendet sich immer mit Exit-Code 0 |
+| SessionStart | `hooks/session-context.mjs` | Wenn das Projekt `changes/` enthält, listet es die aktiven Changes mit abgehakten / gesamten Aufgaben und Artefaktzustand auf. Beendet sich immer mit Exit-Code 0. Gibt außerdem die ausstehende Model-Routing-Zusammenfassung aus (eine Zeile, einmal) und startet höchstens einmal pro `MY_FLOW_MODELS_CHECK_HOURS` (Standard 1, `0` = bei jedem Start) einen abgekoppelten `models check`, der die CLI-Versionen prüft und nur bei Änderung die Analyse im Hintergrund ausführt. Der Hook selbst ruft nie ein Modell auf. Routing-Teil abschalten mit `MY_FLOW_SKIP_HOOKS=model-routing`. Unter Windows wird der Check über die geplante Aufgabe `my-flow-models-check` gestartet, die `install claude` / `install codex` registriert (die Aufgabenplanung führt ihn außerhalb des Job-Objekts des Hooks aus, das Codex abräumt); ohne Aufgabe oder wenn `schtasks /run` fehlschlägt, fällt er auf einen abgekoppelten Kindprozess zurück |
 | Stop | `hooks/completion-guard.mjs` | Wenn die letzte Nachricht Fertigstellung behauptet, das Diff aber noch `test.skip`, `.only`, Platzhalter-TODOs oder Stub-Rückgaben enthält, blockiert es und erklärt warum; während `execute` blockiert er außerdem eine Fertigstellungsbehauptung, solange tasks.md noch unerledigte, nicht als blocked markierte Aufgaben enthält und die Zustandsdatei jünger als 12 h ist (`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`). Nachrichten ohne Fertigstellungsbehauptung werden nie blockiert |
 
 Beide Skripte werden von Claude (über `hooks/hooks.json` im Plugin) und Codex (über das PowerShell-Shim) gemeinsam genutzt. Deaktivieren Sie sie mit `MY_FLOW_SKIP_HOOKS=completion-guard` oder `execute-guard` (oder `all`). Die TTL des execute-guard beträgt standardmäßig 12 Stunden; überschreiben Sie sie mit `MY_FLOW_EXECUTE_GUARD_TTL_HOURS`.
@@ -310,6 +314,8 @@ Der Installer überspringt jede `~/.codex/agents/<name>.toml`, die er nicht selb
 | `spec archive` verweigert | Alle Boxen müssen abgehakt sein und ein Bericht mit `Verdict: PASS` muss unter `.my-flow/verify/` liegen. Führen Sie zuerst `mf-verify` aus oder verwenden Sie `--force` und sagen Sie das ausdrücklich |
 | Codex bittet darum, den Hooks zu vertrauen | Einmalig in `/hooks` genehmigen; das Format der vertrauenswürdigen Hashes hat sich möglicherweise upstream geändert |
 | Split-Pane-Teams unter Windows | Von Claude Code nicht unterstützt; Teams laufen im selben Prozess. Fragen Sie nicht nach tmux-Panes |
+| Der Check wird unter Codex nie fertig, oder `check start` erscheint nie | `schtasks /query /tn my-flow-models-check` ausführen; fehlt die Aufgabe, oder zeigt `node scripts/cli.mjs models status` das Launcher-Root oder Node als nicht vorhanden (Checkout verschoben oder Node aktualisiert), `node scripts/install.mjs claude` bzw. `codex` erneut ausführen, um sie neu zu registrieren. Unter Codex außerdem die my-flow-Hooks einmal in `/hooks` als vertrauenswürdig markieren |
+| Subagenten laufen mit einem unerwarteten Modell | `node scripts/cli.mjs models status` ausführen: zeigt den Override (falls vorhanden) und die aus den installierten Agent-Dateien gelesenen `model:`-/Effort-Werte. `models reset` stellt die `inherit`-Basis wieder her; `models.log` unter `~/.my-flow/` protokolliert jeden Check und jede Analyse. Ein Entwicklungs-Checkout (`claude --plugin-dir`) wird nie umgeschrieben, nur der installierte Plugin-Cache |
 
 ## Lizenz
 

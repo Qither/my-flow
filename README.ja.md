@@ -91,6 +91,7 @@ Codex 側は任意です。[Codex へのインストール](#codex-へのイン�
 |---|---|
 | 具体的で、単一ファイル、受け入れ基準が明確 | `execute` のみ(またはそのまま実施) |
 | 具体的だが複数ファイルまたは複数モジュールにまたがる | `mf-plan → execute → mf-verify` |
+| 具体的、複数ファイル、設計はすでに明確 | `mf-plan --fast [--go] → execute → mf-verify` |
 | 曖昧で、受け入れ基準がなく、「〜すべきか」という相談 | `interview → mf-plan → execute → mf-verify` |
 | ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れる | `mf-plan` と `mf-verify` を決して省略しない |
 
@@ -114,7 +115,7 @@ Claude Code には組み込みの `/plan`(プランモード)と、`run` およ�
 
 ### セッションごとにループの権限はひとつ
 
-Claude Code では、セッションごとに `/goal` は最大 1 つ、エージェントチームも最大 1 つです。`execute` は貼り付け用の `/goal` 文を出力します(スキル自身は設定できません)。Stop フックはあくまでバックストップで、`execute` 中に未チェックのタスクを残したまま完了を宣言した場合のみ、しかも `spec stage` が書いた状態が新しい間だけブロックします。Codex ではスレッドごとに goal は 1 つで、`execute` はアクティブな goal がない場合にのみ `create_goal` を呼び出します。
+Claude Code では、セッションごとに `/goal` は最大 1 つ、エージェントチームも最大 1 つです。`execute` は貼り付け用の `/goal` 文を出力します(スキル自身は設定できません)。Stop フックはあくまでバックストップで、`execute` 中に未チェックのタスクを残したまま完了を宣言した場合のみ、しかも `spec stage` が書いた状態が新しい間だけブロックします。Codex ではスレッドごとに goal は 1 つで、`execute` はアクティブな goal がない場合にのみ `create_goal` を呼び出します。 例外: `mf-plan --fast --go` から入った実行は `/goal` の停止をスキップし、Stop フックの保険だけに頼ります。
 
 ### Claude と Codex のそれぞれの役割
 
@@ -127,9 +128,9 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | コマンド | 動作 | 補足 |
 |---|---|---|
 | `build [--check]` | `src/` を Claude プラグインと Codex サーフェスにレンダリングします | `src/` を編集した後に実行します。`--check` は比較のみを行い、出力が古い場合は終了コード 1 で終了します |
-| `install claude [--dry-run]` | `~/.claude/settings.json` をバックアップし、`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` を設定し、作業合意を `~/.claude/CLAUDE.md` に upsert します | プラグインのインストールコマンドを表示しますが、実行はしません |
-| `install codex [--link] [--dry-run]` | バックアップ後、スキルとエージェントの TOML をコピーし、PowerShell シムを書き込み、`hooks.json` をマージし、信頼済みハッシュを `config.toml` に書き込み、`~/.codex/AGENTS.md` を upsert します | `--link` はコピーの代わりにジャンクションを使用します |
-| `uninstall codex [--dry-run]` | `install codex` を元に戻します。`~/.codex` 内のそれ以外はすべて保持します | |
+| `install claude [--dry-run]` | `~/.claude/settings.json` をバックアップし、`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` を設定し、作業合意を `~/.claude/CLAUDE.md` に upsert します. Windows ではさらにスケジュールタスク `my-flow-models-check`（`conhost.exe --headless node scripts/models.mjs check --quiet --home <MY_FLOW_HOME>`）を登録し、ツールのホームを `~/.my-flow/config.json` に記録します | プラグインのインストールコマンドを表示しますが、実行はしません |
+| `install codex [--link] [--dry-run]` | バックアップ後、スキルとエージェントの TOML をコピーし、PowerShell シムを書き込み、`hooks.json` をマージし、信頼済みハッシュを `config.toml` に書き込み、`~/.codex/AGENTS.md` を upsert します. Windows ではさらにスケジュールタスク `my-flow-models-check` を登録し、ツールのホームとエージェントディレクトリを `~/.my-flow/config.json` に記録します | `--link` はコピーの代わりにジャンクションを使用します |
+| `uninstall codex [--dry-run]` | `install codex` を元に戻します。`~/.codex` 内のそれ以外はすべて保持します. `~/.my-flow/config.json` から Codex のホームを削除します。他のサーフェスが残っていない場合のみスケジュールタスク `my-flow-models-check` を削除します |  |
 | `init [--simple] [--tools claude,codex] [dir]` | `specs/`、`changes/`(`.templates/` と `archive/` を含む)、`specs/README.md`、`.claude/rules/specs.md`、`.my-flow/` を作成し、プロジェクトの `CLAUDE.md` / `AGENTS.md` にブロックを追記します | `--simple` は変更ごとにひとつの `docs/changes/<name>.md` を使う方式に切り替えます |
 | `spec new <name>` | テンプレートから `changes/<name>/{proposal,design,tasks}.md` を作成し、それを現在の変更としてマークします | kebab-case の名前 |
 | `spec status [name] [--json]` | チェック済み / 全タスク数、成果物の状態(missing / empty / done)、delta spec の数。14 日間手つかずの未完了 change に `[stale Nd]` を付け(`--stale-days`、`MY_FLOW_STALE_DAYS`)、2 つの change が同じ要件を主張すると `overlap:`、capability に 5 回マージされると `audit suggested:` を表示(`MY_FLOW_AUDIT_EVERY`) | 未編集のテンプレートは empty として数えられます |
@@ -139,6 +140,7 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | `spec stage <name> <stage>` | 新しい `updated` タイムスタンプ付きで `.my-flow/state/current-change.json` を書き込みます(`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`) | execute-guard はこのファイルが 12 時間以内の場合にのみ作動します |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | もう一方の CLI をアドバイザーとして読み取り専用で実行し、成果物を `.my-flow/ask/` に書き込みます | プロンプトは stdin 経由で渡されます。出力が空の場合は失敗として扱われます |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | `specs/`、`changes/`、`.my-flow/` を見るローカル Web ダッシュボード。即時更新と保護付き編集。`stop` は記録されたプロセスを確認してから終了させます | ループバックのみ、既定ポート 4321、依存なし |
+| `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | サブエージェントのモデルルーティング: `status` は記録済みの CLI バージョン、ローカルの上書き（またはなし）、インストール済みエージェントファイルから読み戻した値を表示します。`analyze` は利用可能な最も強い CLI にロール -> モデル / effort の割り当てを求め、検証して適用します。`apply` は `~/.my-flow/models.json` からインストール済みファイルを再生成し、`reset` は上書きを削除して `inherit` のベースラインに戻します | 書き込み先は `~/.my-flow/`（`MY_FLOW_HOME`）、`~/.codex/agents/`、インストール済み Claude プラグインの `agents/` のみ。リポジトリには書きません |
 
 ## スキル
 
@@ -147,8 +149,8 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 | スキル | 使うタイミング | 動作 | 出力 |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 曖昧なリクエストで、受け入れ基準がない | 1 ラウンドにつき 1 つの質問、詳細より意図を優先。曖昧さをスコアリングし、Non-Goals と Decision Boundaries が明示されたら終了します | `changes/<name>/proposal.md`、トランスクリプトは `.my-flow/interviews/` |
-| `mf-plan <name \| text> [--deliberate]` | 複数ファイルの変更。ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れるもの | planner が下書き → architect がレビュー(`CLEAR / WATCH / BLOCK`)→ critic がレビュー(`OKAY / REJECT`)、最大 3 ラウンド | `design.md`(Do-Not-Touch と Rebuild / Re-run を含む必要があります)、`tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md` に未チェックの項目がある | goal 文を組み立て、タスクごとに実装・検証・チェックを行い、固定の最終ゲートを実行します | Claude: 貼り付け用の `/goal …` を表示。Codex: `create_goal` |
+| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 複数ファイルの変更。ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れるもの. `--fast` では成果物を自分で書き、critic のレビューを 1 回だけ行い、planner も architect も使いません。高リスクのカテゴリ（および `--deliberate` との併用）では拒否され、`--go` はそのまま execute に進みます | planner が下書き → architect がレビュー(`CLEAR / WATCH / BLOCK`)→ critic がレビュー(`OKAY / REJECT`)、最大 3 ラウンド | `design.md`(Do-Not-Touch と Rebuild / Re-run を含む必要があります)、`tasks.md` |
+| `execute <name> [--team] [--worktree]` | `tasks.md` に未チェックの項目がある | goal 文を組み立て、タスクごとに実装・検証・チェックを行い、固定の最終ゲートを実行します. `mf-plan --fast --go` から入ることもでき、その場合は `/goal` の停止をスキップします | Claude: 貼り付け用の `/goal …` を表示。Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | 「完了」を宣言する前に必ず | 読み取り専用の verifier に委譲し、verifier 自身がチェックを実行して基準ごとに報告します | PASS / FAIL / INCOMPLETE を含む `.my-flow/verify/<name>-<time>.md` |
 | `mf-audit <capability \| all>` | `spec status` が `audit suggested` を表示したとき、またはユーザーが「audit the spec」と言ったとき | 読み取り専用の architect が `specs/<cap>/spec.md` をコードとテストと照合: 未実装の要件、文書化されていない挙動、矛盾、置き場所の違う要件を報告。`specs/` は決して編集しない | `Status: CLEAN / DRIFT / BROKEN` と `audit-<cap>` で終わる提案 change 名を含む `.my-flow/verify/audit-<cap>-<time>.md` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 設計へのセカンドオピニオン、最終ゲート前の diff レビュー、計画が行き詰まったときの裁定 | `ask` スクリプトをラップし、要約し、同意するかどうかを述べます | `.my-flow/ask/` |
@@ -160,18 +162,20 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 
 ### 3 つのフロースキルと組み込み機能の違い
 
-- **`/plan` と `mf-plan`**: プランモードは読み取り専用の権限モードで、プロジェクト外にプランファイルをひとつ書き出して承認を求めます。`mf-plan` は 3 つのロールが順にレビューしたコミット対象の成果物(`design.md`、`tasks.md`)を生成し、必須セクションと、後で `execute` と `mf-verify` を駆動するタスク形式を備えています。探索のために先に `/plan` に入ることは引き続き可能です。
+- **`/plan` と `mf-plan`**: プランモードは読み取り専用の権限モードで、プロジェクト外にプランファイルをひとつ書き出して承認を求めます。`mf-plan` は 3 つのロールが順にレビューしたコミット対象の成果物(`design.md`、`tasks.md`)を生成し、必須セクションと、後で `execute` と `mf-verify` を駆動するタスク形式を備えています。探索のために先に `/plan` に入ることは引き続き可能です。 高速レーン `mf-plan --fast` はその中間です。コミットされる成果物と後続フローは同じですが、三役の合意ではなく critic の 1 回のレビューだけです。
 - **`run` と `execute`**: 組み込みの `run` はプロジェクトのアプリを起動します。`execute` は Do-Not-Touch と Rebuild のルールのもとで `tasks.md` を回すタスクループで、ネイティブの goal に包まれ、固定の最終ゲート(verify → cleanup → re-verify → independent review → done)で終わります。
 - **`verify` と `mf-verify`**: `mf-verify` は常にコンテキストを切り替え(読み取り専用の verifier サブエージェント)、`tasks.md`、spec のシナリオ、`design.md` から基準を導き出し、diff を Do-Not-Touch と照合し、Rebuild の手順が実行されたことを確認し、偽の完了パターンをスキャンし、`spec archive` が要求するレポートを書き出します。
 
 ## サブエージェントの役割
 
-| ロール | 本質 | Claude モデル | Codex effort | 拒否されるツール |
-|---|---|---|---|---|
-| `planner` | 提案を、根拠に基づいた設計とタスクリストに変えます。コードを自分で読み、すべてのタスクにその検証方法を明記します | opus | high | なし(書き込みは `changes/<name>/` 配下のみ) |
-| `architect` | 読み取り専用の設計レビュアー: 反論、緊張、統合。`CLEAR / WATCH / BLOCK` | opus | high | Write, Edit |
-| `critic` | 推測なしで計画を実行できるかを判断します。2〜3 つのタスクをシミュレーションし、最大 5 つの修正とともに `OKAY / REJECT` を出します | sonnet | medium | Write, Edit |
-| `verifier` | 新しい証拠のみ。チェックを自分で実行し、基準ごとにステータスを出します。自分のコンテキストの作業を承認することはありません | sonnet | medium | Write, Edit |
+| ロール | 本質 | モデル | Codex effort | Codex サンドボックス | 拒否されるツール |
+|---|---|---|---|---|---|
+| `planner` | 提案を、根拠に基づいた設計とタスクリストに変えます。コードを自分で読み、すべてのタスクにその検証方法を明記します | inherit | high | なし | なし(書き込みは `changes/<name>/` 配下のみ) |
+| `architect` | 読み取り専用の設計レビュアー: 反論、緊張、統合。`CLEAR / WATCH / BLOCK` | inherit | high | read-only | Write, Edit |
+| `critic` | 推測なしで計画を実行できるかを判断します。2〜3 つのタスクをシミュレーションし、最大 5 つの修正とともに `OKAY / REJECT` を出します | inherit | medium | read-only | Write, Edit |
+| `verifier` | 新しい証拠のみ。チェックを自分で実行し、基準ごとにステータスを出します。自分のコンテキストの作業を承認することはありません | inherit | medium | なし（テストを実行できるよう、プロンプトによる読み取り専用のまま） | Write, Edit |
+
+両 CLI ともロールはメインセッションのモデルを継承します（Claude は `model: inherit`、Codex は `model` を省略するので親セッションのモデルが適用されます）。`models` コマンド（CLI コマンドの節）でロールごとにローカルに上書きでき、`models status` が実効値を表示します。
 
 Claude では `my-flow:planner` などとして指定します。Codex は `~/.codex/agents/<name>.toml` からロードします。TOML にはツールの許可リストがないため、読み取り専用は文章(およびヘッドレス時の `-s read-only`)によって強制されます。
 
@@ -179,7 +183,7 @@ Claude では `my-flow:planner` などとして指定します。Codex は `~/.c
 
 | イベント | スクリプト | 動作 |
 |---|---|---|
-| SessionStart | `hooks/session-context.mjs` | プロジェクトに `changes/` がある場合、アクティブな変更をチェック済み / 全タスク数と成果物の状態とともに一覧表示します。常に終了コード 0 で終了します |
+| SessionStart | `hooks/session-context.mjs` | プロジェクトに `changes/` がある場合、アクティブな変更をチェック済み / 全タスク数と成果物の状態とともに一覧表示します。常に終了コード 0 で終了します. さらに、保留中のモデルルーティングの要約を 1 行だけ 1 回出力し、`MY_FLOW_MODELS_CHECK_HOURS`（既定 1、`0` = 毎回）ごとに最大 1 回、切り離した `models check` を起動します。これは CLI のバージョンを調べ、変わった場合にのみバックグラウンドで分析を実行します。フック自体はモデルを呼びません。ルーティング部分は `MY_FLOW_SKIP_HOOKS=model-routing` で無効化できます. Windows では、`install claude` / `install codex` が登録するスケジュールタスク `my-flow-models-check` 経由でチェックを起動します（タスク スケジューラはフックのジョブオブジェクトの外で実行するため、Codex がジョブを破棄しても生き残ります）。タスクがない、または `schtasks /run` が失敗した場合は切り離した子プロセスにフォールバックします |
 | Stop | `hooks/completion-guard.mjs` | 最後のメッセージが完了を宣言しているのに diff に `test.skip`、`.only`、プレースホルダーの TODO、スタブの return がまだ含まれている場合、ブロックして理由を説明します。`execute` 中は、tasks.md に未チェックかつ blocked 未指定のタスクが残っている場合も完了宣言をブロックしますが、状態ファイルが 12 時間以内(`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`)の場合に限ります。完了宣言を含まないメッセージは決してブロックされません |
 
 どちらのスクリプトも Claude(プラグイン内の `hooks/hooks.json` 経由)と Codex(PowerShell シム経由)で共有されます。`MY_FLOW_SKIP_HOOKS=completion-guard`、または `execute-guard`(または `all`)で無効化できます。execute-guard の TTL はデフォルトで 12 時間で、`MY_FLOW_EXECUTE_GUARD_TTL_HOURS` で上書きできます。
@@ -310,6 +314,8 @@ oh-my-codex がインストールされている場合は、先に次の順序�
 | `spec archive` が拒否する | すべてのチェックボックスがチェック済みで、`Verdict: PASS` を含むレポートが `.my-flow/verify/` 配下に存在する必要があります。先に `mf-verify` を実行するか、`--force` を使ってその旨を明記してください |
 | Codex がフックの信頼を求めてくる | `/hooks` で一度承認してください。信頼済みハッシュの形式が上流で変わった可能性があります |
 | Windows での分割ペインのチーム | Claude Code ではサポートされていません。チームはプロセス内で実行されます。tmux ペインを要求しないでください |
+| Codex 配下でチェックが完了しない、または `check start` が現れない | `schtasks /query /tn my-flow-models-check` を実行してください。タスクがない場合、または `node scripts/cli.mjs models status` がランチャーのルートや Node が存在しないと示す場合（チェックアウトの移動や Node の更新）、`node scripts/install.mjs claude` または `codex` を再実行して再登録します。Codex では my-flow のフックを `/hooks` で一度信頼してください |
+| サブエージェントが想定外のモデルで動く | `node scripts/cli.mjs models status` を実行してください。上書き（あれば）と、インストール済みエージェントファイルから読み戻した `model:` / effort の値を表示します。`models reset` で `inherit` のベースラインに戻り、`~/.my-flow/` の `models.log` にすべてのチェックと分析が記録されます。開発用チェックアウト（`claude --plugin-dir`）は書き換えられず、インストール済みプラグインキャッシュのみが対象です |
 
 ## ライセンス
 

@@ -22,6 +22,22 @@
   --t: 120ms;
   --sb-track-color: #ffffff;
   --sb-thumb-color: #000000;
+  /* design D1 (dashboard-design-parity): pressed / open surface, focus outline, disabled
+     opacity, scrollbar sizes, control-kit geometry and the patch row tints. */
+  --pressed-bg: var(--ink);
+  --pressed-fg: var(--paper);
+  --outline-w: 2px;
+  --outline-off: 3px;
+  --disabled: 0.5;
+  --sb-page: 20px;
+  --sb-inner: 16px;
+  --sb-code: 10px;
+  --check: 16px;
+  --switch-w: 48px;
+  --switch-h: 24px;
+  --menu-pad: 4px;
+  --add-bg: oklch(88% 0.12 140 / 0.45);
+  --del-bg: oklch(75% 0.15 25 / 0.35);
 }
 /* Theme (design D8): the OS scheme applies unless the page forces one via data-theme on <html>.
    The dark tokens are declared twice on purpose (media block and attribute block); keep both in sync. */
@@ -36,6 +52,8 @@
     --danger: oklch(70.4% 0.191 22.2);
     --sb-track-color: #1f1f1f;
     --sb-thumb-color: #e6e6e6;
+    --pressed-bg: var(--lime);
+    --pressed-fg: var(--lime-ink);
   }
 }
 :root[data-theme="dark"] {
@@ -49,11 +67,26 @@
   --danger: oklch(70.4% 0.191 22.2);
   --sb-track-color: #1f1f1f;
   --sb-thumb-color: #e6e6e6;
+  --pressed-bg: var(--lime);
+  --pressed-fg: var(--lime-ink);
 }
 :root[data-theme="light"] { color-scheme: light; }
 
-* { box-sizing: border-box; }
+/* reset (design D2, after magick.css "Simple CSS Reset"): no user-agent control chrome, no
+   rounded corners, no pointer focus ring; keyboard focus keeps the outline from the grammar.
+   `label:has(input)` needs :has() (Firefox 121+, Chromium 105+, Safari 15.4+); older engines
+   only lose that pointer cursor, and the kit labels carry cursor: pointer by class as well. */
+*, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
+button, input, select, textarea { font: inherit; color: inherit; margin: 0; border-radius: 0; appearance: none; -webkit-appearance: none; }
+button, [role="button"], [role="combobox"], [role="option"], summary, label:has(input) { cursor: pointer; }
+:focus:not(:focus-visible) { outline: none; }
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+fieldset { min-width: 0; margin: 0; }
+legend { padding: 0; }
+img, svg { max-width: 100%; height: auto; }
+abbr[title] { text-decoration: none; }
 body {
   font-family: var(--sans);
   font-size: 15px;
@@ -62,7 +95,7 @@ body {
   background: var(--paper);
 }
 a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-a:hover { background: var(--lime); color: var(--lime-ink); }
+a:is(:hover, .sg-hover) { background: var(--lime); color: var(--lime-ink); }
 code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
 pre {
   background: var(--paper-2);
@@ -72,7 +105,10 @@ pre {
 }
 code { background: var(--paper-2); padding: 0 3px; }
 pre code { background: none; padding: 0; }
-table { border-collapse: collapse; margin: 12px 0; max-width: 100%; }
+/* design D6: a block table shrinks to its content and scrolls inside itself when wider than the
+   column; the 1 px padding keeps the half of the collapsed outer border that lies outside the
+   table box from being clipped by overflow. */
+table { display: block; width: max-content; max-width: 100%; overflow-x: auto; padding: 1px; border-collapse: collapse; margin: 12px 0; }
 th, td { border: var(--control-border) solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
 th { background: var(--paper-2); }
 hr { border: 0; border-top: var(--control-border) solid var(--border); margin: 20px 0; }
@@ -111,12 +147,10 @@ h1 { font-size: 1.7em; } h2 { font-size: 1.35em; } h3 { font-size: 1.15em; } h4 
   font-weight: 600;
   transition: transform var(--t), box-shadow var(--t), background var(--t);
 }
-.nav-list a:hover { background: var(--lime); color: var(--lime-ink); }
-.nav-list a.active { background: var(--ink); color: var(--paper); transform: translate(var(--control-shadow), var(--control-shadow)); box-shadow: none; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nav-list a.active { background: var(--lime); color: var(--lime-ink); } }
-:root[data-theme="dark"] .nav-list a.active { background: var(--lime); color: var(--lime-ink); }
+.nav-list a:is(:hover, .sg-hover) { background: var(--lime); color: var(--lime-ink); }
+.nav-list a.active { background: var(--pressed-bg); color: var(--pressed-fg); transform: translate(var(--control-shadow), var(--control-shadow)); box-shadow: none; }
 .conn { margin-top: auto; font-size: 0.75em; color: var(--ink-muted); display: flex; align-items: center; gap: 6px; }
-.conn-dot { width: 8px; height: 8px; border: 1px solid var(--border); background: var(--paper); }
+.conn-dot { width: 10px; height: 10px; border: var(--control-border) solid var(--border); background: var(--paper); }
 .conn[data-state="live"] .conn-dot { background: var(--lime); }
 .conn[data-state="reconnecting"] .conn-dot { background: var(--danger); }
 
@@ -129,7 +163,11 @@ h1 { font-size: 1.7em; } h2 { font-size: 1.35em; } h3 { font-size: 1.15em; } h4 
   margin: 14px 0;
 }
 .panel h2:first-child, .panel h3:first-child { margin-top: 0; }
+/* control grammar (design D4): every state is written once as :is(pseudo, .sg-marker) so the
+   styleguide can show hover / pressed / focus without a pointer. Never add a bare :hover,
+   :active or :focus-visible rule for a control; extend the :is() list instead. */
 button, .btn {
+  display: inline-block;
   font: inherit;
   font-weight: 600;
   padding: 4px 12px;
@@ -137,29 +175,34 @@ button, .btn {
   box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color);
   background: var(--paper);
   color: var(--ink);
+  text-decoration: none;
   cursor: pointer;
-  transition: transform var(--t), box-shadow var(--t), background var(--t);
+  transition: transform var(--t), box-shadow var(--t), background var(--t), color var(--t);
 }
-button:hover:not(:disabled) { background: var(--lime); color: var(--lime-ink); }
-button:active:not(:disabled) { transform: translate(var(--control-shadow), var(--control-shadow)); box-shadow: none; }
-button:disabled { opacity: 0.5; cursor: default; }
-button.primary { background: var(--lime); color: var(--lime-ink); }
-button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+:is(button, .btn):is(:hover, .sg-hover):not(:disabled, [aria-disabled="true"]) { background: var(--lime); color: var(--lime-ink); }
+:is(button, .btn):is(:active, .sg-active):not(:disabled, [aria-disabled="true"]) { transform: translate(var(--control-shadow), var(--control-shadow)); box-shadow: none; background: var(--pressed-bg); color: var(--pressed-fg); }
+:is(button, .btn):is(:disabled, [aria-disabled="true"]) { opacity: var(--disabled); cursor: default; }
+:is(button, .btn).primary { background: var(--lime); color: var(--lime-ink); }
+:is(button, .btn).neutral { background: var(--paper-2); }
+:is(button, .btn).reverse { box-shadow: none; }
+:is(button, .btn).reverse:is(:hover, .sg-hover):not(:disabled, [aria-disabled="true"]) { transform: translate(calc(-1 * var(--control-shadow)), calc(-1 * var(--control-shadow))); box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color); }
+:is(button, .btn).icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+:is(button, .btn, a, input, textarea, select, summary, [tabindex]):is(:focus-visible, .sg-focus) { outline: var(--outline-w) solid var(--ink); outline-offset: var(--outline-off); }
 .row-actions { display: flex; gap: var(--gap); flex-wrap: wrap; align-items: center; margin: 10px 0; }
 
 /* lists */
 .cards { display: flex; flex-direction: column; gap: 12px; }
-.card { border: var(--control-border) solid var(--border); background: var(--paper); padding: 10px 12px; }
+.card { border: var(--control-border) solid var(--border); box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color); background: var(--paper); padding: 10px 12px; }
 .card-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .card-head .name { font-weight: 700; font-size: 1.05em; }
-.tag { font-family: var(--mono); font-size: 0.75em; padding: 0 6px; border: 1px solid var(--border); background: var(--paper-2); }
+.tag { display: inline-block; font: 700 0.72em/1.4 var(--mono); padding: 1px 6px; border: var(--control-border) solid var(--border); background: var(--paper-2); }
 .tag.lime { background: var(--lime); color: var(--lime-ink); }
 .tag.warn { background: var(--danger); color: #fff; border-color: var(--danger); }
 .meta { font-family: var(--mono); font-size: 0.8em; color: var(--ink-muted); }
 .progress { display: flex; align-items: center; gap: 8px; min-width: 200px; }
-.bar { flex: 1 1 auto; height: 6px; border: 1px solid var(--border); background: var(--paper-2); }
+.bar { flex: 1 1 auto; height: 10px; border: var(--control-border) solid var(--border); background: var(--paper-2); }
 .bar .fill { display: block; height: 100%; background: var(--lime); transition: width var(--t); }
-.warnings { margin: 12px 0; padding: 8px 12px; border: var(--control-border) solid var(--danger); font-family: var(--mono); font-size: 0.85em; }
+.warnings { margin: 12px 0; padding: 8px 12px; border: var(--control-border) solid var(--danger); box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color); background: var(--paper); font-family: var(--mono); font-size: 0.85em; }
 .warnings div + div { margin-top: 4px; }
 .file-list { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 4px; }
 .file-list li { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
@@ -169,8 +212,42 @@ ul.req { padding-left: 18px; }
 /* rendered markdown */
 .md li.task { list-style: none; margin-left: -18px; }
 .md li.task.done { color: var(--ink-muted); }
-.md .box { font-family: var(--mono); }
-.md a.via { font-family: var(--mono); font-size: 0.8em; border: 1px solid var(--border); padding: 0 4px; text-decoration: none; background: var(--paper-2); }
+/* design D5: the renderer emits a glyph span; the box is drawn over it and the glyph hidden */
+.md .box { display: inline-block; width: var(--check); height: var(--check); border: var(--control-border) solid var(--border); background: var(--paper); vertical-align: -3px; font-size: 0; color: transparent; }
+.md li.task.open .box { background: var(--paper); }
+.md li.task.done .box { background: var(--lime); }
+.md li.task.done .box::after { content: "\2713"; font-size: 11px; line-height: 12px; color: var(--lime-ink); display: block; text-align: center; }
+.md a.via { display: inline-block; font: 700 0.72em/1.4 var(--mono); border: var(--control-border) solid var(--border); padding: 1px 6px; text-decoration: none; background: var(--paper-2); }
+
+/* markdown elements (design D11, adapted from magick.css): element selectors only, so the
+   styleguide's hand-written markup and any future renderer output pick them up. The renderer
+   itself is unchanged; a blockquote in a file still degrades to text. */
+blockquote { margin: 12px 0; padding: 8px 12px; border-left: var(--control-border) solid var(--ink); background: var(--paper-2); }
+blockquote p { margin: 0 0 6px; }
+blockquote p:last-child { margin-bottom: 0; }
+blockquote footer { text-align: right; color: var(--ink-muted); font-size: 0.9em; }
+blockquote footer cite { font-style: italic; }
+dl { margin: 12px 0; }
+dt { font-weight: 700; }
+dd { margin: 0 0 8px 16px; }
+figure { margin: 12px 0; padding: 8px; border: var(--control-border) solid var(--border); background: var(--paper); text-align: center; }
+figure img { display: block; margin: 0 auto; }
+figure pre { text-align: left; }
+figcaption { margin-top: 6px; font-family: var(--mono); font-size: 0.8em; color: var(--ink-muted); }
+kbd { display: inline-block; font-family: var(--mono); font-size: 0.85em; line-height: 1.4; padding: 0 6px; border: var(--control-border) solid var(--border); box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color); background: var(--paper-2); }
+mark { background: var(--lime); color: var(--lime-ink); padding: 0 2px; }
+abbr[title] { text-decoration: underline dotted; text-underline-offset: 2px; cursor: help; }
+details { margin: 12px 0; border: var(--control-border) solid var(--border); background: var(--paper); }
+summary { padding: 4px 12px; font-weight: 600; transition: background var(--t), color var(--t); }
+summary:is(:hover, .sg-hover) { background: var(--lime); color: var(--lime-ink); }
+details[open] > summary { background: var(--pressed-bg); color: var(--pressed-fg); }
+details > :not(summary) { margin: 8px 12px; }
+sup, sub { font-size: 0.75em; line-height: 0; }
+pre .line-number { float: left; margin: 0 1em 0 0; padding-right: 0.6em; border-right: 1px solid var(--ink-muted); color: var(--ink-muted); text-align: right; user-select: none; }
+pre .line-number span { display: block; }
+fieldset { margin: 12px 0; padding: 8px 12px; border: var(--control-border) solid var(--border); }
+legend { font-weight: 700; padding: 0 6px; }
+label { display: inline-flex; align-items: center; gap: 8px; }
 
 /* editor */
 .editor { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -182,14 +259,15 @@ ul.req { padding-left: 18px; }
   font-size: 0.85em;
   line-height: 1.45;
   color: var(--ink);
-  background: var(--paper);
+  background: var(--paper-2);
   border: var(--control-border) solid var(--border);
+  box-shadow: none;
   padding: 10px;
   resize: vertical;
   tab-size: 2;
 }
 .editor .preview { min-width: 0; overflow-wrap: anywhere; }
-.notice { border: var(--control-border) solid var(--danger); padding: 8px 12px; margin: 10px 0; }
+.notice { border: var(--control-border) solid var(--danger); box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color); background: var(--paper); padding: 8px 12px; margin: 10px 0; }
 .notice.ok { border-color: var(--ok); }
 .crumbs { font-family: var(--mono); font-size: 0.85em; color: var(--ink-muted); margin-bottom: 8px; }
 .highlight { outline: 3px solid var(--lime); outline-offset: 2px; }
@@ -198,20 +276,62 @@ ul.req { padding-left: 18px; }
 /* theme control */
 .theme { display: flex; flex-direction: column; gap: 4px; }
 .theme-label { font-size: 0.75em; color: var(--ink-muted); }
-.select-wrap { position: relative; display: block; }
-.select-wrap::after { content: "\25BE"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.8em; }
-.select-wrap:hover::after { color: var(--lime-ink); }
-.theme select {
-  appearance: none; -webkit-appearance: none;
-  font: inherit; font-weight: 600; font-size: 0.85em;
-  width: 100%; padding: 3px 22px 3px 8px;
-  border: var(--control-border) solid var(--border);
-  box-shadow: 2px 2px 0 0 var(--shadow-color);
-  background: var(--paper); color: var(--ink);
-  cursor: pointer; border-radius: 0;
-}
-.theme select:hover { background: var(--lime); color: var(--lime-ink); }
-.theme select:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* listbox (design D7, after qiujm-web header-select-menu): the trigger is a control that goes
+   to the pressed pair while open; the menu is a 2 px / 3 px panel; the active option is lime
+   with an ink border and the selected one carries a check. `.select-trigger` is the same
+   trigger look on a plain button for a page that has no listbox yet. */
+.listbox { position: relative; }
+.listbox-trigger, .select-trigger { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; text-align: left; font-size: 0.85em; padding: 3px 8px; }
+.select-trigger::after { content: "\25BE"; font-size: 0.8em; }
+.listbox-value { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.listbox-caret { flex: 0 0 auto; font-size: 0.8em; }
+.listbox-trigger[aria-expanded="true"],
+.listbox-trigger[aria-expanded="true"]:is(:hover, .sg-hover) { background: var(--pressed-bg); color: var(--pressed-fg); transform: translate(var(--control-shadow), var(--control-shadow)); box-shadow: none; }
+.listbox-menu { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 10; margin: 0; padding: var(--menu-pad); list-style: none; background: var(--paper); color: var(--ink); border: var(--control-border) solid var(--border); box-shadow: var(--control-shadow) var(--control-shadow) 0 0 var(--shadow-color); max-height: 240px; overflow-y: auto; }
+.listbox-menu[hidden] { display: none; } /* keep explicit: an author display on the menu would beat the UA [hidden] rule */
+.listbox-option { position: relative; padding: 4px 28px 4px 8px; border: var(--control-border) solid transparent; font-weight: 600; font-size: 0.85em; cursor: pointer; transition: background var(--t), color var(--t); }
+.listbox-option[data-active="true"] { background: var(--lime); color: var(--lime-ink); border-color: var(--border); }
+.listbox-option[aria-selected="true"]::after { content: "\2713"; position: absolute; right: 8px; top: 4px; }
+.listbox-option[aria-disabled="true"] { opacity: var(--disabled); cursor: default; }
+
+/* form-control kit (design D12, after qiujm-web ui/checkbox, ui/switch, ui/input): native
+   checkbox, radio, switch and text inputs drawn in the control grammar. No JavaScript; the
+   browser keeps the state. Square corners throughout, per the proposal. */
+input[type="checkbox"], input[type="radio"] { width: var(--check); height: var(--check); flex: 0 0 auto; display: inline-grid; place-content: center; vertical-align: -3px; border: var(--control-border) solid var(--border); background: var(--paper); cursor: pointer; transition: background var(--t); }
+:is(input[type="checkbox"], input[type="radio"]):is(:hover, .sg-hover):not(:disabled, :checked) { background: var(--paper-2); }
+:is(input[type="checkbox"], input[type="radio"]):checked { background: var(--lime); }
+input[type="checkbox"]:checked::after { content: "\2713"; font-size: 11px; line-height: 1; color: var(--lime-ink); }
+input[type="radio"]:checked::after { content: ""; width: 6px; height: 6px; background: var(--lime-ink); }
+:is(input[type="checkbox"], input[type="radio"]):disabled { opacity: var(--disabled); cursor: default; }
+label.check { cursor: pointer; }
+label.check:has(input:disabled) { cursor: default; color: var(--ink-muted); }
+.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.switch input { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.switch-track { position: relative; display: inline-block; width: var(--switch-w); height: var(--switch-h); border: var(--control-border) solid var(--border); background: var(--paper-2); transition: background var(--t); }
+.switch-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border: var(--control-border) solid var(--border); background: var(--paper); transition: transform var(--t); }
+.switch:is(:hover, .sg-hover):not(:has(input:disabled, input:checked)) .switch-track { background: var(--paper); }
+.switch input:checked + .switch-track { background: var(--lime); }
+.switch input:checked + .switch-track .switch-thumb { transform: translateX(24px); }
+.switch input:focus-visible + .switch-track, .switch.sg-focus .switch-track { outline: var(--outline-w) solid var(--ink); outline-offset: var(--outline-off); }
+.switch input:disabled + .switch-track { opacity: var(--disabled); }
+.switch:has(input:disabled) { cursor: default; color: var(--ink-muted); }
+input[type="text"], input[type="search"], input[type="url"], input[type="number"], input[type="password"], textarea { display: block; width: 100%; padding: 4px 8px; border: var(--control-border) solid var(--border); background: var(--paper-2); color: var(--ink); }
+::placeholder { color: var(--ink-muted); opacity: 1; }
+input:disabled, textarea:disabled { opacity: var(--disabled); cursor: default; }
+
+/* styleguide (design D8): a developer surface listing every component and state */
+.sg-link { display: block; font-size: 0.75em; color: var(--ink-muted); text-decoration: none; }
+.sg-link.active { color: var(--ink); font-weight: 700; }
+.sg { display: flex; flex-direction: column; gap: 24px; }
+.sg-section h2 { margin-top: 0; }
+.sg-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.sg-item { display: flex; flex-direction: column; gap: 6px; min-width: 120px; padding: 8px; }
+.sg-cap { font-family: var(--mono); font-size: 0.75em; color: var(--ink-muted); }
+.sg-swatch { display: inline-block; width: 48px; height: 32px; border: var(--control-border) solid var(--border); }
+.sg-static .listbox-menu { position: static; }
+.sg-scroll { width: 260px; height: 120px; overflow: auto; border: var(--control-border) solid var(--border); background: var(--paper); }
+.sg-scroll > div { width: 600px; height: 300px; padding: 8px; }
 
 /* diff page (design D11) */
 .diff { display: grid; grid-template-columns: minmax(220px, 1fr) 2fr; gap: 16px; align-items: start; }
@@ -221,16 +341,22 @@ ul.req { padding-left: 18px; }
 .diff-tree, .diff-tree ul { list-style: none; margin: 0; padding: 0; }
 .diff-tree ul { padding-left: 14px; border-left: 1px solid var(--ink-muted); margin-left: 4px; }
 .diff-tree li.dir.closed > ul { display: none; }
-.diff-tree .dir-toggle { font: inherit; padding: 1px 6px; box-shadow: none; border-width: 1px; margin: 2px 0; }
+/* flat control (design D4): transparent border, no shadow, hover lime, never translates */
+.diff-tree .dir-toggle { font: inherit; padding: 1px 6px; margin: 2px 0; border: var(--control-border) solid transparent; box-shadow: none; background: transparent; }
+.diff-tree .dir-toggle:is(:active, .sg-active) { transform: none; }
 .diff-tree .dir-toggle::before { content: "\25BE "; }
 .diff-tree li.dir.closed > .dir-toggle::before { content: "\25B8 "; }
 .diff-tree li.file { display: flex; gap: 8px; align-items: center; padding: 2px 4px; }
+.diff-tree.flat li.file { padding-left: 4px; }
 .diff-tree li.file a { text-decoration: none; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; display: flex; align-items: center; gap: 6px; }
 .diff-tree li.file a:hover { background: none; color: inherit; }
-.diff-tree li.file:hover, .diff-tree li.file.selected { background: var(--lime); color: var(--lime-ink); }
-.diff-tree li.file:hover .meta, .diff-tree li.file.selected .meta { color: var(--lime-ink); }
-.diff-tree li.file:hover .tag.st, .diff-tree li.file.selected .tag.st { background: var(--lime-ink); color: var(--lime); border-color: var(--lime-ink); }
-.diff-tree li.file:hover .tag.latest, .diff-tree li.file.selected .tag.latest { background: var(--paper); color: var(--ink); border-color: var(--border); }
+.diff-tree li.file:is(:hover, .sg-hover) { background: var(--lime); color: var(--lime-ink); }
+.diff-tree li.file:is(:hover, .sg-hover) .meta { color: var(--lime-ink); }
+.diff-tree li.file:is(:hover, .sg-hover) .tag.st { background: var(--lime-ink); color: var(--lime); border-color: var(--lime-ink); }
+.diff-tree li.file:is(:hover, .sg-hover) .tag.latest { background: var(--paper); color: var(--ink); border-color: var(--border); }
+.diff-tree li.file.selected { background: var(--pressed-bg); color: var(--pressed-fg); }
+.diff-tree li.file.selected .meta { color: var(--pressed-fg); }
+.diff-tree li.file.selected .tag.st, .diff-tree li.file.selected .tag.latest { background: var(--pressed-fg); color: var(--pressed-bg); border-color: var(--pressed-fg); }
 .diff-tree .tag.st { min-width: 1.6em; text-align: center; }
 .diff-tree .tag.latest { min-width: 1.6em; text-align: center; background: var(--ink); color: var(--paper); border-color: var(--border); }
 .diff-right { min-width: 0; }
@@ -240,9 +366,9 @@ ul.req { padding-left: 18px; }
 .patch .no { text-align: right; padding: 0 6px; color: var(--ink-muted); user-select: none; background: var(--paper-2); border-right: 1px solid var(--ink-muted); }
 .patch .txt { padding: 0 8px; white-space: pre; }
 .patch .row.hunk .txt { color: var(--ink-muted); background: var(--paper-2); }
-.patch .row.add .txt { background: oklch(88% 0.12 140 / 0.45); }
+.patch .row.add .txt { background: var(--add-bg); }
 .patch .row.add .txt::before { content: "+"; margin-right: 6px; }
-.patch .row.del .txt { background: oklch(75% 0.15 25 / 0.35); }
+.patch .row.del .txt { background: var(--del-bg); }
 .patch .row.del .txt::before { content: "-"; margin-right: 6px; }
 .patch .row.ctx .txt::before { content: " "; margin-right: 6px; }
 .patch .row.meta .txt { color: var(--ink-muted); font-style: italic; }
@@ -250,33 +376,53 @@ ul.req { padding-left: 18px; }
 /* scrollbars: transposed from ../my-flow-sample/src/styles/globals.css:288-372 (design D2-D6).
    Page bar 20 px with a black-bordered track, inner areas 16 px, code blocks 10 px; the
    standard-property fallback stays inside @supports so it never overrides the WebKit rules. */
-body::-webkit-scrollbar { width: 20px; }
+/* Scrollbar matrix (design D9): page bar, inner regions, code and menu, in both axes, with a
+   painted corner wherever two bars can meet. Colours come from --sb-track-color and
+   --sb-thumb-color, which already flip in both dark blocks. */
+body::-webkit-scrollbar { width: var(--sb-page); height: var(--sb-page); }
 body::-webkit-scrollbar-track { background: var(--sb-track-color); border-left: 4px solid #000; }
+body::-webkit-scrollbar-track:horizontal { border-left: 0; border-top: 4px solid #000; }
 body::-webkit-scrollbar-thumb { background: var(--sb-thumb-color); }
+body::-webkit-scrollbar-corner { background: var(--sb-track-color); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) body::-webkit-scrollbar-thumb { border-left: 4px solid #000; }
+  :root:not([data-theme="light"]) body::-webkit-scrollbar-thumb:horizontal { border-left: 0; border-top: 4px solid #000; }
 }
 :root[data-theme="dark"] body::-webkit-scrollbar-thumb { border-left: 4px solid #000; }
+:root[data-theme="dark"] body::-webkit-scrollbar-thumb:horizontal { border-left: 0; border-top: 4px solid #000; }
 .editor textarea::-webkit-scrollbar,
 .sidebar::-webkit-scrollbar,
 .diff-left::-webkit-scrollbar,
-.patch::-webkit-scrollbar { width: 16px; height: 16px; }
+.patch::-webkit-scrollbar,
+table::-webkit-scrollbar,
+.sg-scroll::-webkit-scrollbar { width: var(--sb-inner); height: var(--sb-inner); }
 .editor textarea::-webkit-scrollbar-track,
 .sidebar::-webkit-scrollbar-track,
 .diff-left::-webkit-scrollbar-track,
-.patch::-webkit-scrollbar-track { background: var(--sb-track-color); }
+.patch::-webkit-scrollbar-track,
+table::-webkit-scrollbar-track,
+.sg-scroll::-webkit-scrollbar-track { background: var(--sb-track-color); }
 .editor textarea::-webkit-scrollbar-thumb,
 .sidebar::-webkit-scrollbar-thumb,
 .diff-left::-webkit-scrollbar-thumb,
-.patch::-webkit-scrollbar-thumb { background: var(--sb-thumb-color); }
-.editor textarea::-webkit-scrollbar-corner { background: var(--sb-track-color); }
+.patch::-webkit-scrollbar-thumb,
+table::-webkit-scrollbar-thumb,
+.sg-scroll::-webkit-scrollbar-thumb { background: var(--sb-thumb-color); }
+.editor textarea::-webkit-scrollbar-corner,
+.sidebar::-webkit-scrollbar-corner,
 .diff-left::-webkit-scrollbar-corner,
-.patch::-webkit-scrollbar-corner { background: var(--sb-track-color); }
-pre::-webkit-scrollbar { width: 10px; height: 10px; border: 0; }
-pre::-webkit-scrollbar-track { background: transparent; }
-pre::-webkit-scrollbar-thumb { background: var(--sb-thumb-color); }
-pre::-webkit-scrollbar-corner { background: transparent; border: 0; }
+.patch::-webkit-scrollbar-corner,
+table::-webkit-scrollbar-corner,
+.sg-scroll::-webkit-scrollbar-corner { background: var(--sb-track-color); }
+pre::-webkit-scrollbar,
+.listbox-menu::-webkit-scrollbar { width: var(--sb-code); height: var(--sb-code); border: 0; }
+pre::-webkit-scrollbar-track,
+.listbox-menu::-webkit-scrollbar-track { background: transparent; }
+pre::-webkit-scrollbar-thumb,
+.listbox-menu::-webkit-scrollbar-thumb { background: var(--sb-thumb-color); }
+pre::-webkit-scrollbar-corner,
+.listbox-menu::-webkit-scrollbar-corner { background: transparent; border: 0; }
 @supports not selector(::-webkit-scrollbar) {
-  body, .editor textarea, .sidebar, .diff-left, .patch { scrollbar-color: var(--sb-thumb-color) var(--sb-track-color); scrollbar-width: auto; }
-  pre { scrollbar-color: var(--sb-thumb-color) transparent; scrollbar-width: thin; }
+  body, .editor textarea, .sidebar, .diff-left, .patch, table, .sg-scroll { scrollbar-color: var(--sb-thumb-color) var(--sb-track-color); scrollbar-width: auto; }
+  pre, .listbox-menu { scrollbar-color: var(--sb-thumb-color) transparent; scrollbar-width: thin; }
 }

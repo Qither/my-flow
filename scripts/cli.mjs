@@ -7,6 +7,7 @@
  *   my-flow init [--simple] [--tools claude,codex] [dir]
  *   my-flow ask <codex|claude> [--diff] [--files a,b] [--timeout ms] <question...>
  *   my-flow dashboard [start|stop|status] [--port N] [--root dir] [--json]
+ *   my-flow models [status|analyze|apply|reset] [--json] [--provider claude|codex] [--dry-run]
  */
 import { spawnSync } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
@@ -23,6 +24,7 @@ const scripts = {
   ask: 'ask.mjs',
   spec: 'spec.mjs',
   dashboard: 'dashboard.mjs',
+  models: 'models.mjs',
 };
 
 if (!cmd || cmd === '-h' || cmd === '--help' || !scripts[cmd]) {
@@ -34,7 +36,8 @@ if (!cmd || cmd === '-h' || cmd === '--help' || !scripts[cmd]) {
   init [--simple] [--tools claude,codex]    set up a project (specs/, changes/, templates)
   spec new|status|validate|archive|stage ... manage the intent layer (no external tool)
   ask <codex|claude> [--diff] [--files a,b] <question...>   cross-model advisor
-  dashboard [start|stop|status] [--port N] [--root dir]  local web dashboard over specs/ and changes/`);
+  dashboard [start|stop|status] [--port N] [--root dir]  local web dashboard over specs/ and changes/
+  models [status|analyze|apply|reset] [--json] [--dry-run] subagent model routing (inherit baseline, local override)`);
   process.exit(cmd && !scripts[cmd] ? 1 : 0);
 }
 

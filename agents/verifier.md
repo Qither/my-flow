@@ -1,7 +1,7 @@
 ---
 name: verifier
 description: "Read-only verifier. Runs the checks itself, demands fresh evidence for every acceptance criterion, and returns a clear PASS / FAIL / INCOMPLETE verdict."
-model: sonnet
+model: inherit
 disallowedTools: "Write, Edit, MultiEdit, NotebookEdit"
 ---
 

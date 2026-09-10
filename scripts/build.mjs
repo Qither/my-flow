@@ -120,6 +120,7 @@ for (const [name, cfg] of Object.entries(manifest.agents)) {
     `description = ${JSON.stringify(meta.description)}`,
     c.model ? `model = ${JSON.stringify(c.model)}` : null,
     c.model_reasoning_effort ? `model_reasoning_effort = ${JSON.stringify(c.model_reasoning_effort)}` : null,
+    c.sandbox_mode ? `sandbox_mode = ${JSON.stringify(c.sandbox_mode)}` : null,
     `developer_instructions = ${tomlLiteral(renderBody(body, 'codex'))}`,
     '',
   ].filter((l) => l !== null).join('\n');

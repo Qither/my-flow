@@ -24,6 +24,8 @@ import {
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { TASK_NAME, filePaths, updateConfig, writeConfig } from './lib/models.mjs';
+import { spawnSync } from 'node:child_process';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(join(ROOT, 'manifest.json'), 'utf8'));
@@ -45,6 +47,71 @@ const TOML_START = '# >>> my-flow managed >>>';
 const TOML_END = '# <<< my-flow managed <<<';
 
 const log = (m) => console.log(`${DRY ? '[dry-run] ' : ''}${m}`);
+/**
+ * Registers the Task Scheduler task that starts the background model-routing check outside
+ * the hook's job object (design D4 / D9, win32 only). Re-registers with /f on every install;
+ * refuses when conhost.exe is missing; records config.launcher only on success.
+ */
+function registerLauncher() {
+  if (process.platform !== 'win32') return;
+  const conhost = join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'conhost.exe');
+  if (!existsSync(conhost)) {
+    log(`scheduled task not registered: ${conhost} is missing (the hook will use the plain detached child)`);
+    return;
+  }
+  const home = filePaths().home;
+  const action = `conhost.exe --headless "${process.execPath}" "${join(ROOT, 'scripts', 'models.mjs')}" check --quiet --home "${home}"`;
+  const create = (trigger) => ['/create', '/f', '/tn', TASK_NAME, '/tr', action, ...trigger];
+  const once = create(['/sc', 'once', '/st', '00:00']);
+  log(`schtasks ${once.join(' ')}`);
+  if (DRY) return;
+  let r = spawnSync('schtasks', once, { encoding: 'utf8', windowsHide: true, timeout: 15000 });
+  if (r.error || r.status !== 0) {
+    log(`schtasks /sc once refused (${r.error?.message ?? `exit ${r.status}`}): ${(r.stderr || r.stdout || '').trim()}; retrying with /sc onlogon`);
+    r = spawnSync('schtasks', create(['/sc', 'onlogon']), { encoding: 'utf8', windowsHide: true, timeout: 15000 });
+  }
+  if (r.error || r.status !== 0) {
+    log(`scheduled task not registered: ${(r.stderr || r.stdout || r.error?.message || '').trim()}`);
+    return;
+  }
+  writeConfig({ launcher: { task: TASK_NAME, root: ROOT, node: process.execPath, home, registered: new Date().toISOString() } });
+  log(`scheduled task ${TASK_NAME} registered (action: ${action})`);
+}
+
+/** Uninstall side: drop this tool's home from config.json; delete the task once no surface remains. */
+function unregisterSurface(tool) {
+  const p = filePaths().config;
+  if (!existsSync(p)) return;
+  log(`update ${p} (remove ${tool}.home)`);
+  let cfg;
+  if (DRY) cfg = JSON.parse(readFileSync(p, 'utf8'));
+  else cfg = updateConfig((c) => {
+    if (c[tool]) delete c[tool].home;
+    return c;
+  });
+  const remaining = ['claude', 'codex'].filter((k) => k !== tool && cfg[k]?.home);
+  if (remaining.length) {
+    log('scheduled task kept for the other surface');
+    return;
+  }
+  if (cfg.launcher?.task) {
+    log(`schtasks /delete /tn ${cfg.launcher.task} /f`);
+    if (!DRY) {
+      spawnSync('schtasks', ['/delete', '/tn', cfg.launcher.task, '/f'], { encoding: 'utf8', windowsHide: true, timeout: 15000 });
+      updateConfig((c) => {
+        delete c.launcher;
+        return c;
+      });
+    }
+  }
+}
+
+/** Records tool homes for the model-routing layer in <MY_FLOW_HOME>/config.json (merge, never clobber). */
+function recordConfig(patch) {
+  log(`write ${filePaths().config}`);
+  if (DRY) return;
+  writeConfig(patch);
+}
 function write(path, content) {
   log(`write ${path}`);
   if (DRY) return;
@@ -88,6 +155,7 @@ if (target === 'claude') {
   if (UNINSTALL) {
     const md = join(CLAUDE_HOME, 'CLAUDE.md');
     if (existsSync(md)) write(md, removeBlock(readFileSync(md, 'utf8')));
+    unregisterSurface('claude');
     log('Claude block removed. Disable the plugin with: claude plugin disable my-flow@my-flow');
     process.exit(0);
   }
@@ -101,6 +169,9 @@ if (target === 'claude') {
   const block = readFileSync(join(ROOT, 'claude', 'CLAUDE.block.md'), 'utf8');
   const md = join(CLAUDE_HOME, 'CLAUDE.md');
   write(md, upsertBlock(existsSync(md) ? readFileSync(md, 'utf8') : '', block));
+
+  recordConfig({ claude: { home: CLAUDE_HOME } });
+  registerLauncher();
 
   console.log(`
 Next steps (run in a terminal, not inside a Claude session):
@@ -168,6 +239,7 @@ function stripOurHooks(doc) {
   }
   if (out.state) {
     out.state = Object.fromEntries(Object.entries(out.state).filter(([, v]) => !ourHashes.has(v?.trusted_hash)));
+    if (!Object.keys(out.state).length) delete out.state; // older installs wrote our trust hashes here
   }
   return out;
 }
@@ -210,6 +282,7 @@ if (UNINSTALL) {
   }
   if (existsSync(configPath)) write(configPath, stripTomlBlock(readFileSync(configPath, 'utf8')));
   if (existsSync(agentsMdPath)) write(agentsMdPath, removeBlock(readFileSync(agentsMdPath, 'utf8')));
+  unregisterSurface('codex');
   log('Codex surface removed.');
   process.exit(0);
 }
@@ -279,7 +352,9 @@ for (const [ev, groups] of Object.entries(doc.hooks)) {
     })
   );
 }
-doc.state = { ...(doc.state ?? {}), ...trust };
+// Trust state lives only in config.toml ([hooks.state.*] below): Codex 0.154+ rejects a hooks.json
+// with any top-level key other than `description` / `hooks` ("unknown field `state`").
+delete doc.state;
 write(hooksJsonPath, JSON.stringify(doc, null, 2) + '\n');
 
 // config.toml managed block
@@ -303,6 +378,9 @@ for (const feature of ['hooks', 'goals', 'multi_agent']) {
 // AGENTS.md
 const agentsBlock = readFileSync(join(ROOT, 'codex', 'AGENTS.block.md'), 'utf8');
 write(agentsMdPath, upsertBlock(existsSync(agentsMdPath) ? readFileSync(agentsMdPath, 'utf8') : '', agentsBlock));
+
+recordConfig({ codex: { home: CODEX_HOME, agentsDir } });
+registerLauncher();
 
 console.log(`
 Codex surface installed. Verify with:

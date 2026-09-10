@@ -6,6 +6,7 @@
  * exercise them without a DOM; `boot()` runs only when the shell is present.
  */
 import { escapeHtml as esc, renderMarkdown } from './md.mjs';
+import { mountListbox } from './ui.mjs';
 
 // ---------------------------------------------------------------- pure helpers
 /** '#/changes/demo' -> { page: 'changes', name: 'demo' }; '#/file/<enc>' -> { page: 'file', path } */
@@ -18,6 +19,7 @@ export function parseRoute(hash) {
   if (page === 'specs') return { page, name: rest[0] ?? null };
   if (page === 'archive') return { page, name: rest[0] ?? null };
   if (page === 'scratch') return { page };
+  if (page === 'styleguide') return { page };
   return { page: 'changes', name: null };
 }
 export const fileRoute = (path) => `#/file/${encodeURIComponent(path)}`;
@@ -34,6 +36,8 @@ export function shouldRefetch(route, paths) {
       return any((p) => p.startsWith('changes/archive'));
     case 'scratch':
       return any((p) => p.startsWith('.my-flow/'));
+    case 'styleguide':
+      return false; // static page, no data behind it
     case 'file':
       // the state file decides the execute lock, so every editor reacts to it
       return any((p) => p === route.path || p === '.my-flow/state/current-change.json');
@@ -181,16 +185,19 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
       if (attr) html.setAttribute('data-theme', attr);
       else html.removeAttribute('data-theme');
     }
-    const sel = doc.getElementById('theme-select');
-    if (sel) sel.value = choice;
+    state.themeBox?.set(choice);
   };
-  applyTheme(normalizeTheme(storage.get(THEME_KEY)));
-  doc.getElementById('theme-select')?.addEventListener('change', (ev) => {
-    const choice = normalizeTheme(ev.target.value);
+  // Named onThemeChange: boot() already declares const onChange for live updates below.
+  const onThemeChange = (value) => {
+    const choice = normalizeTheme(value);
     applyTheme(choice); // the document first, persistence second
     if (choice === 'system') storage.remove(THEME_KEY);
     else storage.set(THEME_KEY, choice);
-  });
+  };
+  // Mount before the first apply (design D7), so the trigger label follows the stored choice.
+  const themeRoot = $('theme-listbox');
+  state.themeBox = themeRoot ? mountListbox(themeRoot, { onChange: onThemeChange }) : null;
+  applyTheme(normalizeTheme(storage.get(THEME_KEY)));
 
   const setConn = (s, text) => {
     const c = $('conn');
@@ -413,6 +420,115 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
           h.lines.map((l) => `<div class="row ${l.kind}"><span class="no">${l.oldNo ?? ''}</span><span class="no">${l.newNo ?? ''}</span><span class="txt">${esc(l.text)}</span></div>`).join('')
       )
       .join('')}</div>`;
+  // ---- styleguide (design D8): every component and state side by side, static HTML, no api()
+  const sgItem = (cap, html) => `<div class="sg-item">${html}<span class="sg-cap">${esc(cap)}</span></div>`;
+  const sgSection = (title, items) => `<section class="sg-section"><h2>${esc(title)}</h2><div class="sg-row">${items.join('')}</div></section>`;
+  const sgLabel = (v) => (v === 'system' ? 'Auto (system)' : v === 'light' ? 'Light' : 'Dark');
+  const sgListbox = (id, { open = false, value = 'light', active = 'dark', disabled = false } = {}) => {
+    const opt = (v) => `<li class="listbox-option" role="option" id="${id}-opt-${v}" data-value="${v}" aria-selected="${value === v}"${open && active === v ? ' data-active="true"' : ''}${disabled && v === 'dark' ? ' aria-disabled="true"' : ''}>${sgLabel(v)}</li>`;
+    return `<div class="listbox" id="${id}" data-value="${value}">
+      <button type="button" class="listbox-trigger" id="${id}-trigger" role="combobox" aria-haspopup="listbox" aria-expanded="${open}" aria-controls="${id}-menu" aria-labelledby="${id}-label ${id}-trigger"><span class="listbox-value">${sgLabel(value)}</span><span class="listbox-caret" aria-hidden="true">&#9662;</span></button>
+      <ul class="listbox-menu" id="${id}-menu" role="listbox" aria-labelledby="${id}-label"${open ? '' : ' hidden'}>${opt('system')}${opt('light')}${opt('dark')}</ul>
+    </div>`;
+  };
+  const pageStyleguide = () => {
+    const tokens = ['--paper', '--paper-2', '--ink', '--ink-muted', '--lime', '--danger', '--ok', '--shadow-color', '--pressed-bg', '--pressed-fg']
+      .map((t) => sgItem(t, `<span class="sg-swatch" style="background: var(${t})"></span>`));
+    const text = [
+      sgItem('headings', '<h1 style="margin-top:0">Heading 1</h1><h2>Heading 2</h2><h3>Heading 3</h3><h4>Heading 4</h4>'),
+      sgItem('paragraph, link, hovered link, muted, inline code', '<p>Body text with <a href="#/styleguide">a link</a>, <a href="#/styleguide" class="sg-hover">a hovered link</a>, <span class="muted">muted text</span> and <code>inline code</code>.</p>'),
+      sgItem('breadcrumbs', '<div class="crumbs"><a href="#/changes">changes</a> / demo / design.md</div>'),
+      sgItem('meta, mono, empty', '<span class="meta">1234 B, 2026-09-10 12:00</span><br><span class="mono">mono text</span><br><span class="empty">nothing here</span>'),
+    ];
+    const variants = [['default', ''], ['primary', ' primary'], ['neutral', ' neutral'], ['reverse', ' reverse'], ['icon', ' icon']];
+    const states = [['rest', ''], ['hover', ' sg-hover'], ['pressed', ' sg-active'], ['focus', ' sg-focus'], ['disabled', '']];
+    const buttons = [];
+    for (const [v, vc] of variants) {
+      for (const [s, sc] of states) {
+        const label = v === 'icon' ? '&#9881;' : `${v} ${s}`;
+        buttons.push(sgItem(`button ${v} ${s}`, `<button type="button" class="btn${vc}${sc}"${s === 'disabled' ? ' disabled' : ''}>${label}</button>`));
+      }
+    }
+    buttons.push(sgItem('a.btn (link styled as a button)', '<a class="btn" href="#/styleguide">link button</a>'));
+    buttons.push(sgItem('variants side by side', '<span class="row-actions"><button type="button" class="btn">default</button><button type="button" class="btn primary">primary</button><button type="button" class="btn neutral">neutral</button><button type="button" class="btn reverse">reverse</button><button type="button" class="btn icon">&#9881;</button><button type="button" class="btn sg-active">pressed</button></span>'));
+    const nav = [sgItem('nav tiles: rest, hover, active', '<ul class="nav-list" style="width:160px"><li><a href="#/styleguide">Rest</a></li><li><a href="#/styleguide" class="sg-hover">Hover</a></li><li><a href="#/styleguide" class="active">Active</a></li></ul>')];
+    const tags = [
+      sgItem('tag plain / lime / warn / st / latest', '<span class="tag">plain</span> <span class="tag lime">lime</span> <span class="tag warn">warn</span> <span class="tag st">M</span> <span class="tag latest">&#9679;</span>'),
+      sgItem('provenance link (via)', '<div class="md"><a class="via" href="#/archive">via 2026-09-09-web-dashboard</a></div>'),
+      sgItem('connection dot: live / reconnecting', '<span class="conn mono" data-state="live"><span class="conn-dot"></span>live</span> <span class="conn mono" data-state="reconnecting" style="margin-left:12px"><span class="conn-dot"></span>reconnecting</span>'),
+    ];
+    const surfaces = [
+      sgItem('card', '<div class="cards" style="width:280px"><div class="card"><div class="card-head"><span class="name">demo-change</span><span class="tag lime">current: execute</span></div><div class="row-actions"><span class="tag">proposal=done</span><span class="meta">modified 2026-09-10</span></div></div></div>'),
+      sgItem('panel', '<div class="panel" style="width:280px"><h3>Panel</h3><ul class="file-list"><li><a href="#/styleguide">changes/demo/design.md</a><span class="tag">design</span></li></ul></div>'),
+      sgItem('notice / notice.ok / notice.lock', '<div style="width:280px"><div class="notice">something went wrong</div><div class="notice ok">saved</div><div class="notice lock">read-only while an agent is writing</div></div>'),
+      sgItem('warnings', '<div class="warnings" style="width:280px"><div>stale: untouched for 31 days</div><div>overlap: requirement claimed twice</div></div>'),
+      sgItem('highlight', '<div class="card highlight" style="width:200px">highlighted card</div>'),
+    ];
+    const progress = [0, 50, 100].map((p) => sgItem(`progress ${p}%`, `<span class="progress"><span class="bar"><span class="fill" style="width:${p}%"></span></span><span class="mono">${p}/100</span></span>`));
+    const tables = [
+      sgItem('narrow table', '<div class="md"><table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table></div>'),
+      sgItem('wide table (scrolls inside itself)', '<div class="md" style="width:420px"><table><thead><tr><th>column</th><th>column</th><th>column</th><th>column</th><th>column</th><th>column</th></tr></thead><tbody><tr><td>unbreakable_xxxxxxxxxxxxxxxxxxxx</td><td>unbreakable_xxxxxxxxxxxxxxxxxxxx</td><td>unbreakable_xxxxxxxxxxxxxxxxxxxx</td><td>unbreakable_xxxxxxxxxxxxxxxxxxxx</td><td>unbreakable_xxxxxxxxxxxxxxxxxxxx</td><td>unbreakable_xxxxxxxxxxxxxxxxxxxx</td></tr></tbody></table></div>'),
+      sgItem('hr', '<div style="width:200px"><hr></div>'),
+    ];
+    const code = [
+      sgItem('code block', '<pre style="width:320px"><code>const answer = 42;\nexport default answer; // a long line that scrolls inside the block instead of wrapping the page\n</code></pre>'),
+      sgItem('code block with line numbers', '<pre style="width:320px"><span class="line-number"><span>1</span><span>2</span><span>3</span></span><code>import x from "y";\nconst z = x + 1;\nexport { z };\n</code></pre>'),
+    ];
+    const tasks = [sgItem('task list: open, done', '<div class="md"><ul><li class="task open"><span class="box" aria-hidden="true">&#9744;</span> 1.1 an open task</li><li class="task done"><span class="box" aria-hidden="true">&#9745;</span> 1.2 a done task</li><li>a plain bullet</li></ul></div>')];
+    const tree = [
+      sgItem('file tree: open dir, closed dir, hover, selected, latest', '<div class="diff-left" style="width:260px;position:static;max-height:none"><ul class="diff-tree"><li class="dir"><button type="button" class="dir-toggle" aria-expanded="true">web/</button><ul><li class="file"><a href="#/styleguide"><span class="tag st">M</span> app.css</a></li><li class="file sg-hover"><a href="#/styleguide"><span class="tag st">M</span> hovered.mjs</a></li><li class="file selected"><a href="#/styleguide"><span class="tag st">M</span><span class="tag latest">&#9679;</span> selected.mjs</a><span class="meta">+3 -1</span></li></ul></li><li class="dir closed"><button type="button" class="dir-toggle" aria-expanded="false">test/</button><ul><li class="file"><a href="#/styleguide">hidden.mjs</a></li></ul></li></ul></div>'),
+      sgItem('flat list', '<div class="diff-left" style="width:260px;position:static;max-height:none"><ul class="diff-tree flat"><li class="file"><a href="#/styleguide"><span class="tag st">?</span> web/ui.mjs</a></li><li class="file"><a href="#/styleguide"><span class="tag st">D</span> old/file.md</a></li></ul></div>'),
+    ];
+    const patch = [sgItem('patch: hunk, add, del, ctx, meta', '<div class="diff-right" style="width:420px"><div class="patch-head"><span class="mono">web/app.css</span><span class="tag st">M</span><span class="meta">+2 -1</span></div><div class="patch"><div class="row hunk"><span class="no"></span><span class="no"></span><span class="txt">@@ -1,3 +1,4 @@</span></div><div class="row ctx"><span class="no">1</span><span class="no">1</span><span class="txt">:root {</span></div><div class="row del"><span class="no">2</span><span class="no"></span><span class="txt">  --old: 1;</span></div><div class="row add"><span class="no"></span><span class="no">2</span><span class="txt">  --new: 2;</span></div><div class="row add"><span class="no"></span><span class="no">3</span><span class="txt">  --wide: "a line long enough to make the patch scroll horizontally inside its own box";</span></div><div class="row meta"><span class="no"></span><span class="no"></span><span class="txt">No newline at end of file</span></div></div></div>')];
+    const listbox = [
+      sgItem('listbox (live)', `<span class="theme-label" id="sg-listbox-label">Theme</span>${sgListbox('sg-listbox')}`),
+      sgItem('listbox open: active + selected + check', `<div class="sg-static"><span class="theme-label" id="sg-listbox-open-label">Theme</span>${sgListbox('sg-listbox-open', { open: true, value: 'light', active: 'dark' })}</div>`),
+      sgItem('listbox open: disabled option', `<div class="sg-static"><span class="theme-label" id="sg-listbox-dis-label">Theme</span>${sgListbox('sg-listbox-dis', { open: true, value: 'system', active: 'system', disabled: true })}</div>`),
+      sgItem('select trigger (plain button alias)', '<button type="button" class="select-trigger" style="width:160px">Choose</button>'),
+    ];
+    const kit = [
+      sgItem('checkbox: unchecked / checked / disabled', '<label class="check"><input type="checkbox"> off</label><br><label class="check"><input type="checkbox" checked> on</label><br><label class="check"><input type="checkbox" disabled> disabled</label>'),
+      sgItem('radio group', '<label class="check"><input type="radio" name="sg-r" checked> one</label><br><label class="check"><input type="radio" name="sg-r"> two</label><br><label class="check"><input type="radio" name="sg-r" disabled> three</label>'),
+      sgItem('switch: off / on / disabled / focus', '<label class="switch"><input type="checkbox" role="switch"><span class="switch-track"><span class="switch-thumb"></span></span> off</label><br><label class="switch"><input type="checkbox" role="switch" checked><span class="switch-track"><span class="switch-thumb"></span></span> on</label><br><label class="switch"><input type="checkbox" role="switch" disabled><span class="switch-track"><span class="switch-thumb"></span></span> disabled</label><br><label class="switch sg-focus"><input type="checkbox" role="switch"><span class="switch-track"><span class="switch-thumb"></span></span> focus</label>'),
+      sgItem('text input: rest / focus / disabled / placeholder', '<div style="width:220px"><input type="text" value="rest"><br><input type="text" class="sg-focus" value="focus"><br><input type="text" value="disabled" disabled><br><input type="text" placeholder="placeholder"></div>'),
+      sgItem('textarea', '<div style="width:220px"><textarea rows="3">multi-line text</textarea></div>'),
+    ];
+    const elements = [
+      sgItem('blockquote with footer and cite', '<blockquote style="width:320px"><p>Structure before decoration.</p><footer><cite>qiujm-web DESIGN.md</cite></footer></blockquote>'),
+      sgItem('definition list', '<dl><dt>paper</dt><dd>the page surface</dd><dt>ink</dt><dd>the text colour</dd></dl>'),
+      sgItem('figure and figcaption', '<figure style="width:240px"><pre><code>fig()</code></pre><figcaption>Figure 1: a captioned block</figcaption></figure>'),
+      sgItem('kbd, mark, abbr, sup, sub', '<p>Press <kbd>Ctrl</kbd> + <kbd>S</kbd>, note the <mark>highlighted</mark> part, the <abbr title="Accessible Rich Internet Applications">ARIA</abbr> roles, x<sup>2</sup> and H<sub>2</sub>O.</p>'),
+      sgItem('details: closed / open', '<div style="width:260px"><details><summary>Closed details</summary><p>hidden body</p></details><details open><summary>Open details</summary><p>visible body</p></details></div>'),
+      sgItem('fieldset, legend, labels', '<fieldset style="width:240px"><legend>Options</legend><label><input type="checkbox" checked> first</label><br><label><input type="checkbox"> second</label></fieldset>'),
+    ];
+    const scroll = [sgItem('scroll box: both axes', '<div class="sg-scroll"><div>This box is wider and taller than its frame, so it scrolls in both directions and shows the corner.</div></div>')];
+    return `<div class="crumbs">styleguide</div><h1>Styleguide</h1><p class="muted">Every component and state of the dashboard design grammar. The marker classes sg-hover, sg-active and sg-focus force pointer states for screenshots.</p>
+      <div class="sg">
+        ${sgSection('Tokens', tokens)}
+        ${sgSection('Text and links', text)}
+        ${sgSection('Buttons', buttons)}
+        ${sgSection('Navigation tiles', nav)}
+        ${sgSection('Tags', tags)}
+        ${sgSection('Cards, panels, notices', surfaces)}
+        ${sgSection('Progress', progress)}
+        ${sgSection('Tables and rules', tables)}
+        ${sgSection('Code', code)}
+        ${sgSection('Task list', tasks)}
+        ${sgSection('File tree', tree)}
+        ${sgSection('Patch', patch)}
+        ${sgSection('Listbox', listbox)}
+        ${sgSection('Form controls', kit)}
+        ${sgSection('Markdown elements', elements)}
+        ${sgSection('Scrolling', scroll)}
+      </div>`;
+  };
+  const wireStyleguide = () => {
+    const root = $('sg-listbox');
+    if (!root) return;
+    const box = mountListbox(root, { onChange: () => {} });
+    state.unmountStyleguide = box.destroy; // the mount listens on the document; render() tears it down
+  };
+
   const pageDiff = async (path, out) => {
     if (!state.git) {
       out.order = [];
@@ -479,6 +595,7 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
       const t = ev.target;
       const tag = t && t.tagName ? t.tagName : '';
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+      if (t && t.getAttribute && t.getAttribute('role') === 'combobox') return; // the theme listbox owns its keys
       const nav = diffNav(state.diffOrder ?? [], state.route.path);
       const target = ev.key === 'j' ? nav.next : ev.key === 'k' ? nav.prev : ev.key === '.' ? nav.latest : null;
       if (!target) return;
@@ -506,6 +623,7 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
         if (route.page === 'scratch') return pageScratch();
         if (route.page === 'file') return pageFile(route.path);
         if (route.page === 'diff') return pageDiff(route.path, out);
+        if (route.page === 'styleguide') return pageStyleguide();
         return pageChanges();
       } catch (e) {
         return `<div class="notice">${esc(e.message)}</div>`;
@@ -516,11 +634,14 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
     if (rendering !== job) return; // a newer render superseded this one
     state.unbindDiffKeys?.();
     state.unbindDiffKeys = null;
+    state.unmountStyleguide?.();
+    state.unmountStyleguide = null;
     state.diffOrder = out.order ?? [];
     view.classList.toggle('wide', route.page === 'diff');
     view.innerHTML = html;
     if (route.page === 'file') wireEditor();
     if (route.page === 'diff') wireDiff();
+    if (route.page === 'styleguide') wireStyleguide();
     if (route.page === 'diff') doc.querySelector('.diff-left li.file.selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     if (route.page === 'archive' && route.name) doc.getElementById(`archive-${route.name}`)?.classList.add('highlight');
   };

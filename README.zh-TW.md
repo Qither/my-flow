@@ -91,6 +91,7 @@ Codex 端是選用的；請參閱[安裝到 Codex](#安裝到-codex)。
 |---|---|
 | 具體、單一檔案、驗收標準明確 | 僅 `execute`（或直接動手做） |
 | 具體但涉及多個檔案或多個模組 | `mf-plan → execute → mf-verify` |
+| 具體、多檔、設計已明確 | `mf-plan --fast [--go] → execute → mf-verify` |
 | 模糊、沒有驗收標準、「我們是否應該……」 | `interview → mf-plan → execute → mf-verify` |
 | 涉及建置設定、著色器、引擎模組、資料遷移、身分驗證 | 絕不跳過 `mf-plan` 與 `mf-verify` |
 
@@ -114,7 +115,7 @@ Claude Code 內建了 `/plan`（計畫模式）以及名為 `run` 與 `verify` �
 
 ### 每個工作階段只有一個迴圈主導權
 
-在 Claude Code 中，每個工作階段最多只有一個 `/goal` 與最多一個 agent team。`execute` 會印出 `/goal` 敘述供你貼上（技能本身無法設定它）；Stop 掛鉤只是後備機制，在 `execute` 階段攔截仍留有未勾選任務的完成宣稱，且僅在 `spec stage` 寫入的狀態仍新鮮時生效。在 Codex 中，每個執行緒一個 goal；`execute` 僅在沒有進行中的 goal 時才呼叫 `create_goal`。
+在 Claude Code 中，每個工作階段最多只有一個 `/goal` 與最多一個 agent team。`execute` 會印出 `/goal` 敘述供你貼上（技能本身無法設定它）；Stop 掛鉤只是後備機制，在 `execute` 階段攔截仍留有未勾選任務的完成宣稱，且僅在 `spec stage` 寫入的狀態仍新鮮時生效。在 Codex 中，每個執行緒一個 goal；`execute` 僅在沒有進行中的 goal 時才呼叫 `create_goal`。 例外：由 `mf-plan --fast --go` 進入的執行會跳過 `/goal` 停點，只靠 Stop hook 後盾。
 
 ### Claude 與 Codex 各自負責什麼
 
@@ -127,9 +128,9 @@ Claude Code 負責互動式工作並執行迴圈。Codex 負責審查、規劃�
 | 指令 | 作用 | 備註 |
 |---|---|---|
 | `build [--check]` | 將 `src/` 渲染為 Claude 外掛與 Codex 介面 | 編輯 `src/` 後執行。`--check` 只做比對，輸出過期時以結束代碼 1 結束 |
-| `install claude [--dry-run]` | 備份 `~/.claude/settings.json`，設定 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`，將工作約定寫入（upsert）`~/.claude/CLAUDE.md` | 印出外掛安裝指令，但不執行它們 |
-| `install codex [--link] [--dry-run]` | 先備份，然後複製技能與代理 TOML，寫入 PowerShell shim，合併 `hooks.json`，將信任雜湊寫入 `config.toml`，寫入（upsert）`~/.codex/AGENTS.md` | `--link` 使用 junction 而非複製 |
-| `uninstall codex [--dry-run]` | 還原 `install codex`，保留 `~/.codex` 中的其他一切 | |
+| `install claude [--dry-run]` | 備份 `~/.claude/settings.json`，設定 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`，將工作約定寫入（upsert）`~/.claude/CLAUDE.md`. 在 Windows 上還會註冊排程任務 `my-flow-models-check`（`conhost.exe --headless node scripts/models.mjs check --quiet --home <MY_FLOW_HOME>`），並把工具主目錄記錄到 `~/.my-flow/config.json` | 印出外掛安裝指令，但不執行它們 |
+| `install codex [--link] [--dry-run]` | 先備份，然後複製技能與代理 TOML，寫入 PowerShell shim，合併 `hooks.json`，將信任雜湊寫入 `config.toml`，寫入（upsert）`~/.codex/AGENTS.md`. 在 Windows 上還會註冊排程任務 `my-flow-models-check`，並把工具主目錄與代理目錄記錄到 `~/.my-flow/config.json` | `--link` 使用 junction 而非複製 |
+| `uninstall codex [--dry-run]` | 還原 `install codex`，保留 `~/.codex` 中的其他一切. 從 `~/.my-flow/config.json` 移除 Codex 主目錄；僅當沒有其他表面殘留時才刪除排程任務 `my-flow-models-check` |  |
 | `init [--simple] [--tools claude,codex] [dir]` | 建立 `specs/`、`changes/`（含 `.templates/` 與 `archive/`）、`specs/README.md`、`.claude/rules/specs.md`、`.my-flow/`，並在專案的 `CLAUDE.md` / `AGENTS.md` 末尾附加一段內容 | `--simple` 切換為每個變更一個 `docs/changes/<name>.md` |
 | `spec new <name>` | 從範本建立 `changes/<name>/{proposal,design,tasks}.md` 並將其標記為目前變更 | 名稱使用 kebab-case |
 | `spec status [name] [--json]` | 已勾選 / 總任務數、產出物狀態（missing / empty / done）、delta spec 數量；14 天未動過的未完成變更標記為 `[stale Nd]`（`--stale-days`、`MY_FLOW_STALE_DAYS`），兩個變更宣告同一需求時輸出 `overlap:`，某能力累計 5 次合併後輸出 `audit suggested:`（`MY_FLOW_AUDIT_EVERY`） | 未修改過的範本計為 empty |
@@ -139,6 +140,7 @@ Claude Code 負責互動式工作並執行迴圈。Codex 負責審查、規劃�
 | `spec stage <name> <stage>` | 以新的 `updated` 時間戳寫入 `.my-flow/state/current-change.json`（`new`、`interview`、`mf-plan`、`execute`、`done`、`archived`） | execute-guard 只在此檔案未超過 12 小時時才會觸發 |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以唯讀方式執行另一個 CLI 作為顧問；將產出物寫入 `.my-flow/ask/` | 提示詞透過 stdin 傳入；輸出為空視為失敗 |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | 查看 `specs/`、`changes/`、`.my-flow/` 的本機 Web 儀表板：即時更新、受保護的編輯；`stop` 會先核實記錄的程序再終止它 | 僅 loopback，預設連接埠 4321，零依賴 |
+| `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | 子代理模型路由：`status` 顯示記錄的 CLI 版本、本地覆蓋（或無）以及從已安裝代理檔案回讀的值；`analyze` 請求目前最強的 CLI 給出角色 -> 模型 / 推理強度的對應，驗證後套用；`apply` 依 `~/.my-flow/models.json` 重新產生已安裝檔案；`reset` 刪除覆蓋並恢復 `inherit` 底線 | 只寫入 `~/.my-flow/`（`MY_FLOW_HOME`）、`~/.codex/agents/` 與已安裝 Claude 外掛的 `agents/`；從不寫入儲存庫 |
 
 ## 技能
 
@@ -147,8 +149,8 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 | 技能 | 何時使用 | 作用 | 輸出 |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 需求模糊、沒有驗收標準 | 每回合一個問題，先意圖後細節；對模糊程度評分；當 Non-Goals 與 Decision Boundaries 明確後結束 | `changes/<name>/proposal.md`，逐字記錄保存在 `.my-flow/interviews/` |
-| `mf-plan <name \| text> [--deliberate]` | 多檔案變更；任何涉及建置設定、著色器、引擎模組、資料遷移、身分驗證的改動 | planner 起草 → architect 審查（`CLEAR / WATCH / BLOCK`）→ critic 審查（`OKAY / REJECT`），最多三回合 | `design.md`（必須包含 Do-Not-Touch 與 Rebuild / Re-run）、`tasks.md` |
-| `execute <name> [--team] [--worktree]` | `tasks.md` 中還有未勾選的核取方塊 | 組織 goal 敘述；逐一任務實作、驗證、勾選；執行固定的最終關卡 | Claude：印出 `/goal …` 供你貼上。Codex：`create_goal` |
+| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 多檔案變更；任何涉及建置設定、著色器、引擎模組、資料遷移、身分驗證的改動. 使用 `--fast` 時由你自己撰寫產物，只經 critic 審一次，不用 planner 與 architect；高風險類別（以及與 `--deliberate` 同用）會被拒絕；`--go` 直接接入 execute | planner 起草 → architect 審查（`CLEAR / WATCH / BLOCK`）→ critic 審查（`OKAY / REJECT`），最多三回合 | `design.md`（必須包含 Do-Not-Touch 與 Rebuild / Re-run）、`tasks.md` |
+| `execute <name> [--team] [--worktree]` | `tasks.md` 中還有未勾選的核取方塊 | 組織 goal 敘述；逐一任務實作、驗證、勾選；執行固定的最終關卡. 也可由 `mf-plan --fast --go` 進入，此時跳過 `/goal` 停點 | Claude：印出 `/goal …` 供你貼上。Codex：`create_goal` |
 | `mf-verify <name \| criteria>` | 在任何「已完成」宣告之前 | 委派給唯讀的 verifier，由它自行執行檢查並逐條標準回報 | `.my-flow/verify/<name>-<time>.md`，包含 PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` 輸出 `audit suggested`，或使用者說「audit the spec」時 | 唯讀的 architect 將 `specs/<cap>/spec.md` 與程式碼和測試對照：未實作的需求、未記錄的行為、互相矛盾、放錯能力的需求；絕不編輯 `specs/` | `.my-flow/verify/audit-<cap>-<time>.md`，含 `Status: CLEAN / DRIFT / BROKEN` 與以 `audit-<cap>` 結尾的建議變更名 |
 | `ask <codex\|claude> [--diff] [--files] <question>` | 對設計尋求第二意見、最終關卡前的 diff 審查、規劃停滯時的裁決 | 封裝 `ask` 腳本，做摘要並說明是否同意 | `.my-flow/ask/` |
@@ -160,18 +162,20 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 
 ### 三個流程技能與內建功能的差異
 
-- **`/plan` 與 `mf-plan`**：計畫模式是一種唯讀權限模式，它在專案之外寫一份計畫檔案並請求核准。`mf-plan` 產生提交到儲存庫的產出物（`design.md`、`tasks.md`），由三個角色依序審查，帶有必要章節與一種任務格式，後續由 `execute` 與 `mf-verify` 據此驅動。你仍然可以先進入 `/plan` 進行探索。
+- **`/plan` 與 `mf-plan`**：計畫模式是一種唯讀權限模式，它在專案之外寫一份計畫檔案並請求核准。`mf-plan` 產生提交到儲存庫的產出物（`design.md`、`tasks.md`），由三個角色依序審查，帶有必要章節與一種任務格式，後續由 `execute` 與 `mf-verify` 據此驅動。你仍然可以先進入 `/plan` 進行探索。 快速通道 `mf-plan --fast` 介於兩者之間：同樣的已提交產物與後續流程，但只做一次 critic 審查，而非三角色共識。
 - **`run` 與 `execute`**：內建的 `run` 用於啟動專案的應用程式。`execute` 是在 Do-Not-Touch 與 Rebuild 規則約束下對 `tasks.md` 的任務迴圈，包裹在原生 goal 之中，以固定的最終關卡收尾（驗證 → 清理 → 再次驗證 → 獨立審查 → 完成）。
 - **`verify` 與 `mf-verify`**：`mf-verify` 永遠切換情境（唯讀的 verifier 子代理），從 `tasks.md`、spec 情境與 `design.md` 推導驗收標準，對照 Do-Not-Touch 檢查 diff，檢查 Rebuild 步驟是否已執行，掃描虛假完成模式，並寫出 `spec archive` 所要求的報告。
 
 ## 子代理角色
 
-| 角色 | 職責 | Claude 模型 | Codex 推理強度 | 禁用的工具 |
-|---|---|---|---|---|
-| `planner` | 將提案轉化為有證據支撐的設計與任務清單；親自閱讀程式碼；每個任務都註明其驗證方式 | opus | high | 無（僅在 `changes/<name>/` 下寫入） |
-| `architect` | 唯讀的設計審查者：反題、張力、綜合；`CLEAR / WATCH / BLOCK` | opus | high | Write、Edit |
-| `critic` | 判斷計畫是否無需猜測即可執行；模擬兩到三個任務；`OKAY / REJECT`，最多給出五項修正 | sonnet | medium | Write、Edit |
-| `verifier` | 只採信新鮮證據；親自執行檢查；逐條標準給出狀態；從不核准來自自身情境的工作 | sonnet | medium | Write、Edit |
+| 角色 | 職責 | 模型 | Codex 推理強度 | Codex 沙箱 | 禁用的工具 |
+|---|---|---|---|---|---|
+| `planner` | 將提案轉化為有證據支撐的設計與任務清單；親自閱讀程式碼；每個任務都註明其驗證方式 | inherit | high | 無 | 無（僅在 `changes/<name>/` 下寫入） |
+| `architect` | 唯讀的設計審查者：反題、張力、綜合；`CLEAR / WATCH / BLOCK` | inherit | high | read-only | Write、Edit |
+| `critic` | 判斷計畫是否無需猜測即可執行；模擬兩到三個任務；`OKAY / REJECT`，最多給出五項修正 | inherit | medium | read-only | Write、Edit |
+| `verifier` | 只採信新鮮證據；親自執行檢查；逐條標準給出狀態；從不核准來自自身情境的工作 | inherit | medium | 無（保持由提示詞約束的唯讀，以便能執行測試） | Write、Edit |
+
+兩個 CLI 上的角色都繼承主對話的模型（Claude 為 `model: inherit`；Codex 省略 `model`，因此沿用父工作階段的模型）。`models` 命令（見 CLI 命令一節）可以按角色在本地覆蓋；`models status` 顯示實際生效的值。
 
 Claude 以 `my-flow:planner` 等名稱呼叫它們。Codex 從 `~/.codex/agents/<name>.toml` 載入它們；TOML 沒有工具允許清單，因此唯讀是透過提示文字來約束的（無頭模式下則透過 `-s read-only`）。
 
@@ -179,7 +183,7 @@ Claude 以 `my-flow:planner` 等名稱呼叫它們。Codex 從 `~/.codex/agents/
 
 | 事件 | 腳本 | 行為 |
 |---|---|---|
-| SessionStart | `hooks/session-context.mjs` | 如果專案中存在 `changes/`，列出進行中的變更及其已勾選 / 總任務數與產出物狀態。永遠以結束代碼 0 結束 |
+| SessionStart | `hooks/session-context.mjs` | 如果專案中存在 `changes/`，列出進行中的變更及其已勾選 / 總任務數與產出物狀態。永遠以結束代碼 0 結束. 同時印出待處理的模型路由摘要（一行，只印一次），並在每 `MY_FLOW_MODELS_CHECK_HOURS`（預設 1，`0` = 每次啟動）內至多啟動一次分離的 `models check`：它探測 CLI 版本，僅在版本變化時才在背景執行分析。hook 本身從不呼叫模型。用 `MY_FLOW_SKIP_HOOKS=model-routing` 可關閉路由部分. 在 Windows 上，檢查透過 `install claude` / `install codex` 註冊的排程任務 `my-flow-models-check` 啟動（工作排程器在 hook 的 Job 物件之外執行它，而 Codex 會清掉該 Job）；沒有該任務或 `schtasks /run` 失敗時，退回為分離的子程序 |
 | Stop | `hooks/completion-guard.mjs` | 如果最後一則訊息宣稱已完成，但 diff 中仍包含 `test.skip`、`.only`、佔位 TODO 或存根回傳值，則攔截並說明原因；在 `execute` 階段，若 tasks.md 還有未勾選且未標記 blocked 的任務，也會攔截完成宣稱，但僅限狀態檔未超過 12 小時（`MY_FLOW_EXECUTE_GUARD_TTL_HOURS`）。沒有完成宣稱的訊息永遠不會被攔截 |
 
 這兩個腳本由 Claude（透過外掛中的 `hooks/hooks.json`）與 Codex（透過 PowerShell shim）共用。可用 `MY_FLOW_SKIP_HOOKS=completion-guard` 或 `execute-guard`（或 `all`）停用。execute-guard 的 TTL 預設為 12 小時，可用 `MY_FLOW_EXECUTE_GUARD_TTL_HOURS` 覆寫。
@@ -310,6 +314,8 @@ node scripts/install.mjs --uninstall codex # reverse
 | `spec archive` 拒絕執行 | 所有核取方塊必須已勾選，且 `.my-flow/verify/` 下必須存在包含 `Verdict: PASS` 的報告。請先執行 `mf-verify`，或使用 `--force` 並明確說明 |
 | Codex 要求信任掛鉤 | 在 `/hooks` 中核准一次；上游的信任雜湊格式可能已變更 |
 | Windows 上的分割窗格團隊 | Claude Code 不支援；團隊在處理程序內執行。不要要求 tmux 窗格 |
+| 在 Codex 下檢查永遠不結束，或從未出現 `check start` | 執行 `schtasks /query /tn my-flow-models-check`；若任務不存在，或 `node scripts/cli.mjs models status` 顯示 launcher 的根目錄或 Node 不存在（檢出被移動或 Node 已升級），重新執行 `node scripts/install.mjs claude` 或 `codex` 以重新註冊。在 Codex 下還要在 `/hooks` 裡信任一次 my-flow 的 hook |
+| 子代理使用了預期之外的模型 | 執行 `node scripts/cli.mjs models status`：它顯示覆蓋（若有）以及從已安裝代理檔案回讀的 `model:` / 推理強度值。`models reset` 恢復 `inherit` 底線；`~/.my-flow/` 下的 `models.log` 記錄每次檢查與分析。開發用檢出（`claude --plugin-dir`）永遠不會被改寫，只改寫已安裝的外掛快取 |
 
 ## 授權條款
 

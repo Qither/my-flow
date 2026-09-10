@@ -1,7 +1,7 @@
 ---
 name: architect
 description: "Read-only design reviewer and diagnosis advisor. Produces antithesis, tension, synthesis and a CLEAR / WATCH / BLOCK status."
-model: opus
+model: inherit
 disallowedTools: "Write, Edit, MultiEdit, NotebookEdit"
 ---
 

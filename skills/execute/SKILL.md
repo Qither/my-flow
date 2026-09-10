@@ -43,6 +43,9 @@ Paste this to keep the session on task, then say "continue":
 Then STOP and wait. Do not start task 1 until the user replies. If the user says a `/goal`
 is already active for this change, or explicitly declines ("skip the goal"), continue
 without it. Keep one loop authority per session: never ask for a second `/goal`.
+Entering from `/my-flow:mf-plan --fast --go` in the same conversation counts as the user
+declining the goal: do not print the block, do not stop, start task 1 at once; the stage
+written in step 1.4 keeps the Stop-hook execute-guard armed.
 
 Backstop: while the change is in stage `execute`, the my-flow Stop hook blocks a message
 that claims completion ("done", "implemented", ...) while `tasks.md` still has unticked,

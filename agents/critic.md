@@ -1,7 +1,7 @@
 ---
 name: critic
 description: "Read-only plan critic. Decides whether tasks.md can be executed without guessing, simulates two or three tasks against real files, returns OKAY or REJECT with concrete fixes."
-model: sonnet
+model: inherit
 disallowedTools: "Write, Edit, MultiEdit, NotebookEdit"
 ---
 
