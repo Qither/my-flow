@@ -10,7 +10,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/build.mjs --check",
-    "test": "node --test test/spec.test.mjs test/completion-guard.test.mjs test/dashboard.test.mjs test/markdown.test.mjs test/diff.test.mjs test/models.test.mjs test/styles.test.mjs test/ui.test.mjs"
+    "test": "node --test test/spec.test.mjs test/completion-guard.test.mjs test/dashboard.test.mjs test/markdown.test.mjs test/diff.test.mjs test/models.test.mjs test/styles.test.mjs test/ui.test.mjs test/plugin.test.mjs"
   },
   "engines": {
     "node": ">=20"

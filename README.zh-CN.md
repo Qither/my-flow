@@ -33,11 +33,12 @@ oh-my-claudecode 和 oh-my-codex 过去所封装的一切（agent teams、`/goal
 8. [钩子](#钩子)
 9. [跨模型顾问](#跨模型顾问)
 10. [仪表板](#仪表板)
-11. [意图层](#意图层)
-12. [仓库结构与单一来源编写](#仓库结构与单一来源编写)
-13. [安装到 Codex](#安装到-codex)
-14. [故障排查](#故障排查)
-15. [许可证](#许可证)
+11. [插件](#插件)
+12. [意图层](#意图层)
+13. [仓库结构与单一来源编写](#仓库结构与单一来源编写)
+14. [安装到 Codex](#安装到-codex)
+15. [故障排查](#故障排查)
+16. [许可证](#许可证)
 
 ## 定位
 
@@ -141,6 +142,7 @@ Claude Code 负责交互式工作并运行循环。Codex 负责审查、规划�
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以只读方式运行另一个 CLI 作为顾问；将工件写入 `.my-flow/ask/` | 提示词通过 stdin 传入；输出为空视为失败 |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | 查看 `specs/`、`changes/`、`.my-flow/` 的本地 Web 仪表板：实时更新、受保护的编辑；`stop` 会先核实记录的进程再终止它 | 仅 loopback，默认端口 4321，零依赖 |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | 子代理模型路由：`status` 显示记录的 CLI 版本、本地覆盖（或无）以及从已安装代理文件回读的值；`analyze` 请求当前最强的 CLI 给出角色 -> 模型 / 推理强度的映射，校验后应用；`apply` 依据 `~/.my-flow/models.json` 重新渲染已安装文件；`reset` 删除覆盖并恢复 `inherit` 基线 | 只写入 `~/.my-flow/`（`MY_FLOW_HOME`）、`~/.codex/agents/` 和已安装 Claude 插件的 `agents/`；从不写入仓库 |
+| `plugin add\|remove\|list\|enable\|disable [--json] [--dry-run]` | 插件注册表：`add <path\|git-url>` 校验插件仓库的 `my-flow-plugin.json` 并登记，`list` 显示版本、setup 状态与各宿主状态，`enable` / `disable` / `remove` 管理它；插件贡献的动词随后可用 `my-flow <verb>` 调用 | 只写入 `~/.my-flow/plugins.json`，git 来源时另写 `~/.my-flow/plugins/` 下的克隆；从不写入仓库 |
 
 ## 技能
 
@@ -223,6 +225,42 @@ node scripts/cli.mjs dashboard stop
 - **Diff**：当项目根目录是 git 工作树时，会出现 `Diff` 项，以树形或扁平列表列出工作树相对 `HEAD` 的改动（已暂存、未暂存和未跟踪），并只读地渲染所选文件的补丁。它只对 `specs/`、`changes/`、`.my-flow/` 下的编辑自动刷新，其他位置改动后请点 Refresh。没有 git 时不显示该项。最近修改的文件会被标记，`j` / `k` 在文件间移动，`.` 跳到该文件。
 
 `start` 以分离方式启动服务器并记录到 `.my-flow/state/dashboard.json`；`stop` 会先确认记录的进程确实是仪表板（存活，且 `/api/health` 返回相同的 pid 和 root）再终止它，对过期的记录只清理、不发送任何信号。技能 `/my-flow:dashboard start | stop | status`（Codex：`$my-flow-dashboard`）封装了同样的命令。
+
+## 插件
+
+插件是一个独立仓库，根目录放 `my-flow-plugin.json`，可以贡献技能、代理、钩子、CLI 动词与
+MCP 服务器。my-flow 核心保持零依赖：它只校验清单并写入宿主配置，自己从不讲 MCP。
+
+```
+my-flow plugin add <path|git-url>   校验并登记到 ~/.my-flow/plugins.json
+my-flow plugin list [--json]        版本、setup 状态、Claude / Codex 状态、动词、服务器
+my-flow plugin enable|disable <n>   翻转开关
+my-flow plugin remove <n>           移除（由 my-flow 克隆的目录一并删除）
+my-flow <verb> ...                  已启用插件贡献的动词
+```
+
+清单声明 `name`、`version`、`description`、可选的 `codexSkillPrefix`，以及包含 `skills`、
+`agents`、`hooks`、`cli`、`mcpServers` 的 `contributes`。`${PLUGIN_ROOT}` 是 my-flow 唯一替换的
+占位符。与核心命令、核心角色、核心 Codex 技能目录或另一个已注册插件冲突时，`plugin add` 直接
+拒绝，因此 `install` 只需处理宿主自己的文件。
+
+合并发生在 `install`，不在 `build`：`skills/`、`agents/`、`codex/` 下的生成文件是提交进仓库的，
+一旦漂移 `npm run check` 就会失败。
+
+- `install codex` 把每个启用的插件渲染进 Codex 主目录：技能目录名为 `<codexSkillPrefix><skill>`
+  并带 `.my-flow-plugin` 标记文件，代理 TOML 带 `# my-flow agent: <role> (plugin <name>, ...)`
+  头，钩子经 PowerShell shim 注册并写入信任哈希，`[mcp_servers.<server>]` 表写在托管块内。若该表
+  已定义在托管块之外，则以它为准并提示：
+  `skip [mcp_servers.<server>]: defined outside the my-flow block; remove it first to let my-flow manage it`。
+- `uninstall codex` 依标记精确移除自己写过的内容，因此即使插件已从注册表删除也能清理干净；没有
+  标记的目录永远不会被动。
+- `install claude` 为每个插件打印三条命令（`claude plugin marketplace add`、
+  `claude plugin install`，以及每个服务器一条 `claude mcp add --transport stdio --scope user ...`），
+  一条都不执行；`uninstall claude` 打印对应的 `claude mcp remove` 与 `claude plugin disable`。
+- 目录已消失或清单损坏的已注册插件会以 `skip plugin <name>: <reason>` 跳过，绝不中断核心安装。
+
+Claude 上的插件技能只通过 `my-flow <verb>` 调用有依赖的代码，绝不走 `${CLAUDE_PLUGIN_ROOT}/...`，
+因为插件缓存里的副本可能没有 `node_modules`。
 
 ## 意图层
 

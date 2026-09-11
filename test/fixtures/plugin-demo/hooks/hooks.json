@@ -1,0 +1,17 @@
+{
+  "description": "plugin-demo hooks: a no-op SessionStart hook that proves plugin hooks are rendered",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/demo-hook.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

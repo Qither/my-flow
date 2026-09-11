@@ -104,4 +104,26 @@ Codex is an advisor and cross-verifier in this workflow, not the primary executo
   It is git-ignored and may vanish with a worktree; nothing authoritative lives there.
 - Durable intent lives only in `specs/` and `changes/` (committed) and in promoted skills
   under `.claude/skills/` and `.agents/skills/` (committed).
+
+## 8. Plugins
+
+A plugin is an independent repository with `my-flow-plugin.json` at its root. It may
+contribute skills, agents, hooks, CLI verbs and MCP servers; the core stays dependency-free
+and only writes host configuration.
+
+- `my-flow plugin add <path|git-url>` validates the manifest and records it in
+  `~/.my-flow/plugins.json`; `plugin list [--json]`, `enable`, `disable` and `remove` manage
+  it. Collisions (core commands, verbs, prefixes, roles, server names) are refused at
+  registration time.
+- Merging happens in `install`, never in `build`: `install codex` renders every enabled
+  plugin into the Codex home (skills under `<codexSkillPrefix><skill>`, agent TOMLs, hooks
+  through the shim, `[mcp_servers.*]` inside the managed block; a table already defined
+  outside that block wins and is reported). `install claude` prints the marketplace,
+  plugin-install and `claude mcp add` commands for you to run in a terminal; it never runs
+  them.
+- `uninstall codex` removes exactly what it wrote, by marker, so a plugin dropped from the
+  registry is still cleaned.
+- A plugin skill reaches dependency-bearing code only through `my-flow <verb>`, never
+  through `${CLAUDE_PLUGIN_ROOT}/...`, because the Claude plugin cache may hold a copy
+  without `node_modules`.
 <!-- MY-FLOW:END -->

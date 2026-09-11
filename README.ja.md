@@ -33,11 +33,12 @@ oh-my-claudecode と oh-my-codex がラップしていたもの(エージェン�
 8. [フック](#フック)
 9. [クロスモデルアドバイザー](#クロスモデルアドバイザー)
 10. [ダッシュボード](#ダッシュボード)
-11. [インテントレイヤー](#インテントレイヤー)
-12. [リポジトリ構成と単一ソースでの執筆](#リポジトリ構成と単一ソースでの執筆)
-13. [Codex へのインストール](#codex-へのインストール)
-14. [トラブルシューティング](#トラブルシューティング)
-15. [ライセンス](#ライセンス)
+11. [プラグイン](#プラグイン)
+12. [インテントレイヤー](#インテントレイヤー)
+13. [リポジトリ構成と単一ソースでの執筆](#リポジトリ構成と単一ソースでの執筆)
+14. [Codex へのインストール](#codex-へのインストール)
+15. [トラブルシューティング](#トラブルシューティング)
+16. [ライセンス](#ライセンス)
 
 ## 位置づけ
 
@@ -141,6 +142,7 @@ Claude Code が対話的な作業を行い、ループを実行します。Codex
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | もう一方の CLI をアドバイザーとして読み取り専用で実行し、成果物を `.my-flow/ask/` に書き込みます | プロンプトは stdin 経由で渡されます。出力が空の場合は失敗として扱われます |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | `specs/`、`changes/`、`.my-flow/` を見るローカル Web ダッシュボード。即時更新と保護付き編集。`stop` は記録されたプロセスを確認してから終了させます | ループバックのみ、既定ポート 4321、依存なし |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | サブエージェントのモデルルーティング: `status` は記録済みの CLI バージョン、ローカルの上書き（またはなし）、インストール済みエージェントファイルから読み戻した値を表示します。`analyze` は利用可能な最も強い CLI にロール -> モデル / effort の割り当てを求め、検証して適用します。`apply` は `~/.my-flow/models.json` からインストール済みファイルを再生成し、`reset` は上書きを削除して `inherit` のベースラインに戻します | 書き込み先は `~/.my-flow/`（`MY_FLOW_HOME`）、`~/.codex/agents/`、インストール済み Claude プラグインの `agents/` のみ。リポジトリには書きません |
+| `plugin add\|remove\|list\|enable\|disable [--json] [--dry-run]` | プラグインレジストリ: `add <path\|git-url>` はプラグインリポジトリの `my-flow-plugin.json` を検証して登録し、`list` はバージョン・setup 状態・各ホストの状態を表示し、`enable` / `disable` / `remove` で管理します。プラグインが提供する動詞はその後 `my-flow <verb>` で呼び出せます | 書き込み先は `~/.my-flow/plugins.json` と、git ソースの場合の `~/.my-flow/plugins/` 配下のクローンのみ。リポジトリには書きません |
 
 ## スキル
 
@@ -223,6 +225,48 @@ node scripts/cli.mjs dashboard stop
 - **Diff**: プロジェクトルートが git の作業ツリーであれば、`Diff` 項目が作業ツリーと `HEAD` の差分(ステージ済み、未ステージ、未追跡)をツリーまたはフラットな一覧で示し、選んだファイルのパッチを読み取り専用で表示します。自動更新されるのは `specs/`、`changes/`、`.my-flow/` 配下の編集だけなので、それ以外を編集した後は Refresh ボタンを使ってください。git がなければこの項目は表示されません。最後に変更されたファイルには印が付き、`j` / `k` でファイル間を移動し、`.` でそのファイルへ移動します。
 
 `start` はサーバーを切り離して起動し、`.my-flow/state/dashboard.json` に記録します。`stop` は記録されたプロセスがダッシュボード本体であること(生存しており、`/api/health` が同じ pid と root を返すこと)を確認してから終了させ、古くなった記録は何もシグナルを送らずに片付けます。スキル `/my-flow:dashboard start | stop | status`(Codex: `$my-flow-dashboard`)は同じコマンドを包んでいます。
+
+## プラグイン
+
+プラグインはルートに `my-flow-plugin.json` を置いた独立したリポジトリで、スキル、エージェント、
+フック、CLI 動詞、MCP サーバーを提供できます。my-flow 本体は依存ゼロのままです。マニフェストを
+検証してホストの設定を書くだけで、自身が MCP を話すことはありません。
+
+```
+my-flow plugin add <path|git-url>   検証して ~/.my-flow/plugins.json に登録
+my-flow plugin list [--json]        バージョン、setup 状態、Claude / Codex 状態、動詞、サーバー
+my-flow plugin enable|disable <n>   有効・無効の切り替え
+my-flow plugin remove <n>           削除（my-flow が作ったクローンも削除）
+my-flow <verb> ...                  有効なプラグインが提供する動詞
+```
+
+マニフェストは `name`、`version`、`description`、任意の `codexSkillPrefix`、そして `skills`、
+`agents`、`hooks`、`cli`、`mcpServers` を含む `contributes` を宣言します。my-flow が置換する
+プレースホルダーは `${PLUGIN_ROOT}` だけです。コアのコマンド、コアのロール、コアの Codex スキル
+ディレクトリ、または他の登録済みプラグインと衝突する場合は `plugin add` が拒否するので、
+`install` はホスト自身のファイルだけを相手にすれば済みます。
+
+マージは `build` ではなく `install` で行われます。`skills/`、`agents/`、`codex/` 配下の生成物は
+コミットされており、ずれると `npm run check` が失敗するためです。
+
+- `install codex` は有効な各プラグインを Codex ホームに描画します。スキルは
+  `<codexSkillPrefix><skill>` として `.my-flow-plugin` マーカー付きで、エージェント TOML は
+  `# my-flow agent: <role> (plugin <name>, ...)` ヘッダー付きで、フックは PowerShell シム経由で
+  信頼ハッシュとともに、`[mcp_servers.<server>]` テーブルは管理ブロック内に書かれます。管理ブロック
+  の外に同名のテーブルが既にある場合はそちらが優先され、次の行が出ます:
+  `skip [mcp_servers.<server>]: defined outside the my-flow block; remove it first to let my-flow manage it`。
+- `uninstall codex` はマーカーに従って自分が書いたものだけを削除するので、レジストリから消えた
+  プラグインも掃除されます。マーカーのないディレクトリには決して触れません。
+- `install claude` はプラグインごとに三つのコマンド（`claude plugin marketplace add`、
+  `claude plugin install`、サーバーごとに `claude mcp add --transport stdio --scope user ...`）
+  を表示するだけで実行しません。`uninstall claude` は対応する `claude mcp remove` と
+  `claude plugin disable` を表示します。
+- ディレクトリが消えた、あるいはマニフェストが壊れた登録済みプラグインは
+  `skip plugin <name>: <reason>` としてスキップされ、コアのインストールを止めることはありません。
+
+Claude 上のプラグインスキルは、依存を持つコードを `my-flow <verb>` 経由でのみ呼び出し、
+`${CLAUDE_PLUGIN_ROOT}/...` は使いません。プラグインキャッシュの複製には `node_modules` が
+無いことがあるからです。
 
 ## インテントレイヤー
 

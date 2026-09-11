@@ -16,6 +16,11 @@
  *   node scripts/install.mjs --uninstall codex [--dry-run]
  *
  * Everything is idempotent and text-based: user content outside my-flow markers is preserved.
+ *
+ * Test seam: MY_FLOW_SCHTASKS. Whenever it is defined, every Task Scheduler call runs
+ * `process.execPath <MY_FLOW_SCHTASKS> <args>` instead of `schtasks <args>` (the same rule
+ * scripts/lib/models.mjs applies), so a test install into a temporary home never touches
+ * the user's real scheduled task.
  */
 import { createHash } from 'node:crypto';
 import {
@@ -25,6 +30,17 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { TASK_NAME, filePaths, updateConfig, writeConfig } from './lib/models.mjs';
+import {
+  MARKER_FILE,
+  PLUGIN_AGENT_HEADER_RE,
+  claudeCommands,
+  codexAgentToml,
+  codexHookCommand,
+  codexMcpTables,
+  codexSkillText,
+  loadRegistered,
+  mcpTableRe,
+} from './lib/plugins.mjs';
 import { spawnSync } from 'node:child_process';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -48,6 +64,37 @@ const TOML_END = '# <<< my-flow managed <<<';
 
 const log = (m) => console.log(`${DRY ? '[dry-run] ' : ''}${m}`);
 /**
+ * Enabled plugins with a loadable manifest, read once per install branch (design D7 failure
+ * path). An unreadable registry is treated as empty with a warning; a plugin whose path is
+ * missing or whose manifest has errors is skipped with a logged reason and never aborts the
+ * core install.
+ */
+function loadPlugins({ includeDisabled = false } = {}) {
+  let registered;
+  try {
+    registered = loadRegistered({ warn: (m) => console.error(m) });
+  } catch (e) {
+    console.error(`warning: ${e.message}; treating the plugin registry as empty`);
+    return [];
+  }
+  const out = [];
+  for (const { key, entry, loaded } of registered.plugins) {
+    if (entry.enabled === false && !includeDisabled) continue;
+    if (!loaded.manifest || loaded.errors.length) {
+      log(`skip plugin ${key}: ${loaded.errors[0] ?? 'manifest could not be loaded'}`);
+      continue;
+    }
+    out.push({ key, entry, loaded });
+  }
+  return out;
+}
+/** Task Scheduler call through the MY_FLOW_SCHTASKS seam (see the header comment). */
+function schtasks(args) {
+  const opts = { encoding: 'utf8', windowsHide: true, timeout: 15000 };
+  const seam = process.env.MY_FLOW_SCHTASKS;
+  return seam !== undefined ? spawnSync(process.execPath, [seam, ...args], opts) : spawnSync('schtasks', args, opts);
+}
+/**
  * Registers the Task Scheduler task that starts the background model-routing check outside
  * the hook's job object (design D4 / D9, win32 only). Re-registers with /f on every install;
  * refuses when conhost.exe is missing; records config.launcher only on success.
@@ -65,10 +112,10 @@ function registerLauncher() {
   const once = create(['/sc', 'once', '/st', '00:00']);
   log(`schtasks ${once.join(' ')}`);
   if (DRY) return;
-  let r = spawnSync('schtasks', once, { encoding: 'utf8', windowsHide: true, timeout: 15000 });
+  let r = schtasks(once);
   if (r.error || r.status !== 0) {
     log(`schtasks /sc once refused (${r.error?.message ?? `exit ${r.status}`}): ${(r.stderr || r.stdout || '').trim()}; retrying with /sc onlogon`);
-    r = spawnSync('schtasks', create(['/sc', 'onlogon']), { encoding: 'utf8', windowsHide: true, timeout: 15000 });
+    r = schtasks(create(['/sc', 'onlogon']));
   }
   if (r.error || r.status !== 0) {
     log(`scheduled task not registered: ${(r.stderr || r.stdout || r.error?.message || '').trim()}`);
@@ -97,7 +144,7 @@ function unregisterSurface(tool) {
   if (cfg.launcher?.task) {
     log(`schtasks /delete /tn ${cfg.launcher.task} /f`);
     if (!DRY) {
-      spawnSync('schtasks', ['/delete', '/tn', cfg.launcher.task, '/f'], { encoding: 'utf8', windowsHide: true, timeout: 15000 });
+      schtasks(['/delete', '/tn', cfg.launcher.task, '/f']);
       updateConfig((c) => {
         delete c.launcher;
         return c;
@@ -157,8 +204,17 @@ if (target === 'claude') {
     if (existsSync(md)) write(md, removeBlock(readFileSync(md, 'utf8')));
     unregisterSurface('claude');
     log('Claude block removed. Disable the plugin with: claude plugin disable my-flow@my-flow');
+    // Plugin commands are printed, never executed (D9, U7).
+    for (const { key, loaded } of loadPlugins({ includeDisabled: true })) {
+      const c = claudeCommands(loaded);
+      if (!c.mcpRemove.length && !c.pluginDisable) continue;
+      console.log(`plugin ${key} (run in a terminal, not inside a Claude session):`);
+      for (const line of c.mcpRemove) console.log(`  ${line}`);
+      if (c.pluginDisable) console.log(`  ${c.pluginDisable}`);
+    }
     process.exit(0);
   }
+  const claudePlugins = loadPlugins();
   const settingsPath = join(CLAUDE_HOME, 'settings.json');
   const settings = existsSync(settingsPath) ? JSON.parse(readFileSync(settingsPath, 'utf8')) : {};
   backup([settingsPath, join(CLAUDE_HOME, 'CLAUDE.md')]);
@@ -179,6 +235,15 @@ Next steps (run in a terminal, not inside a Claude session):
   stable:       claude plugin marketplace add "${ROOT}"
                 claude plugin install my-flow@my-flow
 `);
+  // One block per enabled plugin, printed in both modes and executed in neither (D9, U7).
+  for (const { key, loaded } of claudePlugins) {
+    const c = claudeCommands(loaded);
+    console.log(`plugin ${key} (run in a terminal, not inside a Claude session):`);
+    if (c.marketplaceAdd) console.log(`  ${c.marketplaceAdd}`);
+    if (c.pluginInstall) console.log(`  ${c.pluginInstall}`);
+    for (const line of c.mcpAdd) console.log(`  ${line}`);
+    console.log('');
+  }
   process.exit(0);
 }
 
@@ -252,6 +317,94 @@ function stripTomlBlock(text) {
   return (t.slice(0, s) + t.slice(e + TOML_END.length)).replace(/\n{3,}/g, '\n\n').trimEnd() + '\n';
 }
 
+// ---------------- plugin rendering (design D7) ----------------
+/**
+ * Step 1: stale plugin content first, so a disabled or removed plugin disappears on the next
+ * install. Marker-driven, never registry-driven: a skill directory carrying `.my-flow-plugin`
+ * and an agent TOML whose header names a plugin. A user directory without the marker is never
+ * touched.
+ */
+function removeStalePluginContent() {
+  for (const entry of existsSync(skillsDir) ? readdirSync(skillsDir) : []) {
+    const dir = join(skillsDir, entry);
+    if (!existsSync(join(dir, MARKER_FILE))) continue;
+    log(`remove ${dir}`);
+    if (!DRY) rmSync(dir, { recursive: true, force: true });
+  }
+  for (const entry of existsSync(agentsDir) ? readdirSync(agentsDir) : []) {
+    if (!entry.endsWith('.toml')) continue;
+    const p = join(agentsDir, entry);
+    if (!PLUGIN_AGENT_HEADER_RE.test(readFileSync(p, 'utf8').split('\n')[0] ?? '')) continue;
+    log(`remove ${p}`);
+    if (!DRY) rmSync(p, { force: true });
+  }
+}
+
+/** Step 2: plugin skills are always copied (never junction-linked) so placeholders are rewritten. */
+function renderPluginSkills(plugins) {
+  let noted = false;
+  for (const { loaded } of plugins) {
+    if (!loaded.skills.length) continue;
+    if (LINK && !noted) {
+      log('note: plugin skills are always copied so their placeholders can be rewritten');
+      noted = true;
+    }
+    const skillNames = loaded.skills.map((s) => s.name);
+    for (const s of loaded.skills) {
+      const to = join(skillsDir, `${loaded.prefix}${s.name}`);
+      if (existsSync(to) && !existsSync(join(to, MARKER_FILE))) {
+        log(`skip ${to} (exists and is not managed by my-flow; remove it first to replace)`);
+        continue;
+      }
+      log(`${existsSync(to) ? 'replace' : 'add'} ${to}`);
+      if (DRY) continue;
+      rmSync(to, { recursive: true, force: true });
+      mkdirSync(skillsDir, { recursive: true });
+      cpSync(s.dir, to, { recursive: true });
+      const skillMd = join(to, 'SKILL.md');
+      writeFileSync(
+        skillMd,
+        codexSkillText(readFileSync(skillMd, 'utf8'), {
+          pluginName: loaded.manifest.name,
+          root: loaded.root,
+          prefix: loaded.prefix,
+          skill: s.name,
+          skillNames,
+        }),
+        'utf8'
+      );
+      writeFileSync(join(to, MARKER_FILE), `${loaded.manifest.name}\n`, 'utf8');
+    }
+  }
+}
+
+/** Step 3: plugin agent TOMLs, keeping the `# my-flow agent` prefix the core's own check uses. */
+function renderPluginAgents(plugins) {
+  for (const { loaded } of plugins) {
+    const skillNames = loaded.skills.map((s) => s.name);
+    for (const a of loaded.agents) {
+      const to = join(agentsDir, `${a.role}.toml`);
+      if (existsSync(to) && !readFileSync(to, 'utf8').startsWith('# my-flow agent')) {
+        log(`skip ${to} (exists and is not managed by my-flow; remove it first to replace)`);
+        continue;
+      }
+      log(`${existsSync(to) ? 'replace' : 'add'} ${to}`);
+      if (DRY) continue;
+      mkdirSync(agentsDir, { recursive: true });
+      writeFileSync(
+        to,
+        codexAgentToml(a.role, readFileSync(a.file, 'utf8'), {
+          pluginName: loaded.manifest.name,
+          root: loaded.root,
+          prefix: loaded.prefix,
+          skillNames,
+        }),
+        'utf8'
+      );
+    }
+  }
+}
+
 // ---------------- uninstall ----------------
 if (UNINSTALL) {
   backup([configPath, hooksJsonPath, agentsMdPath]);
@@ -268,6 +421,10 @@ if (UNINSTALL) {
       if (!DRY) rmSync(p, { force: true });
     }
   }
+  // Plugin content (D8): marker-driven, so a plugin already dropped from the registry is
+  // still cleaned. The shim, hook and TOML-block steps below remove plugin hooks and MCP
+  // tables by their own markers.
+  removeStalePluginContent();
   if (existsSync(shimPath)) {
     log(`remove ${shimPath}`);
     if (!DRY) rmSync(shimPath, { force: true });
@@ -293,6 +450,10 @@ for (const p of built) if (!existsSync(p)) throw new Error(`missing ${p}; run no
 
 backup([configPath, hooksJsonPath, agentsMdPath]);
 
+// plugins: registry read once, stale plugin content removed first (D7 step 1)
+const plugins = loadPlugins();
+removeStalePluginContent();
+
 // skills
 const srcSkills = join(ROOT, 'codex', 'skills');
 for (const entry of readdirSync(srcSkills)) {
@@ -313,6 +474,7 @@ for (const entry of readdirSync(srcSkills)) {
   }
 }
 if (LINK) log('note: with --link, {{MYFLOW_ROOT}} in skill bodies is not substituted; set it by editing src or use copy mode.');
+renderPluginSkills(plugins);
 
 // agents
 for (const name of Object.keys(manifest.agents)) {
@@ -328,6 +490,7 @@ for (const name of Object.keys(manifest.agents)) {
     cpSync(from, to);
   }
 }
+renderPluginAgents(plugins);
 
 // shim
 const shim = readFileSync(join(ROOT, 'hooks', 'codex-shim.ps1'), 'utf8').replace('{{NODE}}', process.execPath);
@@ -343,6 +506,19 @@ const doc = stripOurHooks(loadHooksJson());
 const trust = {};
 for (const [ev, groups] of Object.entries(template.hooks)) {
   doc.hooks[ev] = [...(doc.hooks[ev] ?? []), ...groups];
+}
+// Plugin hook groups (D7 step 4): appended after the core groups, so the core's trust-key
+// indices stay stable. The command is built here, after JSON parsing, with shimPath verbatim;
+// JSON.stringify escapes it on write and the trust loop below hashes this same string.
+for (const { loaded } of plugins) {
+  for (const [ev, groups] of Object.entries(loaded.hooks?.hooks ?? {})) {
+    const rendered = (groups ?? []).map((g) => ({
+      ...g,
+      hooks: (g.hooks ?? []).map((h) => ({ ...h, command: codexHookCommand(h.command, { root: loaded.root, shimPath }) })),
+    }));
+    for (const g of rendered) for (const h of g.hooks) log(`add hook ${ev}: ${h.command}`);
+    doc.hooks[ev] = [...(doc.hooks[ev] ?? []), ...rendered];
+  }
 }
 for (const [ev, groups] of Object.entries(doc.hooks)) {
   groups.forEach((g, gi) =>
@@ -360,10 +536,28 @@ write(hooksJsonPath, JSON.stringify(doc, null, 2) + '\n');
 // config.toml managed block
 let config = existsSync(configPath) ? stripTomlBlock(readFileSync(configPath, 'utf8')) : '';
 const tomlKey = (k) => `'${k.replace(/'/g, "''")}'`;
+// Plugin MCP servers (D7 step 5). A table already defined outside the managed block wins:
+// a duplicate TOML table would make Codex reject the whole file.
+const pluginToml = [];
+for (const { loaded } of plugins) {
+  for (const { server, lines } of codexMcpTables(loaded.manifest, loaded.root)) {
+    if (mcpTableRe(server).test(config)) {
+      log(`skip [mcp_servers.${server}]: defined outside the my-flow block; remove it first to let my-flow manage it`);
+      continue;
+    }
+    log(`add [mcp_servers.${server}]`);
+    for (const l of lines) log(`  ${l}`);
+    pluginToml.push(...lines, '');
+  }
+}
+if (pluginToml.length) {
+  pluginToml.unshift(`# Plugin MCP servers (regenerated by \`my-flow install codex\`; registry: ${join(filePaths().home, 'plugins.json')})`);
+}
 const block = [
   TOML_START,
   '# Trust state for my-flow hooks (regenerated by `my-flow install codex`).',
   ...Object.entries(trust).flatMap(([k, v]) => [`[hooks.state.${tomlKey(k)}]`, `trusted_hash = "${v.trusted_hash}"`, '']),
+  ...pluginToml,
   TOML_END,
   '',
 ].join('\n');
@@ -381,6 +575,12 @@ write(agentsMdPath, upsertBlock(existsSync(agentsMdPath) ? readFileSync(agentsMd
 
 recordConfig({ codex: { home: CODEX_HOME, agentsDir } });
 registerLauncher();
+
+for (const { key, loaded } of plugins) {
+  const skills = loaded.skills.length ? `skills ${loaded.prefix}*` : 'no skills';
+  const servers = Object.keys(loaded.manifest.contributes?.mcpServers ?? {});
+  console.log(`plugin ${key}: ${skills}, mcp ${servers.length ? servers.join(', ') : 'none'}`);
+}
 
 console.log(`
 Codex surface installed. Verify with:

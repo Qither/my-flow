@@ -33,11 +33,12 @@ Todo lo que oh-my-claudecode y oh-my-codex solían envolver (equipos de agentes,
 8. [Hooks](#hooks)
 9. [Asesor entre modelos](#asesor-entre-modelos)
 10. [Panel web](#panel-web)
-11. [La capa de intención](#la-capa-de-intención)
-12. [Estructura del repositorio y autoría desde una fuente única](#estructura-del-repositorio-y-autoría-desde-una-fuente-única)
-13. [Instalación en Codex](#instalación-en-codex)
-14. [Solución de problemas](#solución-de-problemas)
-15. [Licencia](#licencia)
+11. [Plugins](#plugins)
+12. [La capa de intención](#la-capa-de-intención)
+13. [Estructura del repositorio y autoría desde una fuente única](#estructura-del-repositorio-y-autoría-desde-una-fuente-única)
+14. [Instalación en Codex](#instalación-en-codex)
+15. [Solución de problemas](#solución-de-problemas)
+16. [Licencia](#licencia)
 
 ## Posicionamiento
 
@@ -141,6 +142,7 @@ Todos los comandos son scripts de Node puro. `node scripts/cli.mjs <command>` (o
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Ejecuta la otra CLI en modo de solo lectura como asesor; escribe un artefacto en `.my-flow/ask/` | El prompt pasa por stdin; una salida vacía cuenta como fallo |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Panel web local sobre `specs/`, `changes/` y `.my-flow/`: actualizaciones en vivo, edición protegida; `stop` verifica el proceso registrado antes de terminarlo | Solo loopback, puerto 4321 por defecto, sin dependencias |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | Enrutamiento de modelos de los subagentes: `status` muestra las versiones de CLI registradas, la anulación local (o ninguna) y los valores leídos de los archivos de agente instalados; `analyze` pide a la CLI más potente disponible un mapa rol -> modelo / esfuerzo, lo valida y lo aplica; `apply` vuelve a renderizar los archivos instalados desde `~/.my-flow/models.json`; `reset` borra la anulación y restaura la base `inherit` | Escribe solo bajo `~/.my-flow/` (`MY_FLOW_HOME`), `~/.codex/agents/` y el `agents/` del plugin de Claude instalado; nunca en el repositorio |
+| `plugin add\|remove\|list\|enable\|disable [--json] [--dry-run]` | Registro de plugins: `add <path\|git-url>` valida el `my-flow-plugin.json` de un repositorio de plugin y lo registra, `list` muestra versión, estado del setup y estado por superficie, `enable` / `disable` / `remove` lo gestionan; un verbo aportado por un plugin se invoca luego como `my-flow <verb>` | Solo escribe `~/.my-flow/plugins.json` y, para un origen git, el clon bajo `~/.my-flow/plugins/`; nunca en el repositorio |
 
 ## Skills
 
@@ -223,6 +225,49 @@ Las páginas se actualizan en vivo mediante Server-Sent Events cuando cambia un 
 - **Diff**: cuando la raíz del proyecto es un árbol de trabajo de git, una entrada `Diff` lista los cambios del árbol de trabajo frente a `HEAD` (preparados, sin preparar y sin seguimiento) como árbol o como lista plana y muestra el parche del archivo elegido, solo lectura. Se actualiza sola únicamente con ediciones bajo `specs/`, `changes/` y `.my-flow/`; usa su botón Refresh tras editar en otro sitio. Sin git la entrada no aparece. El archivo modificado más recientemente aparece marcado; `j` / `k` se mueven entre archivos y `.` salta a ese archivo.
 
 `start` desacopla el servidor y lo registra en `.my-flow/state/dashboard.json`; `stop` confirma que el proceso registrado es el panel (vivo, y respondiendo a `/api/health` con el mismo pid y root) antes de terminarlo, y limpia una entrada obsoleta sin enviar ninguna señal. La skill `/my-flow:dashboard start | stop | status` (Codex: `$my-flow-dashboard`) envuelve los mismos comandos.
+
+## Plugins
+
+Un plugin es un repositorio independiente con `my-flow-plugin.json` en su raíz. Puede aportar
+skills, agentes, hooks, verbos de CLI y servidores MCP. El núcleo de my-flow sigue sin
+dependencias: valida el manifiesto y escribe la configuración de los anfitriones, pero nunca
+habla MCP por sí mismo.
+
+```
+my-flow plugin add <path|git-url>   validar y registrar en ~/.my-flow/plugins.json
+my-flow plugin list [--json]        versión, estado del setup, estado Claude / Codex, verbos, servidores
+my-flow plugin enable|disable <n>   cambiar el indicador
+my-flow plugin remove <n>           quitarlo (y el clon, si lo creó my-flow)
+my-flow <verb> ...                  un verbo aportado por un plugin activado
+```
+
+El manifiesto declara `name`, `version`, `description`, un `codexSkillPrefix` opcional y
+`contributes` con `skills`, `agents`, `hooks`, `cli` y `mcpServers`. `${PLUGIN_ROOT}` es el único
+marcador que my-flow sustituye. Cualquier colisión con un comando del núcleo, un rol del núcleo,
+un directorio de skill de Codex del núcleo u otro plugin registrado la rechaza `plugin add`, de
+modo que `install` solo trata con los archivos del anfitrión.
+
+La fusión ocurre en `install`, nunca en el build: los archivos generados bajo `skills/`,
+`agents/` y `codex/` están versionados y `npm run check` falla en cuanto divergen.
+
+- `install codex` renderiza cada plugin activado en el home de Codex: los skills como
+  `<codexSkillPrefix><skill>` con el archivo marcador `.my-flow-plugin`, los TOML de agente con
+  la cabecera `# my-flow agent: <role> (plugin <name>, ...)`, los hooks a través del shim de
+  PowerShell con sus hashes de confianza y las tablas `[mcp_servers.<server>]` dentro del bloque
+  gestionado. Una tabla ya definida fuera de ese bloque gana y se informa:
+  `skip [mcp_servers.<server>]: defined outside the my-flow block; remove it first to let my-flow manage it`.
+- `uninstall codex` quita exactamente lo que escribió, por marcador, así que también limpia un
+  plugin ya borrado del registro; un directorio sin marcador no se toca nunca.
+- `install claude` imprime los tres comandos por plugin (`claude plugin marketplace add`,
+  `claude plugin install`, un `claude mcp add --transport stdio --scope user ...` por servidor)
+  y no ejecuta ninguno; `uninstall claude` imprime los `claude mcp remove` y
+  `claude plugin disable` correspondientes.
+- Un plugin registrado cuyo directorio desapareció, o cuyo manifiesto está roto, se omite con
+  `skip plugin <name>: <reason>` y nunca aborta la instalación del núcleo.
+
+En Claude, un skill de plugin llega al código con dependencias solo mediante `my-flow <verb>`,
+nunca por `${CLAUDE_PLUGIN_ROOT}/...`, porque la caché de plugins puede tener una copia sin sus
+`node_modules`.
 
 ## La capa de intención
 

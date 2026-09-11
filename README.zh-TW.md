@@ -33,11 +33,12 @@ oh-my-claudecode 與 oh-my-codex 過去所封裝的一切（agent teams、`/goal
 8. [掛鉤](#掛鉤)
 9. [跨模型顧問](#跨模型顧問)
 10. [儀表板](#儀表板)
-11. [意圖層](#意圖層)
-12. [儲存庫結構與單一來源撰寫](#儲存庫結構與單一來源撰寫)
-13. [安裝到 Codex](#安裝到-codex)
-14. [疑難排解](#疑難排解)
-15. [授權條款](#授權條款)
+11. [外掛](#外掛)
+12. [意圖層](#意圖層)
+13. [儲存庫結構與單一來源撰寫](#儲存庫結構與單一來源撰寫)
+14. [安裝到 Codex](#安裝到-codex)
+15. [疑難排解](#疑難排解)
+16. [授權條款](#授權條款)
 
 ## 定位
 
@@ -141,6 +142,7 @@ Claude Code 負責互動式工作並執行迴圈。Codex 負責審查、規劃�
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 以唯讀方式執行另一個 CLI 作為顧問；將產出物寫入 `.my-flow/ask/` | 提示詞透過 stdin 傳入；輸出為空視為失敗 |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | 查看 `specs/`、`changes/`、`.my-flow/` 的本機 Web 儀表板：即時更新、受保護的編輯；`stop` 會先核實記錄的程序再終止它 | 僅 loopback，預設連接埠 4321，零依賴 |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | 子代理模型路由：`status` 顯示記錄的 CLI 版本、本地覆蓋（或無）以及從已安裝代理檔案回讀的值；`analyze` 請求目前最強的 CLI 給出角色 -> 模型 / 推理強度的對應，驗證後套用；`apply` 依 `~/.my-flow/models.json` 重新產生已安裝檔案；`reset` 刪除覆蓋並恢復 `inherit` 底線 | 只寫入 `~/.my-flow/`（`MY_FLOW_HOME`）、`~/.codex/agents/` 與已安裝 Claude 外掛的 `agents/`；從不寫入儲存庫 |
+| `plugin add\|remove\|list\|enable\|disable [--json] [--dry-run]` | 外掛註冊表：`add <path\|git-url>` 驗證外掛儲存庫的 `my-flow-plugin.json` 並登記，`list` 顯示版本、setup 狀態與各宿主狀態，`enable` / `disable` / `remove` 管理它；外掛貢獻的動詞之後可用 `my-flow <verb>` 呼叫 | 只寫入 `~/.my-flow/plugins.json`，git 來源時另寫 `~/.my-flow/plugins/` 下的複本；從不寫入儲存庫 |
 
 ## 技能
 
@@ -223,6 +225,42 @@ node scripts/cli.mjs dashboard stop
 - **Diff**：當專案根目錄是 git 工作樹時，會出現 `Diff` 項目，以樹狀或扁平清單列出工作樹相對 `HEAD` 的變動（已暫存、未暫存與未追蹤），並唯讀地呈現所選檔案的補丁。它只對 `specs/`、`changes/`、`.my-flow/` 下的編輯自動更新，其他位置改動後請按 Refresh。沒有 git 時不顯示該項目。最近修改的檔案會被標記，`j` / `k` 在檔案間移動，`.` 跳到該檔案。
 
 `start` 以分離方式啟動伺服器並記錄到 `.my-flow/state/dashboard.json`；`stop` 會先確認記錄的程序確實是儀表板（存活，且 `/api/health` 回傳相同的 pid 與 root）再終止它，對過期的記錄只清理、不送出任何訊號。技能 `/my-flow:dashboard start | stop | status`（Codex：`$my-flow-dashboard`）包裝了同樣的指令。
+
+## 外掛
+
+外掛是一個獨立儲存庫，根目錄放 `my-flow-plugin.json`，可以貢獻技能、代理、掛鉤、CLI 動詞與
+MCP 伺服器。my-flow 核心維持零依賴：它只驗證清單並寫入宿主設定，自己從不講 MCP。
+
+```
+my-flow plugin add <path|git-url>   驗證並登記到 ~/.my-flow/plugins.json
+my-flow plugin list [--json]        版本、setup 狀態、Claude / Codex 狀態、動詞、伺服器
+my-flow plugin enable|disable <n>   切換開關
+my-flow plugin remove <n>           移除（由 my-flow 複製的目錄一併刪除）
+my-flow <verb> ...                  已啟用外掛貢獻的動詞
+```
+
+清單宣告 `name`、`version`、`description`、選用的 `codexSkillPrefix`，以及包含 `skills`、
+`agents`、`hooks`、`cli`、`mcpServers` 的 `contributes`。`${PLUGIN_ROOT}` 是 my-flow 唯一會替換的
+佔位符。與核心指令、核心角色、核心 Codex 技能目錄或另一個已註冊外掛衝突時，`plugin add` 直接
+拒絕，因此 `install` 只需處理宿主自己的檔案。
+
+合併發生在 `install`，不在 `build`：`skills/`、`agents/`、`codex/` 下的產生檔案會提交進儲存庫，
+一旦漂移 `npm run check` 就會失敗。
+
+- `install codex` 把每個啟用的外掛渲染進 Codex 家目錄：技能目錄名為 `<codexSkillPrefix><skill>`
+  並帶 `.my-flow-plugin` 標記檔，代理 TOML 帶 `# my-flow agent: <role> (plugin <name>, ...)`
+  標頭，掛鉤經 PowerShell shim 註冊並寫入信任雜湊，`[mcp_servers.<server>]` 表寫在受管區塊內。若該表
+  已定義在受管區塊之外，則以它為準並提示：
+  `skip [mcp_servers.<server>]: defined outside the my-flow block; remove it first to let my-flow manage it`。
+- `uninstall codex` 依標記精確移除自己寫過的內容，因此即使外掛已從註冊表刪除也能清乾淨；沒有
+  標記的目錄永遠不會被動到。
+- `install claude` 為每個外掛印出三行指令（`claude plugin marketplace add`、
+  `claude plugin install`，以及每個伺服器一行 `claude mcp add --transport stdio --scope user ...`），
+  一行都不執行；`uninstall claude` 印出對應的 `claude mcp remove` 與 `claude plugin disable`。
+- 目錄已消失或清單損壞的已註冊外掛會以 `skip plugin <name>: <reason>` 跳過，絕不中斷核心安裝。
+
+Claude 上的外掛技能只透過 `my-flow <verb>` 呼叫有相依的程式碼，絕不走 `${CLAUDE_PLUGIN_ROOT}/...`，
+因為外掛快取裡的副本可能沒有 `node_modules`。
 
 ## 意圖層
 

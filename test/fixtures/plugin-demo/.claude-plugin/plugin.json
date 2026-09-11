@@ -1,0 +1,15 @@
+{
+  "name": "plugin-demo",
+  "version": "0.1.0",
+  "description": "Dependency-free fixture plugin used by test/plugin.test.mjs to prove the my-flow plugin contract.",
+  "author": {
+    "name": "my-flow tests"
+  },
+  "license": "MIT",
+  "skills": [
+    "./skills/demo/"
+  ],
+  "agents": [
+    "./agents/demo-reviewer.md"
+  ]
+}

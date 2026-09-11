@@ -33,11 +33,12 @@ Everything that oh-my-claudecode and oh-my-codex used to wrap (agent teams, `/go
 8. [Hooks](#hooks)
 9. [Cross-model advisor](#cross-model-advisor)
 10. [Dashboard](#dashboard)
-11. [The intent layer](#the-intent-layer)
-12. [Repository layout and single-source authoring](#repository-layout-and-single-source-authoring)
-13. [Installing into Codex](#installing-into-codex)
-14. [Troubleshooting](#troubleshooting)
-15. [License](#license)
+11. [Plugins](#plugins)
+12. [The intent layer](#the-intent-layer)
+13. [Repository layout and single-source authoring](#repository-layout-and-single-source-authoring)
+14. [Installing into Codex](#installing-into-codex)
+15. [Troubleshooting](#troubleshooting)
+16. [License](#license)
 
 ## Positioning
 
@@ -141,6 +142,7 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Runs the other CLI read-only as an advisor; writes an artifact to `.my-flow/ask/` | Prompt goes through stdin; empty output counts as failure |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Local web dashboard over `specs/`, `changes/` and `.my-flow/`: live updates, guarded editing; `stop` verifies the recorded process before terminating it | Loopback only, default port 4321, no dependencies |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | Subagent model routing: `status` shows the recorded CLI versions, the local override (or none) and the values read back from the installed agent files; `analyze` asks the strongest available CLI for a role -> model / effort map, validates it and applies it; `apply` re-renders the installed files from `~/.my-flow/models.json`; `reset` deletes the override and restores the inherit baseline | Writes only under `~/.my-flow/` (`MY_FLOW_HOME`), `~/.codex/agents/` and the installed Claude plugin `agents/`; never the repository |
+| `plugin add\|remove\|list\|enable\|disable [--json] [--dry-run]` | Plugin registry: `add <path\|git-url>` validates a plugin repository's `my-flow-plugin.json` and records it, `list` shows version, setup state and per-surface state, `enable` / `disable` / `remove` manage it; a verb a plugin contributes is then callable as `my-flow <verb>` | Writes only `~/.my-flow/plugins.json` and, for a git source, the clone under `~/.my-flow/plugins/`; never the repository |
 
 ## Skills
 
@@ -230,6 +232,49 @@ Pages update live over Server-Sent Events whenever a file under `specs/`, `chang
 - **Diff**: when the project root is a git work tree, a `Diff` entry lists the working tree's changes against `HEAD` (staged, unstaged and untracked) as a tree or a flat list and renders the selected file's patch, read-only. It refreshes itself only for edits under `specs/`, `changes/` and `.my-flow/`; use its Refresh button after edits elsewhere. Without git the entry is absent. The most recently modified file is marked, and `j` / `k` move between files while `.` jumps to that file.
 
 `start` detaches the server and records it in `.my-flow/state/dashboard.json`; `stop` confirms that the recorded process is the dashboard (alive, and answering `/api/health` with the same pid and root) before terminating it, and reclaims a stale entry without signalling anything. The skill `/my-flow:dashboard start | stop | status` (Codex: `$my-flow-dashboard`) wraps the same commands.
+
+## Plugins
+
+A plugin is an independent repository with `my-flow-plugin.json` at its root. It may
+contribute skills, agents, hooks, CLI verbs and MCP servers. The my-flow core stays
+dependency-free: it validates the manifest and writes host configuration, and never speaks MCP
+itself.
+
+```
+my-flow plugin add <path|git-url>   validate + record in ~/.my-flow/plugins.json
+my-flow plugin list [--json]        version, setup state, Claude / Codex state, verbs, servers
+my-flow plugin enable|disable <n>   flip the flag
+my-flow plugin remove <n>           drop it (and the clone, when my-flow made it)
+my-flow <verb> ...                  a verb contributed by an enabled plugin
+```
+
+The manifest declares `name`, `version`, `description`, an optional `codexSkillPrefix`, and
+`contributes` with `skills`, `agents`, `hooks`, `cli` and `mcpServers`. `${PLUGIN_ROOT}` is the
+only placeholder my-flow substitutes. Collisions with a core command, a core role, a core Codex
+skill directory or another registered plugin are refused by `plugin add`, so `install` only has
+to deal with the host's own files.
+
+Merging happens in `install`, never in `build`, because the generated files under `skills/`,
+`agents/` and `codex/` are committed and `npm run check` fails when they drift.
+
+- `install codex` renders every enabled plugin into the Codex home: skills as
+  `<codexSkillPrefix><skill>` with a `.my-flow-plugin` marker, agent TOMLs with a
+  `# my-flow agent: <role> (plugin <name>, ...)` header, hooks through the PowerShell shim with
+  their trust hashes, and `[mcp_servers.<server>]` tables inside the managed block. A table
+  already defined outside that block wins and is reported:
+  `skip [mcp_servers.<server>]: defined outside the my-flow block; remove it first to let my-flow manage it`.
+- `uninstall codex` removes exactly what it wrote, by marker, so a plugin already dropped from
+  the registry is still cleaned; a directory of yours without the marker is never touched.
+- `install claude` prints the three commands per plugin (`claude plugin marketplace add`,
+  `claude plugin install`, one `claude mcp add --transport stdio --scope user ...` per server)
+  and runs none of them; `uninstall claude` prints the matching `claude mcp remove` and
+  `claude plugin disable`.
+- A registered plugin whose directory is gone, or whose manifest is broken, is skipped with
+  `skip plugin <name>: <reason>` and never aborts the core install.
+
+A plugin skill on Claude reaches dependency-bearing code only through `my-flow <verb>`, never
+through `${CLAUDE_PLUGIN_ROOT}/...`, because the plugin cache may hold a copy without its
+`node_modules`.
 
 ## The intent layer
 

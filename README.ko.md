@@ -33,11 +33,12 @@ oh-my-claudecode와 oh-my-codex가 감싸던 모든 것(에이전트 팀, `/goal
 8. [훅](#훅)
 9. [크로스 모델 어드바이저](#크로스-모델-어드바이저)
 10. [대시보드](#대시보드)
-11. [인텐트 레이어](#인텐트-레이어)
-12. [저장소 구조와 단일 소스 작성](#저장소-구조와-단일-소스-작성)
-13. [Codex에 설치하기](#codex에-설치하기)
-14. [문제 해결](#문제-해결)
-15. [라이선스](#라이선스)
+11. [플러그인](#플러그인)
+12. [인텐트 레이어](#인텐트-레이어)
+13. [저장소 구조와 단일 소스 작성](#저장소-구조와-단일-소스-작성)
+14. [Codex에 설치하기](#codex에-설치하기)
+15. [문제 해결](#문제-해결)
+16. [라이선스](#라이선스)
 
 ## 포지셔닝
 
@@ -141,6 +142,7 @@ Claude Code는 대화형 작업을 수행하고 루프를 실행합니다. Codex
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | 다른 CLI를 어드바이저로 읽기 전용 실행하고, 산출물을 `.my-flow/ask/`에 기록합니다 | 프롬프트는 stdin으로 전달됩니다. 출력이 비어 있으면 실패로 간주합니다 |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | `specs/`, `changes/`, `.my-flow/`를 보는 로컬 웹 대시보드. 즉시 갱신과 보호된 편집. `stop`은 기록된 프로세스를 확인한 뒤 종료합니다 | 루프백 전용, 기본 포트 4321, 의존성 없음 |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | 서브에이전트 모델 라우팅: `status`는 기록된 CLI 버전, 로컬 덮어쓰기(또는 없음), 설치된 에이전트 파일에서 읽어 온 값을 보여줍니다. `analyze`는 사용 가능한 가장 강한 CLI에 역할 -> 모델 / effort 매핑을 요청해 검증하고 적용합니다. `apply`는 `~/.my-flow/models.json`으로 설치된 파일을 다시 렌더링하고, `reset`은 덮어쓰기를 삭제해 `inherit` 기준선으로 되돌립니다 | `~/.my-flow/`(`MY_FLOW_HOME`), `~/.codex/agents/`, 설치된 Claude 플러그인의 `agents/`에만 씁니다. 저장소에는 쓰지 않습니다 |
+| `plugin add\|remove\|list\|enable\|disable [--json] [--dry-run]` | 플러그인 레지스트리: `add <path\|git-url>`는 플러그인 저장소의 `my-flow-plugin.json`을 검증해 등록하고, `list`는 버전, setup 상태, 호스트별 상태를 보여주며, `enable` / `disable` / `remove`로 관리합니다. 플러그인이 제공하는 동사는 이후 `my-flow <verb>`로 호출합니다 | `~/.my-flow/plugins.json`과, git 소스인 경우 `~/.my-flow/plugins/` 아래의 클론에만 씁니다. 저장소에는 쓰지 않습니다 |
 
 ## 스킬
 
@@ -223,6 +225,48 @@ node scripts/cli.mjs dashboard stop
 - **Diff**: 프로젝트 루트가 git 작업 트리이면 `Diff` 항목이 작업 트리와 `HEAD`의 차이(스테이징됨, 스테이징 안 됨, 추적 안 됨)를 트리 또는 평면 목록으로 나열하고 선택한 파일의 패치를 읽기 전용으로 보여줍니다. `specs/`, `changes/`, `.my-flow/` 아래의 편집에만 자동으로 갱신되므로, 다른 곳을 편집한 뒤에는 Refresh 버튼을 누르세요. git이 없으면 이 항목은 나타나지 않습니다. 가장 최근에 수정된 파일에는 표시가 붙고, `j` / `k`로 파일 사이를 이동하며 `.`로 그 파일로 건너뜁니다.
 
 `start`는 서버를 분리해 띄우고 `.my-flow/state/dashboard.json`에 기록합니다. `stop`은 기록된 프로세스가 정말 대시보드인지(살아 있고 `/api/health`가 같은 pid와 root로 응답하는지) 확인한 뒤 종료하며, 오래된 기록은 아무 시그널도 보내지 않고 정리합니다. 스킬 `/my-flow:dashboard start | stop | status`(Codex: `$my-flow-dashboard`)는 같은 명령을 감쌉니다.
+
+## 플러그인
+
+플러그인은 루트에 `my-flow-plugin.json`을 둔 독립 저장소이며 스킬, 에이전트, 훅, CLI 동사,
+MCP 서버를 제공할 수 있습니다. my-flow 코어는 의존성 없이 유지됩니다. 매니페스트를 검증하고
+호스트 설정을 쓸 뿐, 스스로 MCP를 말하지 않습니다.
+
+```
+my-flow plugin add <path|git-url>   검증 후 ~/.my-flow/plugins.json에 등록
+my-flow plugin list [--json]        버전, setup 상태, Claude / Codex 상태, 동사, 서버
+my-flow plugin enable|disable <n>   플래그 전환
+my-flow plugin remove <n>           제거(my-flow가 만든 클론도 함께 삭제)
+my-flow <verb> ...                  활성화된 플러그인이 제공하는 동사
+```
+
+매니페스트는 `name`, `version`, `description`, 선택적 `codexSkillPrefix`, 그리고 `skills`,
+`agents`, `hooks`, `cli`, `mcpServers`를 담은 `contributes`를 선언합니다. my-flow가 치환하는
+자리표시자는 `${PLUGIN_ROOT}` 하나뿐입니다. 코어 명령, 코어 역할, 코어 Codex 스킬 디렉터리 또는
+다른 등록 플러그인과 충돌하면 `plugin add`가 거부하므로 `install`은 호스트 자신의 파일만
+다루면 됩니다.
+
+병합은 `build`가 아니라 `install`에서 일어납니다. `skills/`, `agents/`, `codex/` 아래 생성물은
+커밋되어 있고 어긋나면 `npm run check`가 실패하기 때문입니다.
+
+- `install codex`는 활성화된 각 플러그인을 Codex 홈에 렌더링합니다. 스킬은
+  `<codexSkillPrefix><skill>` 이름으로 `.my-flow-plugin` 마커와 함께, 에이전트 TOML은
+  `# my-flow agent: <role> (plugin <name>, ...)` 헤더와 함께, 훅은 PowerShell 심을 거쳐 신뢰
+  해시와 함께, `[mcp_servers.<server>]` 테이블은 관리 블록 안에 씁니다. 같은 이름의 테이블이 관리
+  블록 밖에 이미 있으면 그것이 우선하며 다음 줄이 출력됩니다:
+  `skip [mcp_servers.<server>]: defined outside the my-flow block; remove it first to let my-flow manage it`.
+- `uninstall codex`는 마커를 기준으로 자신이 쓴 것만 제거하므로 레지스트리에서 이미 사라진
+  플러그인도 정리됩니다. 마커가 없는 디렉터리는 결코 건드리지 않습니다.
+- `install claude`는 플러그인마다 세 개의 명령(`claude plugin marketplace add`,
+  `claude plugin install`, 서버마다 `claude mcp add --transport stdio --scope user ...`)을
+  출력만 하고 실행하지 않습니다. `uninstall claude`는 대응하는 `claude mcp remove`와
+  `claude plugin disable`을 출력합니다.
+- 디렉터리가 사라졌거나 매니페스트가 깨진 등록 플러그인은 `skip plugin <name>: <reason>`으로
+  건너뛰며 코어 설치를 중단시키지 않습니다.
+
+Claude에서 플러그인 스킬은 의존성이 있는 코드를 `my-flow <verb>`로만 호출하고
+`${CLAUDE_PLUGIN_ROOT}/...`는 쓰지 않습니다. 플러그인 캐시의 사본에는 `node_modules`가 없을 수
+있기 때문입니다.
 
 ## 인텐트 레이어
 
