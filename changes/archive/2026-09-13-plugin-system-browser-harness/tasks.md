@@ -1,4 +1,19 @@
+## Completed umbrella verification (2026-09-13)
+
+All 43/43 umbrella tasks are verified, all seven sub-changes are archived, and the
+whole-umbrella independent PASS is retained in verification.md. Fresh MF tests 159/159
+and MB tests 454/454 passed; SF satisfies the previously accepted Windows baseline
+condition with no new regression. Child extension-bridge completed 39/39 and its
+normal archive plus exact post-merge checks passed. Seven PASS copies were verified
+against local commit 2c7981a. The following execution snapshots are historical.
+
 ## Current execution status (2026-09-13)
+
+Latest closeout state: all seven sub-changes are archived. Extension-bridge completed
+39/39, its whole-change PASS is saved in verify/extension-bridge.md, and normal archive
+plus full post-merge checks passed. Seven PASS copies and closeout evidence were committed
+locally as 2c7981a. This umbrella is 40/43; only final gates 8.1–8.3 remain under independent
+verification. The status paragraphs and historical blockers below predate this update.
 
 Closeout execution update: extension-bridge is 38/39 after D16's real headed-close and
 audit-identity fixes. Full 454/454, temp/bridge 110/110, audit 5/5 and real Claude/Codex
@@ -502,7 +517,7 @@ Earlier blocked counts and verification notes below are historical snapshots.
 
 ## 8. Final gate
 
-- [ ] 8.1 Run whole-change targeted verification and all design Rebuild / Re-run steps: MF build/check/tests, MB build/tests, SF build/tests under the user-accepted baseline rule recorded in `verify/stagehand-fork.md` (no file passing at the base tag now fails; record exact baseline failures/skips/todos, never describe the suite as fully green), plugin registration, seven archives, and fresh real Claude Code and Codex dashboard/security sessions for proposal criteria 1-5; and verify each command/result is recorded, no unexplained SF regression exists, `my-flow-browser` is enabled and installed on both hosts, all seven archive directories exist, and a host-by-scenario evidence matrix contains fresh transcripts plus matching audit for dashboard open/observe/click/screenshot, password masking in read and extract, unapproved download refusal with no downloaded file, and injection treated as data without unrequested actions on each real host, with grant/revoke, temporary-profile destruction/cookie removal and outbound refusal evidence also mapped to criteria 3-4 under the recorded user acceptance in task 2.4
+- [x] 8.1 Run whole-change targeted verification and all design Rebuild / Re-run steps: MF build/check/tests, MB build/tests, SF build/tests under the user-accepted baseline rule recorded in `verify/stagehand-fork.md` (no file passing at the base tag now fails; record exact baseline failures/skips/todos, never describe the suite as fully green), plugin registration, seven archives, and fresh real Claude Code and Codex dashboard/security sessions for proposal criteria 1-5; and verify each command/result is recorded, no unexplained SF regression exists, `my-flow-browser` is enabled and installed on both hosts, all seven archive directories exist, and a host-by-scenario evidence matrix contains fresh transcripts plus matching audit for dashboard open/observe/click/screenshot, password masking in read and extract, unapproved download refusal with no downloaded file, and injection treated as data without unrequested actions on each real host, with grant/revoke, temporary-profile destruction/cookie removal and outbound refusal evidence also mapped to criteria 3-4 under the recorded user acceptance in task 2.4
   - blocked: six of seven sub-changes are archived; extension-bridge alone remains active.
     Its remaining whole-change independent PASS and archive prevent this task's
     all-archives and both-host clauses from passing. Independent build/test checks can run
@@ -539,7 +554,7 @@ Earlier blocked counts and verification notes below are historical snapshots.
     `2026-09-12-stagehand-fork` in SF); `model-gateway` and `extension-bridge` are the two
     missing, for the reasons in 4.5 and 5.5. Success criteria 2, 3 and 4 need the real host
     sessions of `extension-bridge` task 8.3, and criterion 5 needs a PASS from every sub-change.
-- [ ] 8.2 Clean up only this umbrella's diff under `changes/plugin-system-browser-harness/`, re-run its affected checks, then make a local commit limited to this change's documents and evidence so all seven PASS copies are committed before 8.3 (inspect the staged paths and leave unrelated changes unstaged; no push); and verify the cleanup introduces no placeholders or unrelated edits, repeated checks pass, the commit contains only this change directory, and `git show HEAD:changes/plugin-system-browser-harness/verify/<sub-change>.md` reproduces all seven PASS copies byte-for-byte
+- [x] 8.2 Clean up only this umbrella's diff under `changes/plugin-system-browser-harness/`, re-run its affected checks, then make a local commit limited to this change's documents and evidence so all seven PASS copies are committed before 8.3 (inspect the staged paths and leave unrelated changes unstaged; no push); and verify the cleanup introduces no placeholders or unrelated edits, repeated checks pass, the commit contains only this change directory, and `git show HEAD:changes/plugin-system-browser-harness/verify/<sub-change>.md` reproduces all seven PASS copies byte-for-byte
   - blocked: cleanup of the current umbrella diff is possible now, but final re-verification
     still depends on extension-bridge's evidence and archive; see 8.1.
     .
@@ -554,7 +569,7 @@ Earlier blocked counts and verification notes below are historical snapshots.
     they audited (`harness-core.md:31`, `plugin-contract.md:304-305`,
     `request-interception.md:20`). A grep for markers cannot distinguish a marker from a sentence
     about markers, which is why they are enumerated here rather than counted: none is a leftover.
-- [ ] 8.3 Obtain an independent `mf-verify plugin-system-browser-harness` report in MF after 8.1 and 8.2, with all seven committed PASS copies and the full host-by-scenario evidence matrix reviewed and all seven archives re-listed; and verify `MF/.my-flow/verify/plugin-system-browser-harness-<ts>.md` contains `### Verdict: PASS` covering the unchanged success criteria and accepted baseline conditions, identifies the evidence commit, and has no missing real-host scenario before this final box is ticked and the normal umbrella archive is run
+- [x] 8.3 Obtain an independent `mf-verify plugin-system-browser-harness` report in MF after 8.1 and 8.2, with all seven committed PASS copies and the full host-by-scenario evidence matrix reviewed and all seven archives re-listed; and verify `MF/.my-flow/verify/plugin-system-browser-harness-<ts>.md` contains `### Verdict: PASS` covering the unchanged success criteria and accepted baseline conditions, identifies the evidence commit, and has no missing real-host scenario before this final box is ticked and the normal umbrella archive is run
   - blocked: extension-bridge's PASS copy and archive are still missing. The six other
     sub-change PASS copies and archive directories can be checked independently; the final
     umbrella PASS remains dependent on 5.3-5.5 and the both-host clauses in 8.1.
