@@ -694,3 +694,179 @@ fork tag), and Stagehand logs at `level: "info"` to stderr only (`onLog` feeds t
 - After a sub-change is archived in another repository: `git -C <repo> log -1` and the
   archive directory listing, then tick the umbrella box in my-flow and re-run
   `node scripts/spec.mjs validate plugin-system-browser-harness`.
+
+## Closeout supplement (2026-09-13)
+
+This supplement supersedes earlier descriptions assigning archive/post-merge to child 9.4.
+It changes lifecycle ownership only. The accepted option (b), implementation, security policy
+and all acceptance criteria remain. MF = my-flow, MB = my-flow-browser, SF = stagehand.
+
+### PLAN-DR
+
+Principles:
+1. Preserve all-tasks-complete and independent PASS archive guards.
+2. Preserve existing requirement lines and scenarios; only archive provenance may change.
+3. Verify exact archive inputs and retain evidence outside the child directory being moved.
+4. Keep real-host and seven-PASS requirements; missing evidence remains a gap.
+
+Decision drivers (top 3): remove the task/archive cycle; prevent sibling-text loss through
+whole-block replacement; make input freshness independently checkable.
+
+Viable options:
+- Selected: child 9.4 prepares, child 9.3 independently verifies, existing parent 5.5 archives
+  and checks the merge. IDs and every acceptance condition survive; 5.5 stays unchecked
+  until its own post-archive checks pass.
+- Alternative: add an umbrella task after 5.5 for post-merge checks. Viable but unnecessary;
+  it splits accountability for one archive operation and grows the ledger.
+- Rejected: force archive, weaken CLI guards, pre-tick an unverified task or edit its archived
+  ledger. These bypass the dependency instead of resolving it.
+
+### Repository evidence and execution order
+
+MF scripts/spec.mjs:124-147 tests `t.done !== t.total` and requires a PASS before merging.
+Its MODIFIED branch at :111-114 uses `blocks.set(n, stampVia(b, via))`: whole-block
+replacement. stampVia at :85-93 removes old via lines and inserts one archive marker.
+MF specs/spec-helper/spec.md:132-153's provenance requirement governs that permitted difference.
+Thus child archive cannot be its own prerequisite. Parent 5.5 already owns actual archive.
+
+Reuse `splitRequirements` and `sectionBody` from MF scripts/lib/intent.mjs, as the existing
+MB .my-flow/verify/check-extension-bridge-rebase.mjs:6,12-42 does. Its `block` checks an exact
+heading and minimum 20 lines; `containsLines` counts multiplicity; `subsequence` checks
+preamble order. Extend this evidence pattern, not production APIs. The current base anchors
+are MB specs/browser-harness/spec.md:150 (Default policy table) and :394 (Audit record),
+with Audit scenarios at :428-465. The child has these two MODIFIED blocks and the new
+extension-bridge capability.
+
+Order: child 9.4 -> child 9.3 -> parent 5.3 -> parent 5.4 -> parent 5.5 -> parent 8.1 ->
+8.2 -> 8.3 -> normal umbrella archive. Stable IDs preserve history; preparation precedes
+final independent review. The same fresh whole-change report may satisfy 9.3 and 5.4;
+a bounded host-evidence PASS cannot. Historical notes do not supersede this order.
+
+### Guarded prearchive preparation (child 9.4)
+
+Before calling `splitRequirements` for any comparison, extract the complete ordered sequence
+of raw `### Requirement:` headings and its count directly from each original spec text.
+Reject duplicate requirement names before constructing a Map. Apply this to the base file,
+both delta files, and both merged capability files after archive. Save each original heading
+sequence and count in the baseline, alongside full text and hashes. Post-merge, repeat raw
+extraction and duplicate rejection before parsing, then compare the browser-harness sequence
+and count with the base and the extension-bridge sequence and count with its ADDED delta.
+A Map size or its keys cannot substitute: duplicate names would already have been collapsed.
+This guard belongs only in the evidence checker; do not change the production parser or CLI.
+
+1. Rebase both MODIFIED blocks on the then-current MB specs/browser-harness/spec.md. Copy
+   every current line, via marker and scenario verbatim; append only bridge-grant/Target.*
+   policy and bridge/grantedTarget audit additions. Never rewrap/delete current text. Add
+   no audit-kind count. If a current block unexpectedly contains `kinds exist`, stop for
+   planning resolution; the obsolete instruction to drop a base line contradicts exact
+   preservation. The inspected current blocks contain no such sentence.
+2. Extract full blocks up to the next requirement heading, including scenarios. Before
+   every assertion require nonempty text, first line exactly `### Requirement: Audit record`
+   or `### Requirement: Default policy table` as applicable, and at least 20 lines on both
+   base and delta. Never allow empty extraction to pass a negative assertion vacuously.
+3. Require the Audit preamble diff, before the first scenario, to be empty or additions
+   only, with no deletion. Require multiset line containment for both full blocks and an
+   ordered-subsequence preamble check. Pin collation for sorted comparisons; retain duplicate
+   counts. Line contents are exact, normalizing CRLF/LF only. Rewrapped lines fail.
+4. Capture all current Audit `kind: "<x>"` tokens and every complete scenario heading; assert
+   all survive. Assert `kind: "bridge"`, the full grantedTarget sentence and both scenarios
+   `The granted target is on every record while a grant exists` and
+   `A grant transition is an event line, not a call record`. Assert full bridge/Target.*
+   policy additions and their scenarios too. Check the actual base, never an assumed sibling
+   order or count; all other unchanged requirements must also be saved for post-merge checks.
+5. Search active and archived model-gateway directories, including abandoned ones, for at
+   least one tasks.md containing re-base/rebase. Every existing sibling browser-harness delta
+   must have a guarded Audit extraction (exact heading, minimum 20 lines) with zero
+   `kinds exist` inside that block. Whole-file comments do not count. Preserve this handover
+   check even when overlap warnings disappear because a sibling was archived.
+6. Save MF changes/plugin-system-browser-harness/verify/extension-bridge-prearchive.json:
+   schemaVersion 1, capturedAt UTC, absolute roots, raw-byte SHA-256 and complete UTF-8
+   contents of the base file and both child delta files, raw heading sequences/counts (duplicates rejected before parsing), ordered requirement names and full
+   blocks for all base/delta requirements, captured kinds/scenarios, exact expected bridge
+   additions, sibling handover paths and preflight commands/results. Save specs, never session
+   tokens. Re-read the artifact and verify its contents/hashes match the source files.
+7. Run the existing guarded checker, named-child validation and whole-MB validation; record
+   output/warnings/exit codes. Tick only 9.4 after all checks pass. Independent 9.3 must
+   cover preparation and name the artifact plus all three base/delta hashes it verified.
+
+### Archive and all post-merge checks (parent 5.5)
+
+Copy that whole-change PASS to parent verify/extension-bridge.md. Immediately before archive,
+compare current complete base/two-delta raw hashes against both saved baseline and report;
+require every child task checked and no implementation change since verification. Re-run
+preflight. Any mismatch prevents archive: re-open affected active 9.4/9.3 and parent 5.3/5.4,
+regenerate baseline, repeat independent verification and replace the PASS copy. An old report
+matching the CLI's filename gate is insufficient. Do not allow a concurrent spec writer
+between this freshness check and archive; if detected, stop and repeat preparation.
+
+Run `node MF/scripts/spec.mjs archive extension-bridge --root MB` without force. Check:
+- Archive directory exists; active child is absent; current extension-bridge spec exists;
+  copied report has exactly one PASS marker; archived child ledger is all checked.
+- Both merged MODIFIED blocks pass exact-heading/minimum-20-line guards and equal their
+  saved delta blocks except old via lines replaced by one actual archive stamp.
+- Every saved base line survives except via, including duplicate counts and preamble order;
+  every captured kind token/scenario heading survives; all full bridge/grantedTarget sentences
+  and both named audit scenarios survive. Full-text checks add to the original token checks.
+- Re-extract raw headings and counts from both merged capability files, reject duplicates
+  before calling splitRequirements, and match the saved expected sequences/counts.
+- Every untouched browser-harness requirement remains present in original order and with
+  byte-identical normalized block text including via. No extra/missing/duplicate requirement
+  is accepted; the spec preamble stays unchanged. Every added extension-bridge requirement
+  equals its saved delta with only via stamping, in delta order.
+- Whole-MB validation exits 0. Record post-merge evidence under the parent's verify/ and tick
+  5.5 only after every condition passes. Never edit the archived child ledger.
+
+### Risks / Trade-offs for closeout
+
+Preparation can become stale during verification: full-file hashes and the immediate guard
+catch it. Token/scenario counts alone cannot detect rewritten normative text: full blocks
+and ordered line checks cover it. If post-merge fails, leave parent 5.5 unchecked and report
+it; do not hide failure through forced completion, archived-ledger edits or silent spec
+rewrites. Earlier claims that the base cannot change again are not freshness evidence.
+
+### Do-Not-Touch for closeout
+
+No production source, build config, archive CLI, handwritten current-spec edit, existing
+archived ledger, daily Chrome profile, Stagehand code or option (b) change. Child executor
+owns only MB active delta rebase and evidence. Parent executor owns MF umbrella documents,
+evidence and normal archive operations in the appropriate root. This does not authorize
+MB implementation work to edit MF. Planner owns only the two active designs and ledgers.
+
+### Rebuild / Re-run After Change for closeout
+
+Planning edits require named-change and whole-root validation plus independent plan review.
+Delta edits require guarded preflight, MB build/tests and fresh child verification. Archive
+requires all post-merge checks and whole-MB validation. Umbrella still runs existing
+three-repository checks, host evidence, cleanup re-verification and independent final PASS.
+
+### Umbrella evidence scope and accepted baseline
+
+The seven sub-changes are plugin-contract, harness-core, stagehand-fork, model-gateway,
+extension-bridge, temp-profiles and request-interception. Earlier text saying six is
+historical; final review requires all seven archive directories and committed PASS copies.
+
+MF changes/plugin-system-browser-harness/verify/stagehand-fork.md:14-18 records the accepted
+rule: "no file that passed at the base tag fails now". Its :42-43 reports four SDK baseline
+failures (286/290 pass), extension 370 pass/10 todo and two browser setup failures
+(20 pass/20 skip). Apply this existing acceptance to 8.1/proposal criterion 5; it is not a
+new waiver and does not excuse a new failing file/error. Compare fresh failures against the
+baseline, record exact diagnostics and preserve archived reports. Task 2.4 separately records
+the accepted outbound condition: non-loopback Chromium background destinations may appear
+only as refused by the audit proxy.
+
+The inspected MB .my-flow/verify/harness-core-e2e-claude.md and -codex.md contain 2026-09-11
+dashboard open/observe/click/screenshot and download approval, but no actual password
+read/extract or injection-run output. Completed extension-bridge A/B runs prove grant/revoke,
+not those missing scenarios. Parent 8.1 still requires fresh reruns on both hosts. Locate any
+additional genuine transcripts first; otherwise capture fresh dashboard/security sessions
+on real Claude Code and Codex with matching audit and result evidence for masking, no
+unapproved download and no unrequested injected action. A generic MCP client labelled
+claude-code, a unit test or a filled template cannot substitute for a real Claude session.
+Do not tick 8.1/8.3 until each host/scenario cell has evidence. The completed bridge gesture
+evidence can be reused after review against the unchanged implementation.
+
+Parent 8.2 may make a local commit scoped only to changes/plugin-system-browser-harness/
+so the seven PASS copies are committed before independent 8.3 reads them; no push or staging
+unrelated source. Inspect staged paths and verify every copy through git show. After umbrella
+PASS, tick 8.3 and perform normal umbrella archive, then validate and re-list its archive.
+The umbrella carries no delta; its archive moves its ledger and durable evidence.

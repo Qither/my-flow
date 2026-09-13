@@ -1,0 +1,16 @@
+[
+  {
+    "host": "claude",
+    "profilePath": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-closeout-claude-031113c331234ca9aa7cb36902d68317\\harness-home\\browser\\profiles\\tmp-2956ef4df53d4721",
+    "matchingChromePids": [],
+    "checkedAt": "2026-09-13T11:48:33.7089247Z",
+    "predicate": "Chrome command line contains this exact isolated profile path"
+  },
+  {
+    "host": "codex",
+    "profilePath": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-closeout-codex-f5dbf3f6c31e43f58eaf1774efcaa82d\\harness-home\\browser\\profiles\\tmp-74b9991d7e8e4e1a",
+    "matchingChromePids": [],
+    "checkedAt": "2026-09-13T11:48:33.7171355Z",
+    "predicate": "Chrome command line contains this exact isolated profile path"
+  }
+]
