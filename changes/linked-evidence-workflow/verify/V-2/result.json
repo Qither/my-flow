@@ -1,0 +1,270 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "sequence": 2,
+  "requestDigest": "2d373d5f48f16cd5b3685a76928026e822cfcb8c0d8360a37507019bdcfed091",
+  "verdict": "INCOMPLETE",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        "cmd:ui-targeted-98",
+        "browser:fixture-responsive-reading"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:ui-targeted-98",
+        "browser:keyboard-navigation",
+        ".my-flow/verify/linked-evidence-workflow-resume.md"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        "cmd:spec-validate"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        "changes/linked-evidence-workflow/live-host-protocol.md#L-03"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        ".my-flow/verify/linked-evidence-workflow-resume.md",
+        "task:T-29",
+        "task:T-28"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        "cmd:capture-target"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "status": "PARTIAL",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        ".my-flow/verify/linked-evidence-workflow-resume.md",
+        "task:T-31",
+        "task:T-28"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        "cmd:lane-status",
+        "task:T-31",
+        "task:T-28"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test",
+        "cmd:manual-usage-comparison"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "cmd:build",
+        "cmd:build-check",
+        "cmd:npm-test",
+        "cmd:spec-validate",
+        "cmd:protected-path-scan",
+        "browser:fixture-responsive-reading",
+        "task:T-31"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "node scripts/build.mjs",
+      "exitCode": 0,
+      "result": "build complete (no changes)"
+    },
+    {
+      "command": "node scripts/build.mjs --check",
+      "exitCode": 0,
+      "result": "generated files are up to date"
+    },
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "result": "550 passed; 0 failed; 0 skipped; 0 todo"
+    },
+    {
+      "command": "node scripts/spec.mjs validate linked-evidence-workflow",
+      "exitCode": 0,
+      "result": "1 passed; 0 failed"
+    },
+    {
+      "command": "node --test test/dashboard.test.mjs test/styles.test.mjs test/ui.test.mjs",
+      "exitCode": 0,
+      "result": "98 passed; 0 failed; 0 skipped; 0 todo"
+    },
+    {
+      "command": "captureTarget against verify/V-2/request.json",
+      "exitCode": 0,
+      "result": "implementation and acceptance digests match; no diagnostics or unknown required environment"
+    },
+    {
+      "command": "node scripts/spec.mjs lane status linked-evidence-workflow --json",
+      "exitCode": 0,
+      "result": "high lane approved directly for fe714caa by R-03/R-04/R-05"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "clean"
+    },
+    {
+      "command": "protected path diff/status scan",
+      "exitCode": 0,
+      "result": "no changes under changes/archive or specs"
+    },
+    {
+      "command": "changed-file fake-completion scan",
+      "exitCode": 0,
+      "result": "no active fake completion; contextual fixture/documentation hits only"
+    },
+    {
+      "command": "browser responsive and keyboard inspection at fixture port 63360",
+      "exitCode": 0,
+      "result": "T-08 verified at exact 390/1280 in both palettes with no overflow and correct keyboard navigation"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/final_verify_v2",
+    "writerActorId": "codex-executor-01a0a276",
+    "sourceRef": "collaboration:/root/final_verify_v2#final-answer"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "1d98c74b544db902dced78cee4fe38868b0f319e58c6080f44d5f015b31a416f",
+  "endAcceptanceDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+  "artifacts": [
+    {
+      "relativePath": "resume/observations.md",
+      "hash": "0fb8508f33cd57aab9c6a3e893a7913085d7e1045be6a29e51109e2c7e593611",
+      "bytes": 13314
+    },
+    {
+      "relativePath": "resume/390-before.png",
+      "hash": "60998cf5e999ac05669cc26c6c368133763d452956bb1221ad092256b207fe53",
+      "bytes": 30237
+    },
+    {
+      "relativePath": "resume/390-dark-after.png",
+      "hash": "7fe0459d54096ddef57380a39a870c66350b0701b67dbbddd81b8be3d20cd2d7",
+      "bytes": 35101
+    },
+    {
+      "relativePath": "resume/1280-dark-after.png",
+      "hash": "2706b2bb3e98f96c2ebf1788d697f5e415d28ab932529b565a33411c188baa43",
+      "bytes": 66443
+    },
+    {
+      "relativePath": "resume/gate-1.log",
+      "hash": "dd2874ed8f7fc77d62ad041407d9f793b1e97b84052d0adca369b85b06728662",
+      "bytes": 53840
+    },
+    {
+      "relativePath": "resume/gate-2.log",
+      "hash": "68d5657f665f4892307f827c3834063d32cb8b51f97eb6fd3777ab42b3a91f45",
+      "bytes": 53854
+    },
+    {
+      "relativePath": "resume/sse-before.log",
+      "hash": "f3450cc981012c1031ad4336fc257998b7945da494443ef39393abf48f6f1a33",
+      "bytes": 2014
+    },
+    {
+      "relativePath": "resume/ui-sse-tests.log",
+      "hash": "6c1edf73e5e3a323cb36819bd038ff218a25013ad25634d6c88d97ca0b4ae186",
+      "bytes": 9225
+    }
+  ],
+  "reportHash": "89ae995a830fb7b23b1dbb3448bfa4e9d03f267df04806fa3c88074fb95155fe",
+  "finished": "2026-09-15T01:33:45.297Z"
+}

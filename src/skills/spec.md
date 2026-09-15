@@ -85,6 +85,69 @@ spec new audit-<cap>
 spec abandon audit-<cap> --reason "audit clean, no findings"
 ```
 
+## lane select|set|status <name>
+
+The risk lane and the reviews it requires. `select` reads the judgement plus the `--fast` /
+`--deliberate` / `--go` flags and prints the lane with its reasons and refusals, recording
+nothing; `set --lane <low|medium|high> --reason "<why>"` records it (escalation is free, a
+downgrade needs `--force`); `status` says whether the current contract digest is approved for
+its lane, directly or through a chain of applied amendments, and exits 1 while it is not.
+A change with no recorded lane is undeclared and keeps working exactly as it did.
+
+Order matters once: `spec baseline <name>` writes `spec-base.json`, which is part of the
+contract, so capture the baseline **before** the reviews. Capturing it afterwards moves the
+digest out from under them and the lane falls back to unapproved.
+
+## review record <name> --file <json>
+
+One immutable review record with the contract digest it reviewed, kept under
+`changes/<name>/reviews/R-<id>/` beside a snapshot of that text. A review names both the
+reviewer and the writer, and is marked independent only when they differ.
+
+## finding record|resolve|status <name>
+
+A repeated root cause. Two materially different failed approaches make the next attempt wait
+for a design review; `record` writes the blocker under the tasks the cause defeated and exits
+1, leaving every independent task runnable and every ticked box ticked. `resolve` needs the
+architect, planner or critic review that chose the remedy.
+
+## amend propose|apply|cancel|status <name>
+
+A staged change to the approved contract. `propose` records the old and candidate text with
+their digests and holds the affected tasks; `apply` publishes it once the authority its type
+requires is on record (`locator`: executor authority, `equivalent-check`: an independent
+critic OKAY, `scope`: explicit user authority plus the new lane's review) and reopens the
+affected boxes with their evidence links dropped; `cancel` releases the hold and restores
+nothing. The manifest is never an amendment target: a risk lane change needs fresh review.
+
+## evidence begin|record|cancel|status <name>
+
+A verification attempt bound to exact inputs. `begin` captures the implementation inventory and
+the contract, reserves the next attempt number durably, and refuses while an amendment is
+pending or the lane has not approved the contract. `record` stores an immutable result and
+report. `status` reports the durable head and whether it makes the change archivable.
+
+## context <name> [--task T-01] [--since <digest>]
+
+The derived context packet, written to `.my-flow/context/` and never to the change. It carries
+the constraints and the complete criteria index in full, plus the selected task with its
+prerequisite closure, the blocks it references, hashed file locators and open findings. Without
+`--task` it is the final verifier's packet. `--since` compares the previous packet's inputs, not
+timestamps, and reports what changed.
+
+## usage <name> | usage import <name> --file <json>
+
+Measured usage keyed by the source event id, imported once and never re-counted. A field the
+source did not report stays unknown; totals with an unknown in them are reported as unknown,
+self-scoped and inclusive records are never added together, and cached input tokens are a
+subset of the input tokens rather than an addition. No price, no quota, no estimate.
+`--compare <a,b> [--risk low|medium|high]` adds a comparison against other changes that names
+its sample and everything absent from it, and states no saving.
+
+## session new|show|release|recover <key>
+
+The session lease that keeps two sessions in one repository from claiming the same change.
+
 ## stage <name> <stage>
 
 Writes `.my-flow/state/current-change.json` as `{change, stage, updated}` with a fresh

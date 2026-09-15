@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-09-15T04:14:43.256Z",
+  "entries": [
+    {
+      "capability": "labels",
+      "requirement": "Ready label exports",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    }
+  ]
+}

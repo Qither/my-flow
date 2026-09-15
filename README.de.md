@@ -9,6 +9,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+> Planning policy update: low/medium/high lanes are selected automatically. High-risk work keeps full review; only accepted explicit `--fast --go` can continue through the normal goal handoff. See [current English policy](README.md#automatic-review-lanes).
+
 # my-flow
 
 Eine leichtgewichtige Workflow-Schicht, die in **Claude Code** und **Codex CLI** auf dieselbe Weise funktioniert. Sie fügt keine Laufzeitumgebung hinzu und hängt von keinem externen Werkzeug ab. Sie bietet Ihnen:
@@ -92,7 +94,7 @@ Die Codex-Seite ist optional; siehe [Installation in Codex](#installation-in-cod
 |---|---|
 | Konkret, eine einzelne Datei, klare Abnahme | nur `execute` (oder einfach direkt umsetzen) |
 | Konkret, aber mehrere Dateien oder Module | `mf-plan → execute → mf-verify` |
-| Konkret, mehrere Dateien, Design bereits klar | `mf-plan --fast [--go] → execute → mf-verify` |
+| Konkret, mehrere Dateien, Design bereits klar | `mf-plan` (automatic medium) `→ execute → mf-verify` |
 | Vage, keine Abnahmekriterien, „sollten wir...“ | `interview → mf-plan → execute → mf-verify` |
 | Berührt Build-Konfiguration, Shader, Engine-Module, Migrationen, Authentifizierung | `mf-plan` und `mf-verify` niemals überspringen |
 
@@ -151,7 +153,7 @@ Claude ruft sie als `/my-flow:<name>` auf, Codex als `$my-flow-<name>`.
 | Skill | Wann | Was er tut | Ausgabe |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | Vage Anfrage, keine Abnahmekriterien | Eine Frage pro Runde, Absicht vor Detail; bewertet Mehrdeutigkeit; endet, wenn Non-Goals und Decision Boundaries explizit sind | `changes/<name>/proposal.md`, Transkript in `.my-flow/interviews/` |
-| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | Änderungen über mehrere Dateien; alles, was Build-Konfiguration, Shader, Engine-Module, Migrationen oder Authentifizierung berührt. Mit `--fast` schreibst du die Artefakte selbst, ein Critic-Durchgang, kein Planner und kein Architect; abgelehnt für die Hochrisiko-Kategorien (und zusammen mit `--deliberate`); `--go` geht direkt in execute weiter | planner entwirft → architect begutachtet (`CLEAR / WATCH / BLOCK`) → critic begutachtet (`OKAY / REJECT`), bis zu drei Runden | `design.md` (muss Do-Not-Touch und Rebuild / Re-run enthalten), `tasks.md` |
+| `mf-plan <name-or-text> [--amend] [--deliberate] [--fast [--go]]` | Automatic risk lanes; see [current English policy](README.md#automatic-review-lanes) | Low: main context; medium: main context + critic; high: planner → architect → critic. Rejected fixes need re-review | Full planning artifacts and required constraints |
 | `execute <name> [--team] [--worktree]` | `tasks.md` enthält nicht abgehakte Boxen | Formuliert die Goal-Anweisung; implementiert Aufgabe für Aufgabe, verifiziert, hakt ab; führt die feste Abschlussprüfung aus. Kann auch aus `mf-plan --fast --go` heraus betreten werden, was ebenfalls für das Einfügen des `/goal` anhält | Claude: gibt `/goal …` zum Einfügen aus. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | Vor jeder „fertig“-Behauptung | Delegiert an den nur lesenden verifier, der die Prüfungen selbst ausführt und pro Kriterium berichtet | `.my-flow/verify/<name>-<time>.md` mit PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` meldet `audit suggested`, oder der Nutzer sagt „audit the spec“ | Nur lesender architect-Durchlauf, der `specs/<cap>/spec.md` mit Code und Tests vergleicht: nicht umgesetzte Anforderungen, undokumentiertes Verhalten, Widersprüche, falsch einsortierte Anforderungen; bearbeitet `specs/` nie | `.my-flow/verify/audit-<cap>-<time>.md` mit `Status: CLEAN / DRIFT / BROKEN` und einem vorgeschlagenen Change-Namen, der auf `audit-<cap>` endet |
@@ -164,7 +166,7 @@ Claude ruft sie als `/my-flow:<name>` auf, Codex als `$my-flow-<name>`.
 
 ### Wie sich die drei Ablauf-Skills von den eingebauten unterscheiden
 
-- **`/plan` vs. `mf-plan`**: Der Plan-Modus ist ein nur lesender Berechtigungsmodus, der eine einzelne Plandatei außerhalb des Projekts schreibt und um Freigabe bittet. `mf-plan` erzeugt committete Artefakte (`design.md`, `tasks.md`), die nacheinander von drei Rollen begutachtet werden, mit erforderlichen Abschnitten und einem Aufgabenformat, das später `execute` und `mf-verify` steuert. Sie können weiterhin zuerst `/plan` betreten, um zu erkunden. Die Schnellspur `mf-plan --fast` liegt dazwischen: dieselben committeten Artefakte und derselbe Folgeablauf, aber nur ein Critic-Durchgang statt des Drei-Rollen-Konsenses.
+- **`/plan` / `mf-plan` compatibility:** `mf-plan` writes versioned planning artifacts and selects review roles by risk. See the [current English policy](README.md#automatic-review-lanes); planning itself never implements.
 - **`run` vs. `execute`**: Das eingebaute `run` startet die App des Projekts. `execute` ist eine Aufgabenschleife über `tasks.md` unter den Regeln Do-Not-Touch und Rebuild, eingebettet in ein natives Goal, und endet mit der festen Abschlussprüfung (verifizieren → aufräumen → erneut verifizieren → unabhängiges Review → fertig).
 - **`verify` vs. `mf-verify`**: `mf-verify` wechselt immer den Kontext (nur lesender verifier-Subagent), leitet seine Kriterien aus `tasks.md`, den Spec-Szenarien und `design.md` ab, prüft das Diff gegen Do-Not-Touch, prüft, ob die Rebuild-Schritte ausgeführt wurden, sucht nach Mustern vorgetäuschter Fertigstellung und schreibt einen Bericht, den `spec archive` verlangt.
 

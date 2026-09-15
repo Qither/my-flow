@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "R-high-critic-1",
+  "changeId": "754e6308-ddc5-4a4e-8319-0261b788a2aa",
+  "contractDigest": "85e9633ff16c13d236007371412d0ad342d298482e52ed521295d81c5c1c3d3e",
+  "amendment": null,
+  "role": "critic",
+  "actorId": "/root/high_critic",
+  "writerActorId": "/root/high_planner",
+  "verdict": "OKAY",
+  "sourceRef": "native-agent:/root/high_critic/final",
+  "findings": [],
+  "independent": true,
+  "reviewedAt": "2026-09-15T04:21:20.086Z"
+}

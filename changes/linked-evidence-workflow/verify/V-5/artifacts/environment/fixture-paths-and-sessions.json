@@ -1,0 +1,15 @@
+{
+  "root": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25",
+  "plugin": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\candidate-plugin",
+  "homes": {
+    "myFlow": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\homes\\my-flow",
+    "claude": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\homes\\claude",
+    "codex": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\homes\\codex"
+  },
+  "sessions": {
+    "claude": "44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "codex": "a82457bc-a9ed-47e7-b593-36f0a2c887ad"
+  },
+  "candidateDigest": "edacd5fe23ae307e2599dc64a29c91840d42ae2a2b1016c4d0b79dfce7b0a040",
+  "runtimePlugin": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\runtime-plugin"
+}

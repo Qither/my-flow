@@ -1,0 +1,18 @@
+{
+  ".my-flow/config.json": "0cc128653c052b61aaecf8147bd4d2402287e48874030cdc7286c208dafc1522",
+  ".my-flow/models.json": "9491ddb86beafee45a7f62486b11525c9bce3a97a199e88a8d9349b8e8e4851f",
+  ".my-flow/models-state.json": "8b6daaee0aa9094b9a6653f4ca26502d7f776d818b7e0d126f652185a63fb884",
+  ".my-flow/plugins.json": "9f26399520ac4d725ad034e3505f31d1c0e87905f9aafb4e4973852a13328382",
+  ".codex/config.toml": "45b2885d71c87f14e1bfecfc40e4c9496be14f0e1fdc0a46fb3720bb5601da9a",
+  ".codex/hooks.json": "4a0caef7e08915f9f0a51dbd36410c720140e12f3a200d3b793b2411f48f67ae",
+  ".codex/AGENTS.md": "2ccc0980206a8254337a84d3dfd8cc29a8c2bda0b075f38f426d8f65af827377",
+  ".claude/settings.json": "95a84926dcfe7f3ab735dcc55c100ca107ad1b8e576c58db164622b99d1edefa",
+  ".claude/CLAUDE.md": "b49dc0aa3e91e6612b86e2bc6fe66db9f49b206f106264c0121268e3102d090c",
+  ".codex/agents/": [
+    "architect.toml",
+    "browser-operator.toml",
+    "critic.toml",
+    "planner.toml",
+    "verifier.toml"
+  ]
+}

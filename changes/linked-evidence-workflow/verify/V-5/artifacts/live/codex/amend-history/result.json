@@ -1,0 +1,20 @@
+{
+  "verdict": "HISTORY_INVALIDATION_VERIFIED",
+  "host": "codex",
+  "oldDigest": "fe3655ea31b0e1be11e59754c7014f61bd70fe33f251421970b75f8abf70833b",
+  "currentDigest": "7f92db9eb5934212539033fd58e4161aaa9d357c26420fc862c23ed2b21e409c",
+  "oldEvidenceFilesPreserved": 9,
+  "affectedEvidenceRemoved": [
+    "T-01"
+  ],
+  "affectedWithoutPriorEvidence": [
+    "T-02"
+  ],
+  "unaffectedEvidenceRetained": "T-03 -> V-1",
+  "archiveBlockers": [
+    "unfinished-tasks",
+    "contract-drift"
+  ],
+  "scope": "Only missing history condition; original native runs prove role ordering and pending-C behavior.",
+  "logs": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\codex\\.my-flow\\amend-history\\.my-flow\\history-run"
+}

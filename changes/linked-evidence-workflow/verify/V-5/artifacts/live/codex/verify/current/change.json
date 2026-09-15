@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "id": "8e009cf7-5d78-4690-bc20-e28d6fd6d72e",
+  "slug": "verify",
+  "kind": "change",
+  "stage": "new",
+  "revision": 1,
+  "updated": "2026-09-15T02:14:06.715Z",
+  "children": [],
+  "review": null,
+  "verification": {
+    "highWater": 3,
+    "head": {
+      "sequence": 3,
+      "state": "closed",
+      "requestDigest": "15683af364a6b275114a7a6fe061304a9addef803a9c355a091f2d73adf65a56",
+      "resultDigest": "e99052eddf5bdf6633c3f91ed183d6930afa0017931287eb8d593fd48aed5bf5",
+      "verdict": "PASS",
+      "started": "2026-09-15T07:47:40.099Z",
+      "finished": "2026-09-15T07:52:45.095Z"
+    }
+  }
+}

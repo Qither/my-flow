@@ -1,0 +1,18 @@
+{
+  "canonicalDigest": "edacd5fe23ae307e2599dc64a29c91840d42ae2a2b1016c4d0b79dfce7b0a040",
+  "overlays": [
+    {
+      "path": "hooks/hooks.json",
+      "original": "88e173fabb38a3d403b867bda07bbcea8a62c3c519b4a3031cfa844ffe1c7d77",
+      "instrumented": "941ab34fac3c0c87192a7bf6b46a795ae2f0fc6e1864e32b9d4ea1857a2ec163"
+    },
+    {
+      "path": "codex/hooks.template.json",
+      "original": "4b82389659beeda724fefb0cff6f028913dd9d3a7a673b6a7fd4bf854e2fdc17",
+      "instrumented": "ef630462552ab103782920976966a243585a1d099b845baa55280d43e82346df"
+    }
+  ],
+  "otherFilesMatch": true,
+  "observerHash": "77e9adc2073ff2117032b33f0e91a6e4d7a5fab8026f7211e3af39e1b4db2d82",
+  "smoke": "direct and wrapped guard stdout/stderr match"
+}

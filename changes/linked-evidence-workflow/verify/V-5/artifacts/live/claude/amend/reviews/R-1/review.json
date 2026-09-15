@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "id": "R-1",
+  "changeId": "ba122291-a8c7-408a-a6ad-e767fb2b3b17",
+  "contractDigest": "b5b17d4f5c1eb2b2ec1b57381b4b866e6532b8901191feba4dfd56640c2cdb57",
+  "amendment": null,
+  "role": "architect",
+  "actorId": "subagent:my-flow:architect",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "WATCH",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:architect, design review for finding F-1 (escalation lane 'design'); transcript at tasks/af97db3af5149e6a8.output",
+  "findings": [
+    {
+      "id": "premise",
+      "blocking": false,
+      "summary": "Premise checked first: nothing is failing live. node --test on amend-a/b/c each report pass 1 / fail 0, and node scripts/check-a.mjs prints 'A is ready' and exits 0. F-1-a and F-1-b were not executed or observed in this session; they are fixture inputs at scenario-inputs.json failedApproaches[0..1] and the recorded finding already says so in its cause and both evidenceRefs."
+    },
+    {
+      "id": "Q1-grouping",
+      "blocking": false,
+      "summary": "Root-cause grouping GENUINE: both fixture attempts leave the AC-01 command-to-contract binding untouched. F-1-a edits prose (acceptance.md:7 is the contract text, acceptance.md:5 the binding), F-1-b re-executes the same binding and is a no-op on the cause by construction. Cause statement honest, with one caveat: it names the symptom class (a mismatch) but not the invariant - an AC's checks command must be one whose pass/fail is decided by exactly the proposition the AC states."
+    },
+    {
+      "id": "Q2-scope",
+      "blocking": false,
+      "summary": "INSIDE SCOPE; this does not return to the user. proposal.md:15 Decision Boundaries pre-authorizes every element verbatim - target (A's command only), replacement command, amendment type, hold pattern, and this review - and design.md:7 (D-01) mirrors it. No trust boundary moves: no new actor, input source or privilege (F-1.json trustBoundaryChanged false, confirmed independently)."
+    },
+    {
+      "id": "Q3-type",
+      "blocking": false,
+      "summary": "equivalent-check is the RIGHT type. Not locator: a locator repoints at the same artifact on executor authority alone, whereas this substitutes a different artifact as the evidence producer, which would skip the very equivalence review this change must not skip. Not scope: the guarantee text, required flag, evidence mode and asserted proposition are all unchanged, so the user-scope authority and lane review that scope demands are not the applicable gate."
+    },
+    {
+      "id": "Q4-third-patch",
+      "blocking": false,
+      "summary": "A third patch of the same shape is NOT justified; the design change is the correct next move. Structurally the only levers on AC-01's binding are the test file and the checks command, the test file is Do-Not-Touch (design.md:11), and F-1-a and F-1-b already consumed the two non-binding shapes. By rule, mf-plan SKILL.md:160 requires design review before a third patch 'not a weaker check' - which also forbids using this review to substitute a laxer check."
+    },
+    {
+      "id": "Q5-equivalence-conditions",
+      "blocking": false,
+      "summary": "For the independent critic to discharge: (a) NOT YET DEMONSTRATED - scripts/check-a.mjs must be shown to exit nonzero when source/a.mjs does not export 'A ready', without mutating source/ or test/ (the architect verified only the pass path); (g) protection asymmetry - scripts/ is not in Do-Not-Touch and is not among the tracked source locators (only the three test files are), so the file that will carry AC-01's guarantee is neither edit-protected nor digest-watched; record it as a tracked locator if the schema allows, and defer rather than widen the amendment if it does not. Confirmed by the architect for re-confirmation: (b) strict equality against the exact literal (check-a.mjs:3 matches amend-a.test.mjs:4), (c) both resolve the same module via '../source/a.mjs', (d) the assert is top-level and unconditional so it cannot pass vacuously, (e) console.log is after the assert so the pass signal of record should still be the exit code, (f) both commands share the same cwd precondition, (h) oldDigest must match the approved AC-01 text, the candidate digest must be recorded, and the critic must be independent - the architect is not the right actor for that equivalence review."
+    },
+    {
+      "id": "ledger-inconsistency",
+      "blocking": false,
+      "summary": "Flagged not blocking: tasks.md:3 ticks T-01 while line 8 carries the F-1 blocker, and spec.mjs context amend raises it itself as 'notice checked-but-blocked'. This is the tooling working as designed - finding record deliberately leaves ticked boxes ticked and applyAmendment resolves it at apply time - but the apply step MUST actually untick T-01. If the amendment is applied and T-01 stays ticked, that is a real defect."
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-15T07:00:41.875Z"
+}

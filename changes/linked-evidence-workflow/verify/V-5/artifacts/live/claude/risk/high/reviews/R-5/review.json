@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "id": "R-5",
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "contractDigest": "f840808e0f59e4c8f61971241b3777ff3d04c677f8b7d4cfa8828f4a478d730f",
+  "amendment": null,
+  "role": "architect",
+  "actorId": "subagent:my-flow:architect",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "BLOCK",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:architect, round 2; transcript at tasks/ac02c10877df835de.output",
+  "findings": [
+    {
+      "id": "R1-status",
+      "blocking": false,
+      "summary": "Round-1 findings B1, B2, B3, N1, N2 RESOLVED with verified evidence (.my-flow/ is git-ignored per .gitignore:1; the absolute half of AC-02 is empty today; the false substring rationale and the unfalsifiable spec requirement are gone; fall-through dropped from the delta spec). N3 PARTIALLY RESOLVED: the two false claims are retracted at design.md:370-374 but the replacement enumeration drops coverage the old blanket clause had (see A2)."
+    },
+    {
+      "id": "A1",
+      "blocking": true,
+      "summary": "The AC-02 allow-list (acceptance.md:54-57), T-02 (tasks.md:13) and all three Do-Not-Touch categories omit changes/<name>/verify/, which the verification tooling itself creates (evidence.mjs:349 attemptDir, :622 mkdirSync). changes/high/ has no verify/ today, so the first evidence attempt makes '?? changes/high/verify/' appear and fails acceptance.md:75-82 on a purely tool-written path. Because AC-02 is required and mf-verify re-runs it in a separate context, the gate goes red because the verifier ran, and the obvious remedy destroys the verification record - D-07's own catastrophic-remedy hazard reproduced by the fix for it."
+    },
+    {
+      "id": "A2",
+      "blocking": true,
+      "summary": "design.md:337 calls the three Do-Not-Touch categories a partition, but changes/high/specs/, design.md, proposal.md, acceptance.md and change.json fall through all three (category 1 at design.md:344 covers only OTHER changes; category 2 at design.md:352-358 names only lanes/ and reviews/; category 3 at design.md:365-368 is cli.mjs, tasks.md and the baseline file). The deleted blanket clause covered them. AC-02 cannot compensate because git status --porcelain collapses untracked directories (verified: default shows '?? changes/high/specs/', -uall expands to the file), so rewriting the delta spec mid-execute changes nothing in the listing. On a public-api lane the one artifact that outlives the change is unclassified and unmonitored."
+    },
+    {
+      "id": "A3",
+      "blocking": false,
+      "summary": "changes/medium/** is in two mutually exclusive categories (design.md:344 'never modified' and design.md:357 'tool-written'). Because it is allow-listed at acceptance.md:55 and tasks.md:13, a new file under changes/medium/ passes AC-02 and further modification of an already-modified file there produces no status change at all. The anti-revert direction still catches deletion."
+    },
+    {
+      "id": "A4",
+      "blocking": false,
+      "summary": "Two unstated dependencies: the gate's immunity to tooling churn rests entirely on git's default -unormal collapse, which D-07, AC-02 and T-02 never pin (status.showUntrackedFiles=all or an executor using -uall produces a differently shaped listing and false failures); and changes/high/tasks.md is declared writable at design.md:366 but is absent from the allow-list, passing today only by accident of already being modified in the baseline."
+    },
+    {
+      "id": "A5",
+      "blocking": false,
+      "summary": "Digest provenance could not be confirmed mechanically: 'spec.mjs context high --since 072f681d...' fails with no-such-packet, and the full packet reports its own inputs digest as 36db769e..., not the contract digest f840808e... The architect therefore read every source file directly rather than relying on the packet."
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-15T04:57:12.152Z"
+}

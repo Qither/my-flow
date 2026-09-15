@@ -9,6 +9,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+> Planning policy update: low/medium/high lanes are selected automatically. High-risk work keeps full review; only accepted explicit `--fast --go` can continue through the normal goal handoff. See [current English policy](README.md#automatic-review-lanes).
+
 # my-flow
 
 **Claude Code** と **Codex CLI** の両方で同じように動作する軽量なワークフローレイヤーです。ランタイムを追加せず、外部ツールにも依存しません。提供するものは次のとおりです。
@@ -92,7 +94,7 @@ Codex 側は任意です。[Codex へのインストール](#codex-へのイン�
 |---|---|
 | 具体的で、単一ファイル、受け入れ基準が明確 | `execute` のみ(またはそのまま実施) |
 | 具体的だが複数ファイルまたは複数モジュールにまたがる | `mf-plan → execute → mf-verify` |
-| 具体的、複数ファイル、設計はすでに明確 | `mf-plan --fast [--go] → execute → mf-verify` |
+| 具体的、複数ファイル、設計はすでに明確 | `mf-plan` (automatic medium) `→ execute → mf-verify` |
 | 曖昧で、受け入れ基準がなく、「〜すべきか」という相談 | `interview → mf-plan → execute → mf-verify` |
 | ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れる | `mf-plan` と `mf-verify` を決して省略しない |
 
@@ -151,7 +153,7 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 | スキル | 使うタイミング | 動作 | 出力 |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 曖昧なリクエストで、受け入れ基準がない | 1 ラウンドにつき 1 つの質問、詳細より意図を優先。曖昧さをスコアリングし、Non-Goals と Decision Boundaries が明示されたら終了します | `changes/<name>/proposal.md`、トランスクリプトは `.my-flow/interviews/` |
-| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 複数ファイルの変更。ビルド設定、シェーダー、エンジンモジュール、マイグレーション、認証に触れるもの. `--fast` では成果物を自分で書き、critic のレビューを 1 回だけ行い、planner も architect も使いません。高リスクのカテゴリ（および `--deliberate` との併用）では拒否され、`--go` はそのまま execute に進みます | planner が下書き → architect がレビュー(`CLEAR / WATCH / BLOCK`)→ critic がレビュー(`OKAY / REJECT`)、最大 3 ラウンド | `design.md`(Do-Not-Touch と Rebuild / Re-run を含む必要があります)、`tasks.md` |
+| `mf-plan <name-or-text> [--amend] [--deliberate] [--fast [--go]]` | Automatic risk lanes; see [current English policy](README.md#automatic-review-lanes) | Low: main context; medium: main context + critic; high: planner → architect → critic. Rejected fixes need re-review | Full planning artifacts and required constraints |
 | `execute <name> [--team] [--worktree]` | `tasks.md` に未チェックの項目がある | goal 文を組み立て、タスクごとに実装・検証・チェックを行い、固定の最終ゲートを実行します. `mf-plan --fast --go` から入ることもでき、その場合も `/goal` の貼り付けのために一度停止します | Claude: 貼り付け用の `/goal …` を表示。Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | 「完了」を宣言する前に必ず | 読み取り専用の verifier に委譲し、verifier 自身がチェックを実行して基準ごとに報告します | PASS / FAIL / INCOMPLETE を含む `.my-flow/verify/<name>-<time>.md` |
 | `mf-audit <capability \| all>` | `spec status` が `audit suggested` を表示したとき、またはユーザーが「audit the spec」と言ったとき | 読み取り専用の architect が `specs/<cap>/spec.md` をコードとテストと照合: 未実装の要件、文書化されていない挙動、矛盾、置き場所の違う要件を報告。`specs/` は決して編集しない | `Status: CLEAN / DRIFT / BROKEN` と `audit-<cap>` で終わる提案 change 名を含む `.my-flow/verify/audit-<cap>-<time>.md` |
@@ -164,7 +166,7 @@ Claude では `/my-flow:<name>`、Codex では `$my-flow-<name>` として呼び
 
 ### 3 つのフロースキルと組み込み機能の違い
 
-- **`/plan` と `mf-plan`**: プランモードは読み取り専用の権限モードで、プロジェクト外にプランファイルをひとつ書き出して承認を求めます。`mf-plan` は 3 つのロールが順にレビューしたコミット対象の成果物(`design.md`、`tasks.md`)を生成し、必須セクションと、後で `execute` と `mf-verify` を駆動するタスク形式を備えています。探索のために先に `/plan` に入ることは引き続き可能です。 高速レーン `mf-plan --fast` はその中間です。コミットされる成果物と後続フローは同じですが、三役の合意ではなく critic の 1 回のレビューだけです。
+- **`/plan` / `mf-plan` compatibility:** `mf-plan` writes versioned planning artifacts and selects review roles by risk. See the [current English policy](README.md#automatic-review-lanes); planning itself never implements.
 - **`run` と `execute`**: 組み込みの `run` はプロジェクトのアプリを起動します。`execute` は Do-Not-Touch と Rebuild のルールのもとで `tasks.md` を回すタスクループで、ネイティブの goal に包まれ、固定の最終ゲート(verify → cleanup → re-verify → independent review → done)で終わります。
 - **`verify` と `mf-verify`**: `mf-verify` は常にコンテキストを切り替え(読み取り専用の verifier サブエージェント)、`tasks.md`、spec のシナリオ、`design.md` から基準を導き出し、diff を Do-Not-Touch と照合し、Rebuild の手順が実行されたことを確認し、偽の完了パターンをスキャンし、`spec archive` が要求するレポートを書き出します。
 

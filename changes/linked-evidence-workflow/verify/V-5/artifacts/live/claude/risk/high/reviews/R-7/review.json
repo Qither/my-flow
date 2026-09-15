@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "id": "R-7",
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "contractDigest": "810b5e4017afdc82dec813d169d3aa5597ad671fd9145caa1ff1551e2a67343b",
+  "amendment": null,
+  "role": "planner",
+  "actorId": "subagent:my-flow:planner",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "DRAFT",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:planner, round 3 fix pass against R-5 (architect BLOCK) and R-6 (critic REJECT) on digest f840808e0f59; transcript at tasks/ab0ba72a68ab3ec8d.output",
+  "findings": [
+    {
+      "id": "round-3-changes",
+      "blocking": false,
+      "summary": "Fix 1: AC-02's differential half deleted entirely (baseline file, allow-list, both comparison scenarios) and replaced at acceptance.md:32-131 by four absolute path-scoped commands plus a sha256 pin, each carrying its real planning-time value; acceptance.md:52-64 records why the machinery is gone. Fix 2: T-01's baseline capture removed (tasks.md:5, implementation text kept verbatim), T-02 rewritten as the five commands with expected outputs inline (closes C1 - no comparison mechanism is left to under-specify), .my-flow/scope/high-baseline.txt dropped from the writable set and Rebuild/Re-run, D-07 keeps its diagnosis and loses the differential remedy, proposal.md:45-50 corrected because it still asserted a differential gate. Fix 3: the delta spec is pinned by content - T-01 records and T-02 re-verifies a node -e createHash sha256 (9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc, byte-identical in PowerShell 7 and Git Bash), since git status structurally cannot see inside a collapsed untracked directory. Fix 4: Do-Not-Touch rewritten as four groups covering the whole tree, with changes/medium/** moved into a dirty-on-arrival never-reverted group and a changes/high/** group naming every file explicitly; tasks.md is the single hand-edited exception and no AC-02 check reads changes/high/ at all, which retires A4-tasks. Fix 5: evidence.mjs attemptDir/staging/rename and the writeManifestHead calls cited (corrected to :471 and :512, which are the statements rather than comments), with D-07 stating that a differential gate would go red because the verifier ran."
+    },
+    {
+      "id": "new-evidence",
+      "blocking": false,
+      "summary": "All four AC-02 commands were re-run after editing and match the critic's verified values (three empty; git diff --stat -- changes/medium reports 5 files changed, 83 insertions, 15 deletions). The planner additionally recorded that command 4 emits five 'LF will be replaced by CRLF' warnings on stderr on this Windows workspace, as expected noise, so an executor does not read them as failure. A2's collapse mechanism was re-confirmed directly: the delta spec file appears only under -uall."
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-15T05:12:48.326Z"
+}

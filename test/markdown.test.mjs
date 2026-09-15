@@ -64,6 +64,8 @@ test('md: comments are hidden and a via marker becomes a link to the archived ch
   assert.deepEqual(findVia('a <!-- via: 2026-01-01-old --> b <!--via:2026-02-02-new-->'), ['2026-01-01-old', '2026-02-02-new']);
 });
 
+/** The v2 task template carries its stable fields as an ordinary nested list. */
+const fields = (...items) => '<ul>' + items.map((i) => '<li>' + i + '</li>').join('') + '</ul>';
 test('md: golden render of the change templates', () => {
   const design = readFileSync(join(TEMPLATES, 'design.md'), 'utf8');
   assert.equal(
@@ -74,6 +76,8 @@ test('md: golden render of the change templates', () => {
       '<p><strong>Goals:</strong></p>',
       '<p><strong>Non-Goals:</strong></p>',
       '<h2>Decisions</h2>',
+      '<h3>D-01 —</h3>',
+      '<h3>D-02 —</h3>',
       '<h2>Risks / Trade-offs</h2>',
       '<h2>Do-Not-Touch</h2>',
       '<h2>Rebuild / Re-run After Change</h2>',
@@ -85,13 +89,14 @@ test('md: golden render of the change templates', () => {
     renderMarkdown(tasks),
     [
       '<h2>1.</h2>',
-      `<ul><li class="task open">${BOX_OPEN} 1.1  and verify </li><li class="task open">${BOX_OPEN} 1.2  and verify </li></ul>`,
+      `<ul><li class="task open">${BOX_OPEN} 1.1  and verify ${fields('id: T-01', 'depends-on: none', 'accepts: AC-01', 'design: D-01')}</li>` +
+        `<li class="task open">${BOX_OPEN} 1.2  and verify ${fields('id: T-02', 'depends-on: T-01', 'accepts: AC-01')}</li></ul>`,
       '<h2>2.</h2>',
-      `<ul><li class="task open">${BOX_OPEN} 2.1  and verify </li></ul>`,
+      `<ul><li class="task open">${BOX_OPEN} 2.1  and verify ${fields('id: T-03', 'depends-on: T-02', 'accepts: AC-02')}</li></ul>`,
       '<h2>3. Final gate</h2>',
-      `<ul><li class="task open">${BOX_OPEN} 3.1 Targeted verification of the whole change (build, tests, Rebuild / Re-run steps)</li>` +
-        `<li class="task open">${BOX_OPEN} 3.2 Cleanup of own diff only, then re-verify</li>` +
-        `<li class="task open">${BOX_OPEN} 3.3 Independent verification report says PASS (.my-flow/verify/)</li></ul>`,
+      `<ul><li class="task open">${BOX_OPEN} 3.1 Targeted verification of the whole change (build, tests, Rebuild / Re-run steps)${fields('id: T-04', 'depends-on: T-03')}</li>` +
+        `<li class="task open">${BOX_OPEN} 3.2 Cleanup of own diff only, then re-verify${fields('id: T-05', 'depends-on: T-04')}</li>` +
+        `<li class="task open">${BOX_OPEN} 3.3 Independent verification report says PASS (.my-flow/verify/)${fields('id: T-06', 'depends-on: T-05', 'kind: closeout')}</li></ul>`,
     ].join('\n')
   );
 });

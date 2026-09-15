@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "id": "R-01",
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "contractDigest": "694ee77931b10eb5f60f5b413b933a7303c3b9b80f07711abc86f9818e8c8ab9",
+  "amendment": null,
+  "role": "planner",
+  "actorId": "agent:my-flow:planner",
+  "writerActorId": "agent:claude-code:executor",
+  "verdict": "DRAFT-CONFIRMED",
+  "sourceRef": "agent:my-flow:planner#t32-migration-confirmation",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "title": "migration/original/ snapshots 4 of the 7 contract markdown files",
+      "blocking": false
+    },
+    {
+      "severity": "NOTE",
+      "title": "the - tasks: back-reference index in acceptance.md is stale for 11 of 12 criteria; the authoritative accepts: direction in tasks.md is complete",
+      "blocking": false
+    },
+    {
+      "severity": "NOTE",
+      "title": "verification-inputs.json declares no tools, so a host CLI upgrade is not environment drift; revisit in the reviewed revision when the live tasks unblock",
+      "blocking": false
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-14T18:15:09.947Z"
+}

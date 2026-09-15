@@ -1,0 +1,187 @@
+{
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "manual:ui-reading"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "manual:ui-navigation-sse"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "cmd:spec-validate-v5"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "live:amend-both",
+        "live:amend-history-both"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ],
+      "evidenceRefs": [
+        "cmd:recorder-matrix",
+        "live:verify-v2-both",
+        "live:verify-v3-both"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "target:v5",
+        "live:immutable-attempts"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "live:history-links"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "live"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "live:goals-both",
+        "live:unrelated-goal"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "static:policy-review",
+        "live:risk-both",
+        "live:verify-v3-both"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "manual:usage-comparison"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "cmd:npm-test-v5",
+        "cmd:build-check-v5",
+        "cmd:diff-check-v5",
+        "artifact:candidate-isolation",
+        "manual:ui-reading"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "result": "566 passed; 0 failed; 0 cancelled; 0 skipped; 0 todo"
+    },
+    {
+      "command": "node scripts/build.mjs --check",
+      "exitCode": 0,
+      "result": "generated files are up to date"
+    },
+    {
+      "command": "node scripts/spec.mjs validate linked-evidence-workflow",
+      "exitCode": 0,
+      "result": "1 passed; 0 failed"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "result": "clean"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/v3_live_observer",
+    "writerActorId": "codex-executor-01a0a276",
+    "sourceRef": "collaboration:/root/v3_live_observer/V-5-final"
+  },
+  "endImplementationDigest": "93d1ca20e69164035a7b7bd628018e848d76a699df9a27ee6611b5d2cd37f73b",
+  "endAcceptanceDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399"
+}

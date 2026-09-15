@@ -1,0 +1,24 @@
+[
+  {
+    "host": "claude",
+    "cwd": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\claude",
+    "baselineAttempt": "V-1",
+    "beforeContractDigest": "286e887b86475ec50e37057cc168c34cd5800413913255fbb5a19da15542df93",
+    "afterContractDigest": "85f4ab1b196656691e2c8aac878214cf685262a2785937e00b406e9d6c7ab45a",
+    "phase": "static-only-first",
+    "requiredLive": "AC-02",
+    "pendingTask": "T-02",
+    "note": "Authorized L-03 fixture setup adds the declared required live criterion after real baseline PASS; preserve that old report, then require a new INCOMPLETE with only static observations before the separately authorized live phase."
+  },
+  {
+    "host": "codex",
+    "cwd": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\codex",
+    "baselineAttempt": "V-1",
+    "beforeContractDigest": "e493f0a25ae178aebb03de42bea8714c6921cba0dcc2c1a4dee7a0d5945a903a",
+    "afterContractDigest": "85ea6bf18cdd61aadee76754096837dd0ee4ed273752fcbb7126c7ebe245ebcb",
+    "phase": "static-only-first",
+    "requiredLive": "AC-02",
+    "pendingTask": "T-02",
+    "note": "Authorized L-03 fixture setup adds the declared required live criterion after real baseline PASS; preserve that old report, then require a new INCOMPLETE with only static observations before the separately authorized live phase."
+  }
+]

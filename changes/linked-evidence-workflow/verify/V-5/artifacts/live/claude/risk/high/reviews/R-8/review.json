@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "id": "R-8",
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "contractDigest": "810b5e4017afdc82dec813d169d3aa5597ad671fd9145caa1ff1551e2a67343b",
+  "amendment": null,
+  "role": "architect",
+  "actorId": "subagent:my-flow:architect",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "WATCH",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:architect, round 3; transcript at tasks/a068c6615a6668d93.output",
+  "findings": [
+    {
+      "id": "prior-status",
+      "blocking": false,
+      "summary": "A1 RESOLVED structurally (none of the four git checks reads changes/high/, so mf-verify can re-run AC-02 from inside an open evidence attempt and nothing goes red). A2 RESOLVED with one residual (changes/high/design.md, proposal.md and acceptance.md are pinned only by the recorded contract digest, which the contract never says). A3 RESOLVED as classification, partially as coverage. A4 RESOLVED both halves (checks (a) and (c) produce byte-identical empty output with and without -uall, so the collapse dependency is gone, and no check reads tasks.md). A5 unresolved as tooling only: spec.mjs context --since still fails with no-such-packet, so every citation was verified by reading the sources. N3 RESOLVED. All four commands, the sha256 pin, the AC-03 probe, the test baseline and all eight source citations reproduce exactly."
+    },
+    {
+      "id": "W1",
+      "blocking": false,
+      "summary": "Two self-descriptions of the gate are false: design.md:309-310 and design.md:417-418 say no AC-02 check reads changes/high/ at all, but check (e) reads changes/high/specs/cli-output/spec.md (acceptance.md:108-113, tasks.md:13). Both conclusions survive but the stated reason is wrong, and :417-418 tells an executor the delta spec is unmonitored, the opposite of what T-02(e) enforces. Correct before execute."
+    },
+    {
+      "id": "W2",
+      "blocking": false,
+      "summary": "Checks (b) and (d) are index-relative: git diff --stat compares the worktree to the index, not HEAD. 'git add cli.mjs' empties check (b) and turns check (a) into 'M  cli.mjs' against a contract demanding the character-exact ' M cli.mjs' (acceptance.md:73); 'git add -A' or a commit empties check (d), which acceptance.md:100-102 then instructs the executor to read as proof of a Do-Not-Touch violation - a false accusation. Fix: use 'git diff --stat HEAD -- changes/medium' (verified to produce the identical 5 files / 83 insertions / 15 deletions today) and state that nothing is staged or committed during execute."
+    },
+    {
+      "id": "W3",
+      "blocking": false,
+      "summary": "The anti-revert guard is one-directional and its blind spots are undisclosed: check (d) still passes when changes/medium/ is damaged by a new untracked file, a deletion (the diffstat grows), a partial revert of four of the five files, or a further edit to an already-modified file. Do-Not-Touch claims 'never modified and never reverted' but only the full-revert shape is gated, so design.md:240-241's 'strictly stronger' overclaims. Remedy is a knowing-acceptance paragraph, not more machinery - any stronger check reintroduces the differential comparison round 3 correctly deleted."
+    },
+    {
+      "id": "W4",
+      "blocking": false,
+      "summary": "design.md:363 claims every path in the workspace lands in exactly one Do-Not-Touch group. True of today's tree (all 37 tracked files plus the untracked set were checked) but not of a file written directly at changes/<something> or a new changes/<name>/ directory, which lands in no group and is seen by no check. Narrow the claim to 'every path that exists at planning time'."
+    },
+    {
+      "id": "W5",
+      "blocking": false,
+      "summary": "Only check (d)'s CRLF warnings are documented (tasks.md:13, acceptance.md:101-104). cli.mjs is LF-terminated today, so check (b) will most likely emit its own 'LF will be replaced by CRLF' warning once the file is edited; one clause in T-02 prevents a confused executor."
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-15T05:18:57.159Z"
+}

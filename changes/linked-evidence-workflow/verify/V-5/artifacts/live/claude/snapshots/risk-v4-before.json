@@ -1,0 +1,214 @@
+{
+  "at": "2026-09-15T04:08:39.708Z",
+  "label": "risk-v4-before",
+  "host": "claude",
+  "workspace": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\claude",
+  "session": "44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "candidateDigest": "04347c5229fbd8b3f8a3dc1a794f4e0d5749290937066a5d5757b9cd4c40215b",
+  "observerHash": "77e9adc2073ff2117032b33f0e91a6e4d7a5fab8026f7211e3af39e1b4db2d82",
+  "settingsHash": "2555934feb705f71890a3934778acbcd3c3c46efb5b7dd3dfefbeb6b6b240a15",
+  "files": [
+    {
+      "path": ".gitignore",
+      "hash": "5d4ab1e359a28cc1f9bcc5e73065d57bde756b0332e33916a4c2b0c47e153acb",
+      "bytes": 10
+    },
+    {
+      "path": "changes/amend/acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "path": "changes/amend/change.json",
+      "hash": "4fb67865476ef2a6b4fa8442b719042f03be37cd6dd6c560d39089ef73a87cf2",
+      "bytes": 286
+    },
+    {
+      "path": "changes/amend/design.md",
+      "hash": "cfeb235b01eb2a130f56bb2fa07dfcddab8a1774b45d35814481902e4e6fe36e",
+      "bytes": 633
+    },
+    {
+      "path": "changes/amend/proposal.md",
+      "hash": "63760b1c3380b42ab0b422b718611b1ced15a127a5876a1ae49ca1e2d91430ef",
+      "bytes": 714
+    },
+    {
+      "path": "changes/amend/tasks.md",
+      "hash": "9a3efa42aec28821c52f3442ba1b345ba694d2fe1841660c4b1a8f815b7aee71",
+      "bytes": 362
+    },
+    {
+      "path": "changes/high/acceptance.md",
+      "hash": "677b09b23a5640883dbb46e063fd184f8bb80f3970d7dc89fe17bb29c033080a",
+      "bytes": 191
+    },
+    {
+      "path": "changes/high/change.json",
+      "hash": "78cb08f54e54365ec2d25a383d3e853be95b0e262b94c7cffd778dfe1cf2030a",
+      "bytes": 285
+    },
+    {
+      "path": "changes/high/design.md",
+      "hash": "ad392de4a2589d544ecd8402733c1feddb73c82682a6abf7f18fb2c2222ae3c2",
+      "bytes": 560
+    },
+    {
+      "path": "changes/high/proposal.md",
+      "hash": "d34885207149ab13089e9098878c62d9c6d5d44b3406923dcb6e89043d2ef5d5",
+      "bytes": 642
+    },
+    {
+      "path": "changes/high/tasks.md",
+      "hash": "bd8196792945fe185b686910da47dc6da74d90fbde37f09ac38ff7e464ba6f42",
+      "bytes": 152
+    },
+    {
+      "path": "changes/medium/acceptance.md",
+      "hash": "6ee4b005f95b2c92676e2e17891947114163475f278ad1dd7e6f9a4117dacec2",
+      "bytes": 184
+    },
+    {
+      "path": "changes/medium/change.json",
+      "hash": "7e08168d3f58e90b0aec951c07d5fbf2867003713a75ce8437331c1322e41764",
+      "bytes": 291
+    },
+    {
+      "path": "changes/medium/design.md",
+      "hash": "70c25100e145c8cbe6dba62cc38a84b3f4adcb294082ec69e0cea3ee7b66a795",
+      "bytes": 540
+    },
+    {
+      "path": "changes/medium/proposal.md",
+      "hash": "31d3fc245cb217e81794d09bfff726203427fc22de38086bc2e872959542cf7f",
+      "bytes": 601
+    },
+    {
+      "path": "changes/medium/tasks.md",
+      "hash": "9b2626d68c5363442fa85fed7ae6441729d9b59aac38b7bcf47facd573a5ba5e",
+      "bytes": 149
+    },
+    {
+      "path": "changes/verify/acceptance.md",
+      "hash": "7f38c43af8140a58b743487fa5cd5be0ef93843450c2b17b73e74bf71c3a4fa4",
+      "bytes": 152
+    },
+    {
+      "path": "changes/verify/change.json",
+      "hash": "b544d6e1cf6c6aaa6d87c0264def22a58b0e3c01fdd6fb1ed5fca08720238d18",
+      "bytes": 287
+    },
+    {
+      "path": "changes/verify/design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "path": "changes/verify/proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "path": "changes/verify/tasks.md",
+      "hash": "0542618f35cff22d6d25f274932dbb9d1eeeaa09371cf7f42deb4c834507773b",
+      "bytes": 150
+    },
+    {
+      "path": "cli.mjs",
+      "hash": "8887a46a8d35daef84ed545181790d4cebca8f7249b1a7b1201cf493f37bb4dc",
+      "bytes": 31
+    },
+    {
+      "path": "fixture-settings.json",
+      "hash": "dd0f39d2e3f139e178d9a5f27cd6f810fcd516799777d78f44d2102cfbfea8db",
+      "bytes": 67
+    },
+    {
+      "path": "native-probe.txt",
+      "hash": "9168b830ad0e2626d4591ed397d8e13ebb242239eb3c93d7fc1d4466a4b3de53",
+      "bytes": 19
+    },
+    {
+      "path": "scenario-inputs.json",
+      "hash": "c1711357e1d239a60de44f24cdeca3a1092bd28b5e3e300ff6711fa5e841fc0f",
+      "bytes": 522
+    },
+    {
+      "path": "scripts/check-a.mjs",
+      "hash": "7a7ebbd999913bc673940e5ae455e63625d3847a6f9b5643229604ae88c134d8",
+      "bytes": 141
+    },
+    {
+      "path": "source/a.mjs",
+      "hash": "40fb93ee46905bf772d9f2ae37697f9e03004c1492f5bbe6f522ed0c96fff06e",
+      "bytes": 32
+    },
+    {
+      "path": "source/answer.mjs",
+      "hash": "a2098bd92b10bf8b816d24b7556b1ce8c49a879d130489065ef1051c17e042f6",
+      "bytes": 26
+    },
+    {
+      "path": "source/b.mjs",
+      "hash": "93d1618aefe39d12b07558f5ddf8b6b7f2427d56cd9b6bfcb9c0712b9a31c535",
+      "bytes": 32
+    },
+    {
+      "path": "source/c.mjs",
+      "hash": "99b34f7ace2245a4b015c9ea787559c59ad64c4cefa5e3b3c036f462f30a69ab",
+      "bytes": 32
+    },
+    {
+      "path": "source/left.mjs",
+      "hash": "669e1a91b2a4bca10f04052adfb3666be65fcf5f1b823fa0e3cbfca98a328e65",
+      "bytes": 37
+    },
+    {
+      "path": "source/right.mjs",
+      "hash": "374b58a6c56545358a4dcf1aef000d900f999279de5cfaac107332c9f3c867f4",
+      "bytes": 38
+    },
+    {
+      "path": "test/amend-a.test.mjs",
+      "hash": "386bc9d26109fa5d66e8695e9663bae0f66f1056b59f73aab0b53504b2d5dd12",
+      "bytes": 174
+    },
+    {
+      "path": "test/amend-b.test.mjs",
+      "hash": "22629b8f5916fecd71be21dc51911d10c7c6b9c9e906f6696b13dd6f042bb7a9",
+      "bytes": 174
+    },
+    {
+      "path": "test/amend-c.test.mjs",
+      "hash": "f80cf7f6cf8f9c58d6765b68fc5f9d4ca8d83c24360c2d411b75a7ab6bef2f3a",
+      "bytes": 174
+    },
+    {
+      "path": "test/high.test.mjs",
+      "hash": "0f028136f9ea60aaccdafc4574108e24f275a0bd8bd2ca3fa99a6cc4c2c6e660",
+      "bytes": 719
+    },
+    {
+      "path": "test/medium.test.mjs",
+      "hash": "9f589f38251de514413f5a569eeadc550a4962ef87c133e6599fa81cf3b464ec",
+      "bytes": 322
+    },
+    {
+      "path": "test/verify.test.mjs",
+      "hash": "bbe222c12a2f19412f1a86b82ee932eaa8d86fb9eeb5ce8bf3f75a527a347616",
+      "bytes": 176
+    }
+  ],
+  "leases": [
+    {
+      "schemaVersion": 2,
+      "sessionId": "44a33a7a-18f7-4832-9ac2-98141fe75329",
+      "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+      "stage": "mf-plan",
+      "updated": "2026-09-15T03:57:10.238Z",
+      "leaseUntil": "2026-09-15T15:57:10.238Z",
+      "revision": 1
+    }
+  ],
+  "gitStatus": " M changes/medium/change.json\n"
+}

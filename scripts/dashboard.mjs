@@ -17,7 +17,10 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSy
 import { createServer } from 'node:http';
 import { dirname, extname, isAbsolute, join, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { listChanges, newestMtime, read, readState, sectionBody, splitRequirements, statusReport, validateReport } from './lib/intent.mjs';
+import { listChanges, read, readState, sectionBody, splitRequirements, statusReport, validateReport } from './lib/intent.mjs';
+import { IntentIoError, LOCK_REL, TX_DIR_REL, assertNoPendingTransaction, withIntentLock, withIntentSnapshot, writeFileAtomic } from './lib/intent-io.mjs';
+import { editLocks, lockFor } from './lib/intent-state.mjs';
+import { inspectCloseout, inspectCloseoutReference } from './lib/archive.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB = join(HERE, '..', 'web');
@@ -94,19 +97,29 @@ function resolveClientPath(root, path) {
   return { abs, rel: relOf(root, abs) };
 }
 const readable = (rel) => READ_RE.test(rel);
+/**
+ * Immutable records of what happened, which a save would rewrite into a lie: a verification
+ * report, the contract a review saw, an amendment's old or candidate text, the preserved
+ * originals of a migration. C-02 requires refusing these even though they end in `.md`.
+ */
+const RESERVED_IN_CHANGE = /^(verify|reviews|amendments|findings|usage|migration)\//;
 function writable(root, rel) {
   if (!/\.md$/i.test(rel)) return false;
   if (/^specs\/.+/.test(rel)) return true;
-  const m = /^changes\/([^/]+)\/.+/.exec(rel);
-  return !!m && listChanges(root).includes(m[1]);
+  const m = /^changes\/([^/]+)\/(.+)$/.exec(rel);
+  if (!m || !listChanges(root).includes(m[1])) return false;
+  return !RESERVED_IN_CHANGE.test(m[2]);
 }
 const eolOf = (text) => (text.includes('\r\n') ? 'crlf' : 'lf');
-/** The execute lock (design D7): read per request and fail-open, so it lifts the moment `spec stage` rewrites the state. */
-function lockOf(root) {
-  const s = readState(root);
-  if (!s || s.stage !== 'execute') return null;
-  const change = typeof s.change === 'string' ? s.change : null;
-  return { change, stage: 'execute', message: `the dashboard is read-only while "${change ?? 'the current change'}" is at stage execute; an agent is writing` };
+/**
+ * The execute lock (design D7, contract C-06), now scoped: the union of the live execute leases,
+ * each covering its own change and the spec capabilities that change claims. Read per request, so
+ * it lifts the moment a lease is released and never needs a restart.
+ */
+function lockOf(root, rel = null) {
+  const locks = editLocks(root);
+  if (rel === null) return locks.scopes.length || locks.legacy || locks.repair ? { change: locks.scopes[0]?.change ?? locks.legacy?.change ?? null, stage: 'execute', message: locks.scopes[0]?.message ?? locks.legacy?.message ?? locks.repair.message } : null;
+  return lockFor(locks, rel);
 }
 
 // ---------------------------------------------------------------- git (read-only)
@@ -327,6 +340,23 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
   const timers = new Set();
   let pending = new Set();
   let flushTimer = null;
+  const observed = new Map();
+  // Ignore transient reader locks and server bookkeeping, including their container mtimes.
+  // Retain child paths so journal changes and added/removed files still trigger refreshes.
+  const watchStamp = (dir) => {
+    const entries = [];
+    const visit = (rel) => {
+      if (rel === STATE_REL || rel === LOCK_REL) return;
+      const abs = join(root, rel);
+      const st = lstatSync(abs);
+      if (st.isDirectory()) {
+        if (rel !== STATE_DIR_REL && rel !== TX_DIR_REL) entries.push([rel, 'directory']);
+        for (const name of readdirSync(abs).sort()) visit(`${rel}/${name}`);
+      } else entries.push([rel, st.mtimeMs, st.size]);
+    };
+    if (existsSync(join(root, dir))) visit(dir);
+    return JSON.stringify(entries);
+  };
 
   // ---- push (D6)
   const broadcast = (event, data) => {
@@ -342,23 +372,32 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
   const queue = (rel) => {
     // The server's own state file is never an update; a recursive watcher also reports its
     // parent directory for that write, and a bare directory event carries nothing the client needs.
-    if (rel === STATE_REL || rel === STATE_DIR_REL) return;
+    if (rel === STATE_REL || rel === STATE_DIR_REL || rel === LOCK_REL || rel === TX_DIR_REL) return;
     pending.add(rel);
     if (flushTimer) return;
     flushTimer = setTimeout(() => {
       flushTimer = null;
-      const paths = [...pending].sort();
+      let paths = [...pending].sort();
       pending = new Set();
+      // Some native watchers report only a directory, including on metadata-only reads.
+      // Compare once per burst, rather than emitting an API-read -> SSE -> API-read loop.
+      for (const dir of new Set(paths.map((p) => p.split('/')[0]))) {
+        try {
+          const stamp = watchStamp(dir);
+          if (observed.get(dir) === stamp) paths = paths.filter((p) => p !== dir && !p.startsWith(`${dir}/`));
+          observed.set(dir, stamp);
+        } catch { /* a concurrent writer moved an entry; retain the notification */ }
+      }
+      if (!paths.length) return;
       broadcast('change', { at: new Date().toISOString(), paths });
     }, DEBOUNCE_MS);
   };
   const pollFallback = (dir) => {
-    const abs = join(root, dir);
     let last = null;
     const tick = () => {
       let now;
       try {
-        now = existsSync(abs) ? newestMtime(abs) : null;
+        now = watchStamp(dir);
       } catch {
         return; // a file vanished mid-walk; compare again next tick
       }
@@ -372,6 +411,7 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
   const watchDir = (dir) => {
     const abs = join(root, dir);
     if (!existsSync(abs)) return;
+    observed.set(dir, watchStamp(dir));
     let w;
     try {
       w = watch(abs, { recursive: true }, (_event, filename) => {
@@ -403,6 +443,37 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
     res.end(JSON.stringify(obj));
   };
   const fail = (res, status, error, message, headers) => send(res, status, { ok: false, error, message }, headers);
+  /**
+   * The coordinated I/O boundary (C-09). A read materializes its whole result under the one
+   * repository lock and releases it before this handler delivers anything; a write holds the
+   * same lock across its check-and-replace. Returns `{ value }`, or null after answering:
+   * a busy lock is 503 for reads and 423 for writes, an unfinished journal asks for recovery.
+   */
+  const guardedIo = (res, purpose, fn, { write = false } = {}) => {
+    try {
+      if (!write) return { value: withIntentSnapshot(root, fn, { purpose }) };
+      return {
+        value: withIntentLock(
+          root,
+          (token) => {
+            assertNoPendingTransaction(root); // 423 before the 404/409 that would disclose file state
+            return fn(token);
+          },
+          { purpose }
+        ),
+      };
+    } catch (e) {
+      if (!(e instanceof IntentIoError)) throw e;
+      const status = write ? 423 : e.code === 'busy' || e.code === 'recovery-pending' ? 503 : 500;
+      send(res, status, { ok: false, error: e.code, message: e.message, retryable: e.retryable }, e.code === 'busy' ? { 'retry-after': '1' } : {});
+      return null;
+    }
+  };
+  /** `send(200, <one locked snapshot>)`, or the coordinated failure this root is in. */
+  const sendSnapshot = (res, purpose, fn) => {
+    const r = guardedIo(res, purpose, fn);
+    return r ? send(res, 200, r.value) : undefined;
+  };
   /** Collects the body up to BODY_LIMIT; past it, answers 413 at once, drains the rest and resolves null. */
   const readBody = (req, res) =>
     new Promise((resolveBody) => {
@@ -428,18 +499,23 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
     const r = resolveClientPath(root, url.searchParams.get('path') ?? '');
     if (r.error) return fail(res, r.status, r.error, r.message);
     if (!readable(r.rel)) return fail(res, 403, 'not-readable', `${r.rel} is outside the readable directories`);
-    if (!existsSync(r.abs) || !statSync(r.abs).isFile()) return fail(res, 404, 'no-such-file', `${r.rel} does not exist`);
-    const raw = readFileSync(r.abs, 'utf8');
-    const canWrite = writable(root, r.rel);
-    const lock = canWrite ? lockOf(root) : null; // a read-only file never claims a lock
-    return send(res, 200, {
-      path: r.rel,
-      content: raw.replace(/\r\n/g, '\n'),
-      mtimeMs: statSync(r.abs).mtimeMs,
-      eol: eolOf(raw),
-      writable: canWrite && !lock,
-      lockReason: lock ? lock.message : null,
+    const got = guardedIo(res, 'file', () => {
+      if (!existsSync(r.abs) || !statSync(r.abs).isFile()) return { missing: true };
+      const raw = readFileSync(r.abs, 'utf8');
+      const canWrite = writable(root, r.rel);
+      const lock = canWrite ? lockOf(root, r.rel) : null; // a read-only file never claims a lock
+      return {
+        path: r.rel,
+        content: raw.replace(/\r\n/g, '\n'),
+        mtimeMs: statSync(r.abs).mtimeMs,
+        eol: eolOf(raw),
+        writable: canWrite && !lock,
+        lockReason: lock ? lock.message : null,
+      };
     });
+    if (!got) return undefined;
+    if (got.value.missing) return fail(res, 404, 'no-such-file', `${r.rel} does not exist`);
+    return send(res, 200, got.value);
   };
   const handleFilePost = async (req, res) => {
     if (!/^application\/json\b/i.test(req.headers['content-type'] ?? '')) return fail(res, 415, 'bad-content-type', 'POST /api/file requires content-type: application/json');
@@ -455,20 +531,58 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
     if (r.error) return fail(res, r.status, r.error, r.message);
     if (!/\.md$/i.test(r.abs)) return fail(res, 403, 'not-writable', 'only markdown files can be saved');
     if (!writable(root, r.rel)) return fail(res, 403, 'not-writable', `${r.rel} is not under specs/ or an active change`);
-    const lock = lockOf(root); // after the request is judged, before any filesystem state is disclosed
+    const lock = lockOf(root, r.rel); // after the request is judged, before any filesystem state is disclosed
     if (lock) return send(res, 423, { ok: false, error: 'locked', change: lock.change, stage: lock.stage, message: lock.message });
-    if (!existsSync(r.abs) || !statSync(r.abs).isFile()) return fail(res, 404, 'no-such-file', `${r.rel} does not exist; the dashboard edits, it does not create`);
     if (typeof data.content !== 'string') return fail(res, 400, 'bad-content', 'content must be a string');
-    const onDisk = readFileSync(r.abs, 'utf8');
-    const current = statSync(r.abs).mtimeMs;
-    if (data.force !== true && current !== data.mtimeMs) {
-      return send(res, 409, { ok: false, error: 'mtime', message: `${r.rel} changed on disk since it was loaded`, mtimeMs: current, content: onDisk.replace(/\r\n/g, '\n') });
+    // The repository intent lock is taken here, still before any filesystem state is disclosed,
+    // and held across the whole check-and-replace (C-09).
+    const done = guardedIo(
+      res,
+      'dashboard-save',
+      () => {
+        if (!existsSync(r.abs) || !statSync(r.abs).isFile()) return { status: 404, body: { ok: false, error: 'no-such-file', message: `${r.rel} does not exist; the dashboard edits, it does not create` } };
+        const onDisk = readFileSync(r.abs, 'utf8');
+        const current = statSync(r.abs).mtimeMs;
+        if (data.force !== true && current !== data.mtimeMs) {
+          return { status: 409, body: { ok: false, error: 'mtime', message: `${r.rel} changed on disk since it was loaded`, mtimeMs: current, content: onDisk.replace(/\r\n/g, '\n') } };
+        }
+        const eol = eolOf(onDisk);
+        let text = data.content.replace(/\r\n?/g, '\n');
+        if (eol === 'crlf') text = text.replace(/\n/g, '\r\n');
+        writeFileAtomic(r.abs, text);
+        return { status: 200, body: { ok: true, path: r.rel, mtimeMs: statSync(r.abs).mtimeMs, eol } };
+      },
+      { write: true }
+    );
+    return done ? send(res, done.value.status, done.value.body) : undefined;
+  };
+  /**
+   * `GET /api/intent/<change>[/<type>/<id>]` (C-02): one projection, the same one `spec inspect`
+   * prints. Nothing here reads a client-supplied filesystem path: the reference resolves through
+   * the manifest index and the change's own Markdown blocks, so `READ_RE` stays as narrow as it is.
+   */
+  const handleIntent = (res, pathname) => {
+    let parts;
+    try {
+      parts = pathname.slice('/api/intent/'.length).split('/').map(decodeURIComponent);
+    } catch {
+      return fail(res, 400, 'bad-path', 'malformed percent encoding in the reference');
     }
-    const eol = eolOf(onDisk);
-    let text = data.content.replace(/\r\n?/g, '\n');
-    if (eol === 'crlf') text = text.replace(/\n/g, '\r\n');
-    writeFileSync(r.abs, text, 'utf8');
-    return send(res, 200, { ok: true, path: r.rel, mtimeMs: statSync(r.abs).mtimeMs, eol });
+    if (parts.some((s) => !s || s === '.' || s === '..' || /[\\/\0]/.test(s))) return fail(res, 400, 'bad-path', 'a reference segment must be a plain identifier');
+    const shape = parts.length === 1 || parts.length === 3 || (parts.length === 5 && parts[1] === 'evidence' && parts[3] === 'acceptance');
+    if (!shape) return fail(res, 404, 'not-found', 'expected /api/intent/<change>[/<type>/<id>]');
+    const sub = parts.length === 5 ? { type: parts[3], id: parts[4] } : null;
+    const got = guardedIo(res, 'intent', () => (parts.length === 1 ? inspectCloseout(root, parts[0]) : inspectCloseoutReference(root, parts[0], parts[1], parts[2], sub)));
+    if (!got) return undefined;
+    const r = got.value;
+    if (r.error) {
+      const status = r.error === 'duplicate-identity' ? 409 : r.error === 'bad-reference-type' ? 400 : 404;
+      return send(res, status, { ok: false, error: r.error, message: r.message, ...(r.paths ? { paths: r.paths } : {}) });
+    }
+    if (r.projection.invalid) {
+      return send(res, 409, { ok: false, error: 'invalid-graph', message: 'the derived intent graph has unresolved references, repeated ids or a cycle', ...r.projection });
+    }
+    return send(res, 200, r.projection);
   };
   const handleEvents = (req, res) => {
     res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-cache', connection: 'keep-alive' });
@@ -499,16 +613,18 @@ export async function startServer({ root: rootArg = process.cwd(), port = DEFAUL
     const p = url.pathname;
     if (p.startsWith('/api/')) {
       if (req.method === 'GET' && p === '/api/health') return send(res, 200, { ok: true, pid: process.pid, host, port: boundPort, root, started, version: VERSION, git: gitInfo.ok });
-      if (req.method === 'GET' && p === '/api/status') return send(res, 200, statusReport(root).json);
-      if (req.method === 'GET' && p === '/api/validate') return send(res, 200, validateReport(root).json);
+      if (req.method === 'GET' && p === '/api/status') return sendSnapshot(res, 'status', () => statusReport(root).json);
+      if (req.method === 'GET' && p === '/api/validate') return sendSnapshot(res, 'validate', () => validateReport(root).json);
       if (req.method === 'GET' && p.startsWith('/api/changes/')) {
         const name = decodeURIComponent(p.slice('/api/changes/'.length));
-        const detail = changeDetail(root, name);
-        return detail ? send(res, 200, detail) : fail(res, 404, 'no-such-change', `changes/${name} is not an active change`);
+        const got = guardedIo(res, 'change', () => changeDetail(root, name));
+        if (!got) return undefined;
+        return got.value ? send(res, 200, got.value) : fail(res, 404, 'no-such-change', `changes/${name} is not an active change`);
       }
-      if (req.method === 'GET' && p === '/api/specs') return send(res, 200, specsIndex(root));
-      if (req.method === 'GET' && p === '/api/archive') return send(res, 200, archiveIndex(root));
-      if (req.method === 'GET' && p === '/api/scratch') return send(res, 200, scratchIndex(root));
+      if (req.method === 'GET' && p === '/api/specs') return sendSnapshot(res, 'specs', () => specsIndex(root));
+      if (req.method === 'GET' && p === '/api/archive') return sendSnapshot(res, 'archive', () => archiveIndex(root));
+      if (req.method === 'GET' && p === '/api/scratch') return sendSnapshot(res, 'scratch', () => scratchIndex(root));
+      if (req.method === 'GET' && p.startsWith('/api/intent/')) return handleIntent(res, p);
       if (req.method === 'GET' && p === '/api/file') return handleFileGet(res, url);
       if (req.method === 'POST' && p === '/api/file') return handleFilePost(req, res);
       if (req.method === 'GET' && p === '/api/events') return handleEvents(req, res);

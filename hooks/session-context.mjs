@@ -48,12 +48,29 @@ function artifacts(dir) {
     .join(' ');
 }
 
-let current = null;
-try {
-  current = JSON.parse(read(join(cwd, '.my-flow', 'state', 'current-change.json')) ?? 'null');
-} catch {
-  current = null;
-}
+/**
+ * One shared view of who this session is and what it is bound to (contract C-06): a lease of its
+ * own, the legacy pointer when nothing else could be meant, or nothing at all.
+ *
+ * Imported dynamically, like the model library below: a hook runs from an installed plugin cache
+ * that may be older or half-updated, and a missing file must still leave the change status
+ * printed and the exit code zero.
+ */
+const view = await (async () => {
+  try {
+    const { sessionView } = await import('./lib/intent-view.mjs');
+    return await sessionView(cwd, input);
+  } catch {
+    let state = null;
+    try {
+      state = JSON.parse(read(join(cwd, '.my-flow', 'state', 'current-change.json')) ?? 'null');
+    } catch {
+      /* fail open */
+    }
+    return { degraded: true, binding: { change: state?.change ?? null, stage: state?.stage ?? null, source: 'legacy', ambiguous: false, reason: null } };
+  }
+})();
+const current = view.binding.change ? { change: view.binding.change, stage: view.binding.stage } : null;
 
 if (existsSync(changesDir)) {
   const changes = readdirSync(changesDir, { withFileTypes: true })
@@ -64,12 +81,15 @@ if (existsSync(changesDir)) {
     lines.push('Active changes (changes/<name>/):');
     for (const n of changes.slice(0, 8)) {
       const t = countTasks(join(changesDir, n, 'tasks.md'));
-      const mark = current?.change === n ? ` <- current (stage: ${current.stage ?? 'unknown'})` : '';
+      const mark = current?.change === n ? ` <- current (stage: ${current.stage ?? 'unknown'}, ${view.binding.source === 'lease' ? 'this session' : 'legacy pointer'})` : '';
       lines.push(`- ${n}: ${t ? `${t.done}/${t.total} tasks ticked` : 'no tasks.md'}; ${artifacts(join(changesDir, n))}${mark}`);
     }
     if (changes.length > 8) lines.push(`- ... ${changes.length - 8} more`);
   } else {
     lines.push('changes/ exists but has no active change.');
+  }
+  if (view.binding.ambiguous) {
+    lines.push(`Another session holds a live lease (${view.binding.reason}), and this session is unidentified, so nothing is marked current here. Run "spec session new" and pass --session to bind this one.`);
   }
   lines.push('Flow (my-flow skills): interview -> mf-plan -> execute -> mf-verify. tasks.md checkboxes are the only progress ledger; design.md Do-Not-Touch and Rebuild / Re-run sections are hard rules.');
 } else if (current?.change) {

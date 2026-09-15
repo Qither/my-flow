@@ -1,0 +1,22 @@
+[
+  {
+    "host": "claude",
+    "attempt": "V-1",
+    "sequence": 1,
+    "dir": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\claude\\changes\\verify\\verify\\V-1",
+    "requestDigest": "ed94d5c723aba3950cb81b49f1e3b59e8651e948bb9ba46a8b3183e805d9e6da",
+    "implementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+    "acceptanceDigest": "286e887b86475ec50e37057cc168c34cd5800413913255fbb5a19da15542df93",
+    "contextLog": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\observations\\verify-baseline-context-claude.stdout.txt"
+  },
+  {
+    "host": "codex",
+    "attempt": "V-1",
+    "sequence": 1,
+    "dir": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\codex\\changes\\verify\\verify\\V-1",
+    "requestDigest": "f8a532291437bdb5249fb6b839606665a1ba40b6c3b3090eed715afa70aec9b2",
+    "implementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+    "acceptanceDigest": "e493f0a25ae178aebb03de42bea8714c6921cba0dcc2c1a4dee7a0d5945a903a",
+    "contextLog": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\observations\\verify-baseline-context-codex.stdout.txt"
+  }
+]

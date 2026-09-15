@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c49bbe1-6b95-4bef-9781-681d0e43eebc",
+  "sequence": 3,
+  "requestDigest": "e1db7683c5b959aee518fe153ae98605866eb436e552f408a08eda1c5b782d12",
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E6",
+        "E7",
+        "E8"
+      ],
+      "note": "Re-run fresh in this attempt rather than carried forward from V-1 or V-2: 1 test / 1 pass / 0 fail / 0 skipped / 0 todo, exit 0, against implementation and test files whose hashes match the V-3 target snapshot, with zero fake-completion matches."
+    },
+    {
+      "id": "AC-02",
+      "status": "VERIFIED",
+      "modes": [
+        "live"
+      ],
+      "evidenceRefs": [
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "note": "The independent verifier read native-probe.txt itself inside attempt V-3 and returned LIVE_FIXTURE_READY together with its real role (my-flow:verifier subagent, read-only, fresh context) and its actual tool events: Read tool on the absolute path (E2), Bash cat (E3), Bash od -c showing the exact 19 bytes L I V E _ F I X T U R E _ R E A D Y newline (E4), and Bash sha256sum 9168b830ad0e... computed from its own read (E5). No V-1 report, V-2 report, artifacts/baseline-verifier.md, preflight record, attempt snapshot hash, observations/live copy, or main-agent assertion was used as or in place of this read. The main agent never read the file."
+    },
+    {
+      "id": "T-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "The ticked box is backed by the verifier's own fresh run in this attempt, not by its evidence: V-1 pointer, which names a closed attempt against the older acceptance digest 286e887b8647."
+    },
+    {
+      "id": "T-02",
+      "status": "VERIFIED",
+      "modes": [
+        "live"
+      ],
+      "evidenceRefs": [
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "note": "The live observation T-02 describes was performed in this attempt and returned LIVE_FIXTURE_READY. The box was still unticked when the read-only verifier reported; the main agent ticks it only after this PASS is recorded."
+    },
+    {
+      "id": "DNT",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E8",
+        "E9",
+        "E10",
+        "E11",
+        "E12"
+      ],
+      "note": "All 17 protected files are byte-identical to the pre-run snapshot (0 mismatches) and nothing changed during this attempt. No diff under test/, scripts/, the candidate plugin or outside the workspace. verify's own diff is confined to its three artifact files. The git diff does intersect the literal phrase 'other changes', but attribution was established rather than assumed: source/left.mjs and source/right.mjs match changes/medium/design.md D-02 and belong to medium, and changes/amend/** and changes/high/** are other changes' planning artifacts."
+    },
+    {
+      "id": "RERUN",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "live"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E2",
+        "E8",
+        "E9"
+      ],
+      "note": "Both of this change's fixed acceptance checks ran fresh in this attempt, after the last relevant edit; E8 and E9 confirm zero file drift since the V-3 snapshot, so no edit postdates the runs. V-2 could only mark this PARTIAL."
+    },
+    {
+      "id": "NG-DB",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E10",
+        "E11",
+        "E12",
+        "E16",
+        "E17"
+      ],
+      "note": "Decision Boundary ordering checked rather than assumed: V-2 really did record INCOMPLETE with AC-02 MISSING at 07:38:44Z, and V-3 started at 07:51:14Z, so the INCOMPLETE on old static evidence was observed before any live PASS. V-1's PASS is not a live PASS - its criteria list is AC-01 only and its acceptance digest 286e887b8647 predates AC-02's 85f4ab1b1966. No old PASS was fabricated or reused."
+    }
+  ],
+  "commands": [
+    {
+      "id": "E1",
+      "command": "node --test test/verify.test.mjs",
+      "result": "exit 0; tests 1 / pass 1 / fail 0 / cancelled 0 / skipped 0 / todo 0; duration 62.7657 ms"
+    },
+    {
+      "id": "E2",
+      "command": "Read tool on the absolute path of native-probe.txt",
+      "result": "returned LIVE_FIXTURE_READY (single content line), read by the verifier itself in attempt V-3"
+    },
+    {
+      "id": "E3",
+      "command": "cat native-probe.txt",
+      "result": "LIVE_FIXTURE_READY"
+    },
+    {
+      "id": "E4",
+      "command": "od -c native-probe.txt",
+      "result": "L I V E _ F I X T U R E _ R E A D Y \\n; end offset 0000023 octal = 19 bytes"
+    },
+    {
+      "id": "E5",
+      "command": "sha256sum native-probe.txt",
+      "result": "9168b830ad0e2626d4591ed397d8e13ebb242239eb3c93d7fc1d4466a4b3de53, computed by the verifier after its own read rather than taken from the snapshot"
+    },
+    {
+      "id": "E6",
+      "command": "cat source/answer.mjs; cat test/verify.test.mjs",
+      "result": "export const answer = 42; and a single test('answer is 42', () => assert.equal(answer, 42)) with no filter and no skip"
+    },
+    {
+      "id": "E7",
+      "command": "fake-completion grep over test scripts source cli.mjs native-probe.txt fixture-settings.json scenario-inputs.json",
+      "result": "exit 1, zero matches"
+    },
+    {
+      "id": "E8",
+      "command": "sha256sum of all 18 tracked implementation files vs changes/verify/verify/V-3/target.json",
+      "result": "every hash matches; zero drift since the attempt snapshot"
+    },
+    {
+      "id": "E9",
+      "command": "node comparison of the 17 protected entries in observations/live/verify-live-v5-before/claude/snapshot.json against current bytes",
+      "result": "protected entries in snapshot: 17, mismatches: 0, all 17 MATCH"
+    },
+    {
+      "id": "E10",
+      "command": "git diff --name-only",
+      "result": "18 paths under changes/amend, changes/high, changes/medium, changes/verify plus source/left.mjs and source/right.mjs; no path under test/, scripts/, the candidate plugin or outside the workspace"
+    },
+    {
+      "id": "E11",
+      "command": "git diff --stat -- changes/verify",
+      "result": "only acceptance.md, change.json and tasks.md; 25 insertions, 2 deletions"
+    },
+    {
+      "id": "E12",
+      "command": "git diff -- source/left.mjs source/right.mjs",
+      "result": "'Left pending'->'Left ready' and 'Right pending'->'Right ready', matching changes/medium/design.md D-02; attributable to change medium, not verify"
+    },
+    {
+      "id": "E13",
+      "command": "ls specs; ls changes/verify/specs; find changes/verify -type d",
+      "result": "no base spec directory and no delta specs; only the V-1/V-2/V-3 attempt dirs"
+    },
+    {
+      "id": "E14",
+      "command": "spec.mjs validate verify",
+      "result": "ok verify; 1 passed, 0 failed"
+    },
+    {
+      "id": "E15",
+      "command": "spec.mjs context verify",
+      "result": "acceptance criteria complete = AC-01 [automated], AC-02 [live]; tasks [x] T-01, [ ] T-02; open findings none"
+    },
+    {
+      "id": "E16",
+      "command": "diff changes/verify/verify/V-3/contract/changes__verify__acceptance.md changes/verify/acceptance.md",
+      "result": "identical; the attempt contract is the live acceptance text at digest 85f4ab1b1966"
+    },
+    {
+      "id": "E17",
+      "command": "cat V-1/result.json; cat V-2/result.json; cat V-3/request.json",
+      "result": "V-1 PASS with criteria AC-01 only and endAcceptanceDigest 286e887b8647, finished 06:34:52.980Z; V-2 INCOMPLETE with AC-01 VERIFIED and AC-02 MISSING, finished 07:38:44.327Z; V-3 started 07:51:14.771Z requiring AC-01 [automated] and AC-02 [live]"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "subagent:my-flow:verifier",
+    "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "sourceRef": "foreground Agent dispatch, subagent_type my-flow:verifier, attempt V-3; report at .my-flow/verify/verify-20260915T0755Z-V-3.md; transcript at tasks/ac74d67967f932261.output"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "84ab185dd6629ced288f85f568b9e22becc8ea2266c8d3553b2c626d80cfacc2",
+  "finished": "2026-09-15T07:56:27.829Z"
+}

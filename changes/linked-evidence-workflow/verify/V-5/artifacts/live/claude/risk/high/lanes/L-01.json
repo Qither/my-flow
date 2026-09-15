@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "sequence": 1,
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "lane": "high",
+  "reason": "public-api: adds a new externally observable CLI contract (--json) to cli.mjs:1, whose default stdout is asserted by test/high.test.mjs:7-11; the proposal's decision boundary requires the full review lane even when --fast is requested, so the user's --fast was refused",
+  "paths": [
+    "cli.mjs"
+  ],
+  "previous": null,
+  "direction": "initial",
+  "forced": false,
+  "recordedAt": "2026-09-15T04:20:40.775Z"
+}

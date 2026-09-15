@@ -1,0 +1,13 @@
+{
+  "at": "2026-09-15T07:33:44.844Z",
+  "contractDigest": "26746df20995eb3678e6d8f6fe15894d17405dc14e889b6fd9344486bd4ddaaf",
+  "tasks": "# amend\n\n- [ ] 1.1 Confirm A and verify A readiness\n  - id: T-01\n  - depends-on: none\n  - accepts: AC-01\n  - design: D-01\n- [ ] 1.2 Confirm B and verify B readiness\n  - id: T-02\n  - depends-on: T-01\n  - accepts: AC-02\n  - design: D-01\n- [x] 1.3 Confirm C independently and verify C readiness\n  - id: T-03\n  - evidence: V-1\n  - depends-on: none\n  - accepts: AC-03\n  - design: D-01\n",
+  "acceptance": "### AC-01 — A readiness\n\n- evidence-mode: automated\n- required: true\n- checks: `node scripts/check-a.mjs`\n\nThe exported value equals A ready.\n\n### AC-02 — B readiness\n\n- evidence-mode: automated\n- required: true\n- checks: `node --test test/amend-b.test.mjs`\n\nThe exported value equals B ready.\n\n### AC-03 — C readiness\n\n- evidence-mode: automated\n- required: true\n- checks: `node --test test/amend-c.test.mjs`\n\nThe exported value equals C ready.\n",
+  "state": {
+    "state": "applied",
+    "proposedAt": "2026-09-15T07:33:44.387Z",
+    "appliedAt": "2026-09-15T07:33:44.715Z",
+    "oldDigest": "b5b17d4f5c1eb2b2ec1b57381b4b866e6532b8901191feba4dfd56640c2cdb57",
+    "newDigest": "26746df20995eb3678e6d8f6fe15894d17405dc14e889b6fd9344486bd4ddaaf"
+  }
+}

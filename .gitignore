@@ -2,3 +2,4 @@ node_modules/
 .my-flow/
 *.log
 .DS_Store
+changes/.transactions/

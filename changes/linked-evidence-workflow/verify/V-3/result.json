@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "sequence": 3,
+  "requestDigest": "992164610f6a5c3394d0db3edff12fafe947412fff69ce8ffa98186b43e40fb1",
+  "verdict": "INCOMPLETE",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-02",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-03",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-04",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-05",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "changes/linked-evidence-workflow/live-host-protocol.md",
+        ".my-flow/verify/linked-evidence-workflow-v3-observer.md"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-07",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-08",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-09",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "changes/linked-evidence-workflow/live-host-protocol.md",
+        ".my-flow/verify/linked-evidence-workflow-v3-observer.md"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "changes/linked-evidence-workflow/live-host-protocol.md",
+        ".my-flow/verify/linked-evidence-workflow-v3-observer.md"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    },
+    {
+      "id": "AC-12",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "changes/linked-evidence-workflow/live-host-protocol.md",
+        ".my-flow/verify/linked-evidence-workflow-v3-observer.md"
+      ]
+    }
+  ],
+  "commands": [
+    "candidate inventory comparison",
+    "fixture spec validate medium/high",
+    "fixture lane status medium/high",
+    "runtime selectLane checks",
+    "fixture git status and diff --check",
+    "fixture baseline Node tests"
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/v3_live_observer",
+    "writerActorId": "codex-executor-01a0a276",
+    "sourceRef": "collaboration:/root/v3_live_observer#final-answer"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": null,
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "471d5d75ed93b5500fedab461b162e8200e44f5d600137c3279b07bb4b7dcd90",
+  "finished": "2026-09-15T03:37:48.485Z"
+}

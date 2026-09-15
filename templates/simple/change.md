@@ -1,7 +1,12 @@
 # Change: <name>
 
 <!-- Single-file alternative to changes/<name>/ for small projects. Same sections, same
-     rules: the checkboxes below are the only progress ledger. -->
+     rules: the checkboxes below are the only progress ledger.
+
+     Simple mode stays deliberately legacy. There is no acceptance.md, no change.json and no
+     task id here, so the linked-intent commands (lane, review, finding, amend, evidence,
+     context) do not apply to it and it makes none of their guarantees. Move the change into
+     changes/<name>/ if you want them. -->
 
 ## Why
 

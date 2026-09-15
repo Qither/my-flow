@@ -1,0 +1,167 @@
+{
+  "implementation": {
+    "records": [
+      {
+        "path": ".gitignore",
+        "type": "file",
+        "mode": "file",
+        "hash": "5d4ab1e359a28cc1f9bcc5e73065d57bde756b0332e33916a4c2b0c47e153acb"
+      },
+      {
+        "path": "cli.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "8887a46a8d35daef84ed545181790d4cebca8f7249b1a7b1201cf493f37bb4dc"
+      },
+      {
+        "path": "fixture-settings.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "dd0f39d2e3f139e178d9a5f27cd6f810fcd516799777d78f44d2102cfbfea8db"
+      },
+      {
+        "path": "native-probe.txt",
+        "type": "file",
+        "mode": "file",
+        "hash": "9168b830ad0e2626d4591ed397d8e13ebb242239eb3c93d7fc1d4466a4b3de53"
+      },
+      {
+        "path": "scenario-inputs.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "c1711357e1d239a60de44f24cdeca3a1092bd28b5e3e300ff6711fa5e841fc0f"
+      },
+      {
+        "path": "scripts/check-a.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "7a7ebbd999913bc673940e5ae455e63625d3847a6f9b5643229604ae88c134d8"
+      },
+      {
+        "path": "source/a.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "40fb93ee46905bf772d9f2ae37697f9e03004c1492f5bbe6f522ed0c96fff06e"
+      },
+      {
+        "path": "source/answer.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "a2098bd92b10bf8b816d24b7556b1ce8c49a879d130489065ef1051c17e042f6"
+      },
+      {
+        "path": "source/b.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "93d1618aefe39d12b07558f5ddf8b6b7f2427d56cd9b6bfcb9c0712b9a31c535"
+      },
+      {
+        "path": "source/c.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "99b34f7ace2245a4b015c9ea787559c59ad64c4cefa5e3b3c036f462f30a69ab"
+      },
+      {
+        "path": "source/left.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "02f31091bb308d5eb654d7256fe6dfdb4933c8a6747230bab692656aba871fb1"
+      },
+      {
+        "path": "source/right.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "2ccd48398ae2f84e5606e0a5af8b1ac587166b9b36ff140aee23b27420a5f6b7"
+      },
+      {
+        "path": "test/amend-a.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "386bc9d26109fa5d66e8695e9663bae0f66f1056b59f73aab0b53504b2d5dd12"
+      },
+      {
+        "path": "test/amend-b.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "22629b8f5916fecd71be21dc51911d10c7c6b9c9e906f6696b13dd6f042bb7a9"
+      },
+      {
+        "path": "test/amend-c.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "f80cf7f6cf8f9c58d6765b68fc5f9d4ca8d83c24360c2d411b75a7ab6bef2f3a"
+      },
+      {
+        "path": "test/high.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "0f028136f9ea60aaccdafc4574108e24f275a0bd8bd2ca3fa99a6cc4c2c6e660"
+      },
+      {
+        "path": "test/medium.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "9f589f38251de514413f5a569eeadc550a4962ef87c133e6599fa81cf3b464ec"
+      },
+      {
+        "path": "test/verify.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "bbe222c12a2f19412f1a86b82ee932eaa8d86fb9eeb5ce8bf3f75a527a347616"
+      }
+    ],
+    "git": {
+      "head": "403925ffab5d11ad1a08afd5fcc589ec32babd6e",
+      "ref": "main",
+      "dirty": true
+    },
+    "declared": [],
+    "digest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18"
+  },
+  "acceptance": {
+    "digest": "5ab87c3665fc97759889bd7b96e50b9d93596fa93afa41003c1a8bd1e0725a7b",
+    "tasks": [
+      {
+        "id": "T-01",
+        "number": "1.1",
+        "title": "Update both labels and verify both fixed label checks pass",
+        "kind": "work",
+        "dependsOn": [],
+        "accepts": [
+          "AC-01"
+        ],
+        "design": [
+          "D-01"
+        ]
+      }
+    ],
+    "identity": {
+      "id": "8dbfeef3-6bc3-430a-a176-ad1c05ecbce2",
+      "slug": "medium",
+      "kind": "change",
+      "children": [],
+      "review": {
+        "lane": "medium",
+        "reason": "Two reversible label modules; no public interface or high-risk category",
+        "paths": [
+          "source/left.mjs",
+          "source/right.mjs"
+        ]
+      }
+    }
+  },
+  "environment": {
+    "os": "win32 x64",
+    "node": "v24.1.0",
+    "git": "git version 2.45.1.windows.1",
+    "tools": {}
+  },
+  "contractFiles": {
+    "changes/medium/proposal.md": "changes__medium__proposal.md",
+    "changes/medium/design.md": "changes__medium__design.md",
+    "changes/medium/acceptance.md": "changes__medium__acceptance.md",
+    "changes/medium/spec-base.json": "changes__medium__spec-base.json",
+    "changes/medium/specs/labels/spec.md": "changes__medium__specs__labels__spec.md",
+    "changes/medium/change.json": "changes__medium__change.json"
+  }
+}

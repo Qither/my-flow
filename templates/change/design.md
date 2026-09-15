@@ -11,7 +11,12 @@
 ## Decisions
 
 <!-- Key design decisions with rationale and alternatives considered (PLAN-DR: principles,
-     decision drivers, viable options). -->
+     decision drivers, viable options). Tasks point at these ids with "- design: D-01"; the ids
+     never change when a decision is reworded or reordered. -->
+
+### D-01 — <!-- short decision title -->
+
+### D-02 — <!-- short decision title -->
 
 ## Risks / Trade-offs
 

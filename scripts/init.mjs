@@ -52,7 +52,9 @@ if (!SIMPLE) {
   mkdirSync(join(project, 'specs'), { recursive: true });
   mkdirSync(join(project, 'changes', 'archive'), { recursive: true });
   copyIfMissing(join(T, 'specs-README.md'), join(project, 'specs', 'README.md'));
-  for (const f of ['proposal.md', 'design.md', 'tasks.md']) {
+  // acceptance.md and the version marker are additive: a customized legacy set keeps working,
+  // and `spec new` treats a set without the marker as legacy rather than mixing the two.
+  for (const f of ['proposal.md', 'design.md', 'tasks.md', 'acceptance.md', '.template-version']) {
     copyIfMissing(join(T, 'change', f), join(project, 'changes', '.templates', f));
   }
   for (const d of ['specs', 'changes/archive']) {

@@ -9,6 +9,8 @@
   <a href="README.es.md">Español</a>
 </p>
 
+> Planning policy update: low/medium/high lanes are selected automatically. High-risk work keeps full review; only accepted explicit `--fast --go` can continue through the normal goal handoff. See [current English policy](README.md#automatic-review-lanes).
+
 # my-flow
 
 一個輕量級的工作流程層，在 **Claude Code** 與 **Codex CLI** 中以相同的方式運作。它不引入任何執行階段，也不相依任何外部工具。它為你提供：
@@ -92,7 +94,7 @@ Codex 端是選用的；請參閱[安裝到 Codex](#安裝到-codex)。
 |---|---|
 | 具體、單一檔案、驗收標準明確 | 僅 `execute`（或直接動手做） |
 | 具體但涉及多個檔案或多個模組 | `mf-plan → execute → mf-verify` |
-| 具體、多檔、設計已明確 | `mf-plan --fast [--go] → execute → mf-verify` |
+| 具體、多檔、設計已明確 | `mf-plan` (automatic medium) `→ execute → mf-verify` |
 | 模糊、沒有驗收標準、「我們是否應該……」 | `interview → mf-plan → execute → mf-verify` |
 | 涉及建置設定、著色器、引擎模組、資料遷移、身分驗證 | 絕不跳過 `mf-plan` 與 `mf-verify` |
 
@@ -151,7 +153,7 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 | 技能 | 何時使用 | 作用 | 輸出 |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | 需求模糊、沒有驗收標準 | 每回合一個問題，先意圖後細節；對模糊程度評分；當 Non-Goals 與 Decision Boundaries 明確後結束 | `changes/<name>/proposal.md`，逐字記錄保存在 `.my-flow/interviews/` |
-| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | 多檔案變更；任何涉及建置設定、著色器、引擎模組、資料遷移、身分驗證的改動. 使用 `--fast` 時由你自己撰寫產物，只經 critic 審一次，不用 planner 與 architect；高風險類別（以及與 `--deliberate` 同用）會被拒絕；`--go` 直接接入 execute | planner 起草 → architect 審查（`CLEAR / WATCH / BLOCK`）→ critic 審查（`OKAY / REJECT`），最多三回合 | `design.md`（必須包含 Do-Not-Touch 與 Rebuild / Re-run）、`tasks.md` |
+| `mf-plan <name-or-text> [--amend] [--deliberate] [--fast [--go]]` | Automatic risk lanes; see [current English policy](README.md#automatic-review-lanes) | Low: main context; medium: main context + critic; high: planner → architect → critic. Rejected fixes need re-review | Full planning artifacts and required constraints |
 | `execute <name> [--team] [--worktree]` | `tasks.md` 中還有未勾選的核取方塊 | 組織 goal 敘述；逐一任務實作、驗證、勾選；執行固定的最終關卡. 也可由 `mf-plan --fast --go` 進入，此時同樣會停一次等你貼上 `/goal` | Claude：印出 `/goal …` 供你貼上。Codex：`create_goal` |
 | `mf-verify <name \| criteria>` | 在任何「已完成」宣告之前 | 委派給唯讀的 verifier，由它自行執行檢查並逐條標準回報 | `.my-flow/verify/<name>-<time>.md`，包含 PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` 輸出 `audit suggested`，或使用者說「audit the spec」時 | 唯讀的 architect 將 `specs/<cap>/spec.md` 與程式碼和測試對照：未實作的需求、未記錄的行為、互相矛盾、放錯能力的需求；絕不編輯 `specs/` | `.my-flow/verify/audit-<cap>-<time>.md`，含 `Status: CLEAN / DRIFT / BROKEN` 與以 `audit-<cap>` 結尾的建議變更名 |
@@ -164,7 +166,7 @@ Claude 以 `/my-flow:<name>` 呼叫它們，Codex 以 `$my-flow-<name>` 呼叫�
 
 ### 三個流程技能與內建功能的差異
 
-- **`/plan` 與 `mf-plan`**：計畫模式是一種唯讀權限模式，它在專案之外寫一份計畫檔案並請求核准。`mf-plan` 產生提交到儲存庫的產出物（`design.md`、`tasks.md`），由三個角色依序審查，帶有必要章節與一種任務格式，後續由 `execute` 與 `mf-verify` 據此驅動。你仍然可以先進入 `/plan` 進行探索。 快速通道 `mf-plan --fast` 介於兩者之間：同樣的已提交產物與後續流程，但只做一次 critic 審查，而非三角色共識。
+- **`/plan` / `mf-plan` compatibility:** `mf-plan` writes versioned planning artifacts and selects review roles by risk. See the [current English policy](README.md#automatic-review-lanes); planning itself never implements.
 - **`run` 與 `execute`**：內建的 `run` 用於啟動專案的應用程式。`execute` 是在 Do-Not-Touch 與 Rebuild 規則約束下對 `tasks.md` 的任務迴圈，包裹在原生 goal 之中，以固定的最終關卡收尾（驗證 → 清理 → 再次驗證 → 獨立審查 → 完成）。
 - **`verify` 與 `mf-verify`**：`mf-verify` 永遠切換情境（唯讀的 verifier 子代理），從 `tasks.md`、spec 情境與 `design.md` 推導驗收標準，對照 Do-Not-Touch 檢查 diff，檢查 Rebuild 步驟是否已執行，掃描虛假完成模式，並寫出 `spec archive` 所要求的報告。
 

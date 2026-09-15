@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c49bbe1-6b95-4bef-9781-681d0e43eebc",
+  "sequence": 1,
+  "requestDigest": "ed94d5c723aba3950cb81b49f1e3b59e8651e948bb9ba46a8b3183e805d9e6da",
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/baseline-verifier.md"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --test test/verify.test.mjs",
+      "exitCode": 0,
+      "summary": "Independent verifier: 1 test, 1 pass, 0 fail/skipped/todo/cancelled; 18/18 target hashes match"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/v3_live_observer",
+    "writerActorId": "fixture-baseline-writer",
+    "sourceRef": "collaboration:/root/v3_live_observer#independent-verify-baselines"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "endAcceptanceDigest": "286e887b86475ec50e37057cc168c34cd5800413913255fbb5a19da15542df93",
+  "artifacts": [
+    {
+      "relativePath": "baseline-verifier.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    }
+  ],
+  "reportHash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+  "finished": "2026-09-15T06:34:52.980Z"
+}

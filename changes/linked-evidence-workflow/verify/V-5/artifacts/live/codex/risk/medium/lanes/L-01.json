@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "sequence": 1,
+  "changeId": "8dbfeef3-6bc3-430a-a176-ad1c05ecbce2",
+  "lane": "medium",
+  "reason": "Two reversible label modules; no public interface or high-risk category",
+  "paths": [
+    "source/left.mjs",
+    "source/right.mjs"
+  ],
+  "previous": null,
+  "direction": "initial",
+  "forced": false,
+  "recordedAt": "2026-09-15T04:14:40.797Z"
+}

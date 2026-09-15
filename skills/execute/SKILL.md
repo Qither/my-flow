@@ -63,21 +63,43 @@ owned files. On Windows the team runs in-process. One team per session.
 ## 3. Task loop
 
 Run `/my-flow:spec stage <name> execute` once before task 1; this writes
-`.my-flow/state/current-change.json` with a fresh `updated` timestamp and arms the Stop-hook
-execute-guard. Never edit that file by hand.
+`.my-flow/state/current-change.json` with a fresh `updated` timestamp, binds this session to
+the change and arms the Stop-hook execute-guard. Never edit that file by hand. Pass
+`--session <id>` when several sessions share one repository, so each holds its own lease.
+
+`stage execute` refuses a linked change whose contract is not executable (a task with no declared
+prerequisites or no acceptance reference, a required criterion with no evidence mode or no
+checks, any structural error) and, when the change records a review lane, one that lane has not
+approved. `/my-flow:spec lane status <name>` says which it is. Fix either in /my-flow:mf-plan,
+never by editing the contract here; `--skip-contract-gate` stages it anyway and is a decision to
+record. `--force` does not waive it: that flag already means "take over a live lease".
 
 For each pending task, in order:
 
 1. Implement the smallest change that satisfies the task, following patterns already in the
-   codebase.
+   codebase. For a task with prerequisites or a long reference chain,
+   `/my-flow:spec context <name> --task <id>` writes the derived packet to scratch: the full
+   constraints, the complete criteria index, the task with its prerequisite closure, the blocks
+   it references, hashed file locators and any open finding. Re-run it with
+   `--since <digest>` to be told only what changed.
 2. Run the task's own verification phrase (the "and verify ..." part). If the task touches
    anything listed in Rebuild / Re-run, run those steps now.
 3. Only if the check passed: tick the box in `tasks.md`, then run
    `/my-flow:spec stage <name> execute` to refresh the state timestamp. Optional commit
    `feat(<name>): <task id> <summary>`.
-4. If the check failed twice with materially different approaches, record the blocker under
-   the task in `tasks.md` (`  - blocked: <reason>`) and continue with independent tasks.
+4. If the check failed twice with materially different approaches, the cause is a design
+   question, not a third patch. Record it:
+   `/my-flow:spec finding record <name> --file <finding.json>` with the `cause`, the `tasks` it
+   defeated and this `attempt`. It exits 1 once two materially different approaches have failed
+   and writes the blocker under exactly those tasks, so every independent task stays runnable.
+   A ticked box is never reopened by a finding. Resolve it only through a recorded design
+   review: `/my-flow:spec finding resolve <name> --id F-1 --review R-2 --remedy "<what>"`.
    Never tick a blocked task.
+5. If the remedy needs the contract itself to change, stage it instead of editing it:
+   `/my-flow:spec amend propose <name> --file <candidate.json>` (`locator`, `equivalent-check`
+   or `scope`) holds only the affected tasks while the approved text stays in force, and
+   `/my-flow:spec amend apply <name> --id A-1` publishes it once its authority is recorded,
+   reopening the affected boxes. A scope change needs the user, not a reviewer.
 
 ## 4. Final gate (fixed order)
 
@@ -87,7 +109,10 @@ For each pending task, in order:
 3. Re-run step 1.
 4. Independent review: run /my-flow:mf-verify <name> in a separate context. Optionally
    /my-flow:ask for a cross-model review of the diff.
-5. Only if the report says PASS: declare done. Tick any remaining meta task, run
+5. If a host reported what the work cost, import it rather than estimating it:
+   `/my-flow:spec usage import <name> --file <event.json>`. Failed and abandoned attempts are
+   imported too; a field the host did not report stays unknown and never becomes zero.
+6. Only if the report says PASS: declare done. Tick any remaining meta task, run
    `/my-flow:spec stage <name> done` (this releases the Stop-hook backstop), and suggest
    `/my-flow:spec archive <name>`.
 

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "sequence": 1,
+  "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+  "lane": "medium",
+  "reason": "Two explicit source modules with a known one-line approach and a fixed automated acceptance check; no auth, migration, destructive, public-api, build-config or engine-module category (source/left.mjs and source/right.mjs are imported only by test/medium.test.mjs:3-4)",
+  "paths": [
+    "source/left.mjs",
+    "source/right.mjs"
+  ],
+  "previous": null,
+  "direction": "initial",
+  "forced": false,
+  "recordedAt": "2026-09-15T04:16:14.249Z"
+}

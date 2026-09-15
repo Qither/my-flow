@@ -1,0 +1,46 @@
+{
+  "at": "2026-09-15T05:52:03.694Z",
+  "cwd": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\claude-goal-replay",
+  "session": "6c128080-6d71-4dbd-9052-1a26716c62f3",
+  "candidateDigest": "04347c5229fbd8b3f8a3dc1a794f4e0d5749290937066a5d5757b9cd4c40215b",
+  "baseline": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\observations\\live\\risk-v4-after\\claude",
+  "approval": {
+    "declared": true,
+    "lane": "medium",
+    "digest": "6df15429080d19fc38cc8ae01d3850e427628ad21d7afac6f8efe343f0aa1d30",
+    "approved": true,
+    "via": "direct",
+    "chain": [],
+    "reasons": [],
+    "requirements": {
+      "lane": "medium",
+      "roles": [
+        "critic"
+      ],
+      "summary": "an independent critic OKAY"
+    },
+    "used": [
+      "R-1"
+    ],
+    "history": [
+      {
+        "schemaVersion": 2,
+        "sequence": 1,
+        "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+        "lane": "medium",
+        "reason": "Two explicit source modules with a known one-line approach and a fixed automated acceptance check; no auth, migration, destructive, public-api, build-config or engine-module category (source/left.mjs and source/right.mjs are imported only by test/medium.test.mjs:3-4)",
+        "paths": [
+          "source/left.mjs",
+          "source/right.mjs"
+        ],
+        "previous": null,
+        "direction": "initial",
+        "forced": false,
+        "recordedAt": "2026-09-15T04:16:14.249Z"
+      }
+    ]
+  },
+  "originalWorkspacePreserved": true,
+  "authenticationHome": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\homes\\claude",
+  "scope": "Only replay the missed manual /goal exchange and its subsequent first task; no planning/authentication/probe replay."
+}

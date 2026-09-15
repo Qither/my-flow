@@ -1,0 +1,15 @@
+{
+  "at": "2026-09-15T06:42:40.889Z",
+  "previousDigest": "04347c5229fbd8b3f8a3dc1a794f4e0d5749290937066a5d5757b9cd4c40215b",
+  "candidateDigest": "edacd5fe23ae307e2599dc64a29c91840d42ae2a2b1016c4d0b79dfce7b0a040",
+  "changed": [
+    "scripts/lib/evidence.mjs",
+    "test/evidence.test.mjs"
+  ],
+  "sessions": {
+    "claude": "44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "codex": "a82457bc-a9ed-47e7-b593-36f0a2c887ad"
+  },
+  "profilesAndRolesUnchanged": true,
+  "hookOverlaysUnchanged": true
+}

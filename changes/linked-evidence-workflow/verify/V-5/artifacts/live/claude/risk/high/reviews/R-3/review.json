@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 2,
+  "id": "R-3",
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "contractDigest": "072f681dde292e279860edea5bfdc13a94201d06e11e1ab628356aa314169e40",
+  "amendment": null,
+  "role": "critic",
+  "actorId": "subagent:my-flow:critic",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "REJECT",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:critic, round 1; transcript at tasks/abc15a6fad7923a5c.output",
+  "findings": [
+    {
+      "id": "F1",
+      "blocking": true,
+      "summary": "T-02 (tasks.md:13) / AC-02 (acceptance.md:41-53) cannot be executed without inventing a rule: git status --porcelain is already red before T-01 (modified changes/medium/* and changes/high/*, untracked changes/.transactions/, changes/high/lanes|reviews|specs/, changes/medium/lanes|reviews/). acceptance.md:49-53 is falsified by this change's own delta spec. Fix: make AC-02 differential against a captured pre-execution baseline, list the tool-written paths that must NOT be reverted, and state that reverting changes/medium/ is itself a Do-Not-Touch violation."
+    },
+    {
+      "id": "F2",
+      "blocking": true,
+      "summary": "design.md:248 lists changes/.transactions/ as Do-Not-Touch while design.md:253-254 declares the writable set 'exactly cli.mjs plus changes/high/**'; the tooling journals into changes/.transactions/ (intent-io.mjs publishJournal) and that path is not git-ignored (.gitignore holds only .my-flow/). 'No new files anywhere' is already false. Fix: reclassify as tool-written-never-hand-edited and restate the writable set and the no-new-file rule concretely."
+    },
+    {
+      "id": "F3",
+      "blocking": true,
+      "summary": "T-03 (tasks.md:18) / AC-03 requires empty stderr and a one-line stdout per invocation but names no mechanism that separates the streams without writing files, which design.md:253 forbids; 2>&1 destroys the distinction. Fix: name a concrete spawnSync-based one-liner that reports status, stdout, stderr and stdout line count for the three argument vectors."
+    },
+    {
+      "id": "F4",
+      "blocking": true,
+      "summary": "D-02's rationale (design.md:116-119) is factually false (Array.prototype.includes uses SameValueZero on elements, not substring matching), and spec.md:46-56 derives an unfalsifiable requirement from it with no task and no acceptance criterion. Fix: keep the honest rationale already at design.md:112-114 and delete spec.md:46-56 (or give it real coverage)."
+    },
+    {
+      "id": "F5",
+      "blocking": true,
+      "summary": "Unknown-argument fall-through must be decided once. spec.md:22-26 records it as a durable SHALL that spec archive merges into specs/cli-output/, contradicting proposal.md:29 and the reversibility claim at design.md:177-178. Fix: either drop spec.md:22-26 and leave it a design decision evidenced by AC-03 only, or keep it and correct design.md:177-178 and proposal.md:29 to accept the breaking-change consequence knowingly. Also strike the 'because both read one constant in the source' clause at spec.md:44 (N1)."
+    },
+    {
+      "id": "B2-headline",
+      "blocking": false,
+      "summary": "REFUTED against the architect: design.md:141's clause 'that no requirement asks for and no check pins' modifies the rejected strict-parser contract, not the fall-through, so design.md:138-142 is not self-contradictory. Only the reversibility claim at design.md:177-178 is falsified."
+    },
+    {
+      "id": "N2",
+      "blocking": false,
+      "summary": "REFUTED as a defect: spec.md:30 states the contract as '--json appears among its user arguments', so position-insensitive matching and the unhonored POSIX -- separator agree with the spec. Worth one sentence of knowing acceptance in D-02, not a correction."
+    },
+    {
+      "id": "T-01",
+      "blocking": false,
+      "summary": "CLEAN: T-01 (tasks.md:5) executes with zero guessing; the baseline it claims was reproduced exactly (tests 2 / pass 1 / fail 1, SyntaxError at test/high.test.mjs:15:25)."
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-15T04:41:56.231Z"
+}

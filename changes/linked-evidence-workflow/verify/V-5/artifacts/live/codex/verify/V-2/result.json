@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "changeId": "8e009cf7-5d78-4690-bc20-e28d6fd6d72e",
+  "sequence": 2,
+  "requestDigest": "1a0ee846d03f3ef2823970f29bd1af3a3aaec32bbac6de54e3001c46870b6b5c",
+  "verdict": "INCOMPLETE",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        ".my-flow/verify/verify-V2-ac01-only.md#E-01",
+        ".my-flow/verify/verify-V2-ac01-only.md#E-02"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": []
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --test test/verify.test.mjs",
+      "exitCode": 0,
+      "output": "Independent verifier: tests 1, pass 1, fail 0, skipped 0; authorized rerun after sandbox spawn EPERM"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/verify_ac01_only",
+    "writerActorId": "/root",
+    "sourceRef": "native-agent:/root/verify_ac01_only/final"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": null,
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "291c4f2d5b39d0258bd075260a5c61a784bf31944c98b8741b5011524660d0fc",
+  "finished": "2026-09-15T07:39:12.185Z"
+}

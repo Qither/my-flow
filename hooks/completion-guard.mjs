@@ -80,45 +80,33 @@ const message = lastAssistantMessage();
 if (!message || GOAL_HANDOFF_RE.test(message) || !COMPLETION_CLAIM_RE.test(message)) allow();
 
 // ---- rule 1: execute-guard ----
-const DEFAULT_TTL_HOURS = 12;
-const ttlHours = Number(process.env.MY_FLOW_EXECUTE_GUARD_TTL_HOURS);
-const TTL_HOURS = Number.isFinite(ttlHours) && ttlHours > 0 ? ttlHours : DEFAULT_TTL_HOURS;
-const TTL_MS = TTL_HOURS * 3600 * 1000;
 const SPEC_SCRIPT = join(dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'spec.mjs');
+const ttlEnv = Number(process.env.MY_FLOW_EXECUTE_GUARD_TTL_HOURS);
+const TTL_HOURS = Number.isFinite(ttlEnv) && ttlEnv > 0 ? ttlEnv : 12;
 
-function stateIsFresh(state, now = Date.now()) {
-  const t = typeof state?.updated === 'string' ? Date.parse(state.updated) : NaN;
-  return Number.isFinite(t) && now - t <= TTL_MS; // missing or unparseable -> stale; future -> fresh
-}
-
-function remainingTasks() {
-  let state;
+/**
+ * The change this invocation may guard, and what is left in it. The guard enforces only a
+ * binding this session can actually claim: an identified session's own live lease, or the legacy
+ * pointer when no lease could be meant. While another session holds a lease and this caller is
+ * unidentified, the guard stays silent rather than enforcing somebody else's work.
+ */
+async function remainingTasks() {
+  // dynamic, so an older or half-updated plugin cache still runs this hook and still exits 0
+  let adapter;
   try {
-    state = JSON.parse(readFileSync(join(cwd, '.my-flow', 'state', 'current-change.json'), 'utf8'));
+    adapter = await import('./lib/intent-view.mjs');
   } catch {
-    return null;
+    return null; // no adapter, no claim about whose work this is
   }
-  if (state?.stage !== 'execute' || !state.change) return null;
-  if (!stateIsFresh(state)) return null;
-  const candidates = [join(cwd, 'changes', state.change, 'tasks.md'), join(cwd, 'docs', 'changes', `${state.change}.md`)];
-  const path = candidates.find((p) => existsSync(p));
-  if (!path) return null;
-  const lines = readFileSync(path, 'utf8').split(/\r?\n/);
-  const remaining = [];
-  for (let i = 0; i < lines.length; i++) {
-    const m = /^\s*- \[ \] (\d+\.\d+ .*)$/.exec(lines[i]);
-    if (!m) continue;
-    let blocked = false;
-    for (let j = i + 1; j < lines.length && /^\s+\S/.test(lines[j]) && !/^\s*- \[/.test(lines[j]); j++) {
-      if (/blocked:/i.test(lines[j])) blocked = true;
-    }
-    if (!blocked) remaining.push(m[1].trim());
-  }
-  return { change: state.change, path, remaining };
+  const view = await adapter.sessionView(cwd, input);
+  if (view.binding.ambiguous) return null;
+  if (view.binding.stage !== 'execute' || !view.binding.change) return null;
+  const tasks = await adapter.taskView(cwd, view.binding.change);
+  return tasks ? { ...tasks, via: view.binding.source } : null;
 }
 
 if (!skipExecute) {
-  const r = remainingTasks();
+  const r = await remainingTasks();
   if (r && r.remaining.length) {
     const reason =
       `[my-flow execute-guard] The last message claims completion, but change "${r.change}" is in stage execute and tasks.md still has ${r.remaining.length} unticked task(s):\n` +
@@ -126,7 +114,7 @@ if (!skipExecute) {
       (r.remaining.length > 5 ? `\n- ... ${r.remaining.length - 5} more` : '') +
       `\nContinue with the next task, or mark it "  - blocked: <reason>" under the task if it cannot proceed. ` +
       `When the final gate has passed, run: node "${SPEC_SCRIPT}" stage ${r.change} done --root "${cwd}". ` +
-      `(This guard fires only on a completion claim while the state file is younger than ${TTL_HOURS}h; ` +
+      `(This guard fires only on a completion claim while this session's binding is live, within ${TTL_HOURS}h; ` +
       `refresh with "stage ${r.change} execute". Bypass: MY_FLOW_SKIP_HOOKS=execute-guard)`;
     process.stdout.write(JSON.stringify({ decision: 'block', reason }));
     process.exit(0);

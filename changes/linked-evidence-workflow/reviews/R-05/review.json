@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 2,
+  "id": "R-05",
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "contractDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+  "amendment": null,
+  "role": "critic",
+  "actorId": "agent:my-flow:critic",
+  "writerActorId": "agent:claude-code:executor",
+  "verdict": "OKAY",
+  "sourceRef": "agent:my-flow:critic#t32-high-lane-review",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "simulated 5.2/T-20, 5.4/T-22, 5.5/T-23 and 6.1/T-25 against the real files and judged each tick earned; found no placeholder TODO, test.skip, .only, stub return or assertion-free test body in the diff, and Do-Not-Touch clean",
+      "evidence": "npm test 540 pass 0 fail; build.mjs --check up to date; validate ok"
+    },
+    {
+      "id": "C-1",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "6.3, 6.4 and 6.5 read as waiting because T-31 is blocked; the executor must record the relaxation in tasks.md rather than let the ledger contradict the work, and a blocked annotation is digest-neutral",
+      "evidence": "spec inspect --json readiness; scripts/lib/evidence.mjs task projection"
+    },
+    {
+      "id": "C-2",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "T-32's title names a command that now refuses (already-v2), because the upgrade ran ahead of the ledger; record under the task what remains of T-32 so the next reader does not run the refused command",
+      "evidence": "spec upgrade linked-evidence-workflow -> already-v2"
+    },
+    {
+      "id": "C-3",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "design.md D-08's \"keep this plan legacy through T-31\" is now false, and correcting it would invalidate this digest and all four reviews; carry the correction in tasks.md and amend D-08 only at the next digest-changing edit",
+      "evidence": "design.md D-08; scripts/lib/evidence.mjs acceptanceTarget"
+    },
+    {
+      "id": "C-4",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "--skip-contract-gate is an escape hatch C-01 does not name, and C-04 says --force cannot bypass v2 checks; the trust boundary is intact because archive and evidence begin remain unwaivable, so this is documentation debt for the next digest-changing edit",
+      "evidence": "contracts.md C-01, C-04; scripts/spec.mjs stage gate"
+    },
+    {
+      "id": "C-5",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "the temporary-install test prevents real-home writes by construction but never asserts that the real three-home configuration is unchanged; AC-12 asks for that fingerprint, it lives inside the blocked T-29, and T-28 must re-obtain it rather than let T-25's tick stand in for it",
+      "evidence": "test/workflow.test.mjs install test; acceptance.md AC-12"
+    },
+    {
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "the critic confirmed the two post-architect changes are what the architect asked for and not an overshoot: the stage gate now reads under the lock the write holds, and SKIP_CONTRACT_GATE is read at one site so archive and evidence begin stay unwaivable"
+    },
+    {
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "recorded after this review: a peer session found that --since accepted a digest naming no persisted packet and answered as if nothing had changed, which AC-10 requires to be refused; scripts/lib/context.mjs now refuses a stale, too-short or cross-lane digest and two tests cover it, taking the suite to 542"
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-14T19:09:49.391Z"
+}

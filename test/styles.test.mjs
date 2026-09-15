@@ -126,3 +126,25 @@ test('package.json: no runtime dependencies', () => {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
   assert.equal(pkg.dependencies, undefined);
 });
+
+test('app.css: the linked task rules use palette tokens only, so both palettes follow the twins', () => {
+  const css = read('app.css');
+  const start = css.indexOf('/* linked task rows');
+  assert.ok(start > 0, 'the linked task block is present');
+  const block = css.slice(start, css.indexOf('/* rendered markdown', start));
+  const literals = block.match(/#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(|\b(?:black|white|red|green|blue|gray|grey)\b/g) ?? [];
+  assert.deepEqual(literals, [], `a literal colour would need its own dark twin: ${literals.join(', ')}`);
+  for (const rule of ['.task-row', '.task-result', '.task-why', '.task-detail summary', '.ref-label']) {
+    assert.ok(block.includes(rule), `${rule} has a rule`);
+  }
+  assert.equal(darkTwinMismatch(css), null, 'and every explicit dark rule is still declared twice and identical');
+});
+
+test('app.css: long unbreakable content wraps instead of widening the page', () => {
+  const css = read('app.css');
+  for (const rule of ['.task-result', '.task-why', '.refs li']) {
+    const at = css.indexOf(`${rule} {`);
+    assert.ok(at > 0, `${rule} has a rule`);
+    assert.match(css.slice(at, css.indexOf('}', at)), /overflow-wrap: anywhere/, `${rule} wraps unbreakable tokens`);
+  }
+});

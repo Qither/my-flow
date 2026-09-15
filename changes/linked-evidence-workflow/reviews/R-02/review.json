@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "id": "R-02",
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "contractDigest": "694ee77931b10eb5f60f5b413b933a7303c3b9b80f07711abc86f9818e8c8ab9",
+  "amendment": null,
+  "role": "architect",
+  "actorId": "agent:my-flow:architect",
+  "writerActorId": "agent:claude-code:executor",
+  "verdict": "BLOCK",
+  "sourceRef": "agent:my-flow:architect#t32-high-lane-review",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "BLOCK",
+      "blocking": true,
+      "title": "contractApproval hashes a different contract than beginAttempt does: only beginAttempt passes the declared supportingContractPaths, so a change that declares both a lane and a supporting contract file has two digests and the two gates are mutually unsatisfiable",
+      "evidence": "scripts/lib/evidence.mjs:203,443,792; scripts/lib/archive.mjs:379; scripts/spec.mjs:289,308,320,331,408,429"
+    },
+    {
+      "id": "F-2",
+      "severity": "BLOCK",
+      "blocking": true,
+      "title": "stage execute enforces neither the approved contract nor the executable-contract check, while contracts.md C-01, C-06 and C-07 and a docstring in evidence.mjs all say it does",
+      "evidence": "scripts/spec.mjs:726-760; contracts.md:71,245,280; scripts/lib/evidence.mjs:1398"
+    },
+    {
+      "id": "F-3",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "the review lane is the only mutable unhistoried field in an append-only design: spec lane set --lane low --force is self-approving and cheaper than any amendment link",
+      "evidence": "scripts/spec.mjs:464-468; scripts/lib/evidence.mjs:1339-1342; scripts/lib/intent-state.mjs:263"
+    },
+    {
+      "id": "F-4",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "the declared-versus-undeclared boundary is sound, but every change is born with review null and only prose asks for a lane",
+      "evidence": "scripts/lib/intent-state.mjs:57; src/skills/mf-plan.md:49"
+    },
+    {
+      "id": "F-5",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "amendmentAuthority accepts any one independent review for a scope amendment instead of the recorded lane's reviews, contrary to C-07",
+      "evidence": "scripts/lib/evidence.mjs:1021-1026,777,1309; contracts.md:283"
+    },
+    {
+      "id": "F-6",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "the dashboard writable() allow-list accepts reserved .md artifacts under verify/, reviews/, amendments/ and migration/original/, which C-02 requires it to reject",
+      "evidence": "scripts/dashboard.mjs:100-105; contracts.md:101-102; test/dashboard.test.mjs:462-469"
+    },
+    {
+      "id": "F-7",
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "the acceptance target includes the task number, so a cosmetic renumber costs a full re-review and fresh evidence with no amendment type that covers it",
+      "evidence": "scripts/lib/evidence.mjs:238; contracts.md:132"
+    },
+    {
+      "id": "F-8",
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "usage event ids containing a colon collide with the hyphen form once written to disk, so the second import is dropped as a duplicate",
+      "evidence": "scripts/lib/usage.mjs:29-31,109; contracts.md:335"
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-14T18:23:56.027Z"
+}

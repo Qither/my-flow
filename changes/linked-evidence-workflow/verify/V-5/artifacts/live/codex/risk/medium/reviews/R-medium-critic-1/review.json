@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "R-medium-critic-1",
+  "changeId": "8dbfeef3-6bc3-430a-a176-ad1c05ecbce2",
+  "contractDigest": "5ab87c3665fc97759889bd7b96e50b9d93596fa93afa41003c1a8bd1e0725a7b",
+  "amendment": null,
+  "role": "critic",
+  "actorId": "/root/medium_critic",
+  "writerActorId": "/root",
+  "verdict": "OKAY",
+  "sourceRef": "native-agent:/root/medium_critic/final",
+  "findings": [],
+  "independent": true,
+  "reviewedAt": "2026-09-15T04:15:40.517Z"
+}

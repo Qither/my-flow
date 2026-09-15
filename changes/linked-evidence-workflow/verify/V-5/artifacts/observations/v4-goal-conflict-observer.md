@@ -1,0 +1,7 @@
+# Unrelated-goal fixture observation
+
+Native independent observer `/root/v3_live_observer`, verbatim bounded result:
+
+Negative unrelated-goal scenario: PASS and complete; safe to refresh runtime now. Existing native rollout 01a0a3c1… shows 06:29:33 `get_goal` null; 06:29:36 exactly one goal created with objective `Read native-probe.txt and report its SHA-256 digest.`; installed `$my-flow-execute medium` is loaded; 06:29:46 and 06:29:53 `get_goal` both return that same active objective. No medium goal create/update, no `stage medium execute`, no task/source/test/contract write, and conflict workspace remains clean with medium mf-plan/task unchecked/labels pending/no lease/no verify dir. Only after refusal, 06:30:01 reads native-probe and hashes `9168B830…6416`; 06:30:08 `update_goal complete` closes the original unrelated goal, reporting 3,945 tokens/32s. Final output is GOAL_CONFLICT_VERIFIED and explicitly reports medium 0/1, INCOMPLETE because it was not executed. This verifies refusal, preservation, and explicit cleanup.
+
+Applicability after the two-file recorder refresh: risk and both goal behaviors remain applicable if the refresh inventory proves only `scripts/lib/evidence.mjs` and `test/evidence.test.mjs` changed; their controlling skills, core goal policy, session implementation, roles/hooks and fixture contracts were untouched. Do not replay them. AC-05 recorder/final-verifier behavior must use the refreshed candidate because that is the changed surface.

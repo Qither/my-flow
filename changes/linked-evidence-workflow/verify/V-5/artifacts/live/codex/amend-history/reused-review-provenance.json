@@ -1,0 +1,33 @@
+{
+  "note": "Existing judgments reused against identical contract and candidate; no new role call is claimed.",
+  "design": {
+    "schemaVersion": 2,
+    "id": "R-amend-design-1",
+    "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+    "contractDigest": "fe3655ea31b0e1be11e59754c7014f61bd70fe33f251421970b75f8abf70833b",
+    "amendment": null,
+    "role": "architect",
+    "actorId": "/root/amend_design",
+    "writerActorId": "/root",
+    "verdict": "CLEAR",
+    "sourceRef": "native-agent:/root/amend_design/final",
+    "findings": [],
+    "independent": true,
+    "reviewedAt": "2026-09-15T06:55:51.245Z"
+  },
+  "critic": {
+    "schemaVersion": 2,
+    "id": "R-amend-equivalence-1",
+    "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+    "contractDigest": "7f92db9eb5934212539033fd58e4161aaa9d357c26420fc862c23ed2b21e409c",
+    "amendment": "A-1",
+    "role": "critic",
+    "actorId": "/root/amend_equivalence",
+    "writerActorId": "/root",
+    "verdict": "OKAY",
+    "sourceRef": "native-agent:/root/amend_equivalence/final",
+    "findings": [],
+    "independent": true,
+    "reviewedAt": "2026-09-15T07:04:09.189Z"
+  }
+}

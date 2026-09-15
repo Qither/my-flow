@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "sequence": 1,
+  "requestDigest": "be208d47d412bf6cd15d480c37d424f64105467b3f880788fc9d0adbefe39da1",
+  "verdict": "INCOMPLETE",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "node --test test/intent-graph.test.mjs",
+        "node --test test/markdown.test.mjs",
+        "node --test test/ui.test.mjs",
+        "changes/linked-evidence-workflow/tasks.md"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "PARTIAL",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "node --test test/intent-graph.test.mjs",
+        "node --test test/dashboard.test.mjs",
+        "node --test test/ui.test.mjs"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "node --test test/intent-graph.test.mjs",
+        "node --test test/spec.test.mjs",
+        "node --test test/dashboard.test.mjs",
+        "node --test test/context.test.mjs",
+        "node scripts/spec.mjs validate linked-evidence-workflow"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "node --test test/evidence.test.mjs",
+        "node --test test/context.test.mjs",
+        "node --test test/workflow.test.mjs",
+        "skills/execute/SKILL.md",
+        "codex/skills/my-flow-execute/SKILL.md",
+        "node scripts/build.mjs --check"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "node --test test/evidence.test.mjs",
+        "node --test test/workflow.test.mjs",
+        "skills/mf-verify/SKILL.md",
+        ".my-flow/verify/linked-evidence-workflow-preflight.md"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "node --test test/evidence.test.mjs",
+        "node --test test/archive.test.mjs",
+        "node --test test/dashboard.test.mjs",
+        "node scripts/spec.mjs evidence status linked-evidence-workflow"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "node --test test/intent-io.test.mjs",
+        "node --test test/archive.test.mjs",
+        "node --test test/spec.test.mjs",
+        "node --test test/dashboard.test.mjs"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "node --test test/evidence.test.mjs",
+        "node --test test/archive.test.mjs"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "status": "PARTIAL",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "node --test test/intent-state.test.mjs",
+        "node --test test/completion-guard.test.mjs",
+        "node --test test/dashboard.test.mjs",
+        "node --test test/workflow.test.mjs",
+        ".my-flow/verify/linked-evidence-workflow-preflight.md"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "node --test test/context.test.mjs",
+        "node --test test/workflow.test.mjs",
+        "node --test test/models.test.mjs",
+        "node scripts/build.mjs --check",
+        ".my-flow/verify/linked-evidence-workflow-preflight.md"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "node --test test/usage.test.mjs",
+        "scripts/lib/usage.mjs",
+        "manual review of rendered compareUsage/renderUsage output"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "npm test",
+        "node scripts/build.mjs --check",
+        "node --test test/intent-io.test.mjs",
+        "node --test test/spec.test.mjs",
+        "node --test test/archive.test.mjs",
+        "node --test test/dashboard.test.mjs",
+        "node --test test/plugin.test.mjs",
+        "node --test test/workflow.test.mjs",
+        "git status --short -- changes/archive specs/",
+        "README.md"
+      ]
+    }
+  ],
+  "commands": [
+    "npm test",
+    "node scripts/build.mjs --check",
+    "node scripts/spec.mjs validate linked-evidence-workflow",
+    "node --test test/<suite>.test.mjs (15 suites, isolated)",
+    "node scripts/spec.mjs context linked-evidence-workflow",
+    "node scripts/spec.mjs evidence status linked-evidence-workflow",
+    "git status --short -- changes/archive specs/",
+    "browser_open http://127.0.0.1:4321/ (failed: no DevTools port)"
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "agent:my-flow:verifier",
+    "writerActorId": "agent:claude-code:executor",
+    "sourceRef": "agent:my-flow:verifier#linked-evidence-workflow-V-1"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": null,
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "dd71b45f80360c3c85e2fb2bab3604ccafa76f309efc8f83af5767cf04882bb9",
+  "finished": "2026-09-14T19:34:04.866Z"
+}

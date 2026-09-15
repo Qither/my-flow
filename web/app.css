@@ -154,6 +154,15 @@ h1 { font-size: 1.7em; } h2 { font-size: 1.35em; } h3 { font-size: 1.15em; } h4 
 .conn[data-state="live"] .conn-dot { background: var(--lime); }
 .conn[data-state="reconnecting"] .conn-dot { background: var(--danger); }
 
+/* Keep the task column readable when the desktop sidebar would consume most of the viewport. */
+@media (max-width: 700px) {
+  .shell { flex-direction: column; }
+  .sidebar { flex: none; position: static; height: auto; border-right: 0; border-bottom: var(--panel-border) solid var(--border); }
+  .nav-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .content { padding: 16px 16px 48px; overflow-wrap: anywhere; }
+  .progress { min-width: 0; max-width: 100%; }
+}
+
 /* panels and controls */
 .panel {
   border: var(--panel-border) solid var(--border);
@@ -208,6 +217,21 @@ button, .btn {
 .file-list li { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 ul.req { padding-left: 18px; }
 .empty { color: var(--ink-muted); font-style: italic; }
+
+/* linked task rows (design D1, D2): action and observable result in the row, everything
+   technical one labelled link away inside the row's own disclosure. */
+.tasks { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-direction: column; gap: 10px; }
+.task-row { padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.task-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.task-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.task-action { font-weight: 600; }
+.task-result { margin: 2px 0 0 26px; color: var(--ink-muted); font-size: 0.9em; overflow-wrap: anywhere; }
+.task-why { margin: 6px 0; font-size: 0.9em; overflow-wrap: anywhere; }
+.task-detail { margin: 4px 0 0 26px; font-size: 0.9em; }
+.task-detail summary { cursor: pointer; font-family: var(--mono); color: var(--ink-muted); }
+.refs { list-style: none; padding: 0; margin: 6px 0; display: flex; flex-direction: column; gap: 4px; }
+.refs li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; overflow-wrap: anywhere; }
+.ref-label { flex: none; min-width: 72px; font: 700 0.85em/1.4 var(--mono); color: var(--ink-muted); }
 
 /* rendered markdown */
 .md li.task { list-style: none; margin-left: -18px; }

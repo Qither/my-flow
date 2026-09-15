@@ -1,0 +1,420 @@
+{
+  "at": "2026-09-15T07:26:43.752Z",
+  "label": "verify-static-v5-before",
+  "host": "codex",
+  "workspace": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\codex",
+  "session": "a82457bc-a9ed-47e7-b593-36f0a2c887ad",
+  "candidateDigest": "edacd5fe23ae307e2599dc64a29c91840d42ae2a2b1016c4d0b79dfce7b0a040",
+  "observerHash": "77e9adc2073ff2117032b33f0e91a6e4d7a5fab8026f7211e3af39e1b4db2d82",
+  "settingsHash": "cf285a47aa92ae60a49200c083066724f809c9bde1171a8e28a755b7087ce610",
+  "files": [
+    {
+      "path": ".gitignore",
+      "hash": "5d4ab1e359a28cc1f9bcc5e73065d57bde756b0332e33916a4c2b0c47e153acb",
+      "bytes": 10
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T04-14-40-801Z-b5wwqe/journal.json",
+      "hash": "53ad76eb74c3bdfb545812ae0921505a41207e747d5f199dcdc5d04ae4c24143",
+      "bytes": 1055
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T04-15-52-441Z-96wr9l/journal.json",
+      "hash": "e1fa3eafd77ffcb76a9b7d3f7cea8db0d1aba54ea99f6bfd5275bf2aa5708f6e",
+      "bytes": 997
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T06-53-59-362Z-7vgteb/journal.json",
+      "hash": "d9da8292bc74a57d311ad2632d81d57ff8e9a2ddb5bde97a17cb657008774e4f",
+      "bytes": 1345
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T06-53-59-442Z-grs286/journal.json",
+      "hash": "b5448a38b6e56f9e52b861f0b132baab2eba5d3458d04fffa3fc44ab89d68262",
+      "bytes": 4035
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T06-55-51-323Z-e12jal/journal.json",
+      "hash": "b9ae2ba359e0a9372f18c24bd13cc1d1756fd776361fa724b79b90b6f52ecdff",
+      "bytes": 4619
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T06-55-51-451Z-qimr4h/journal.json",
+      "hash": "546fd989187a0b329da8adaa0e23154cd7b3d00745e9c160bcd0b4924c49fbc8",
+      "bytes": 5317
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T07-04-09-276Z-fkkd00/journal.json",
+      "hash": "ce5ab0a97e39c3504e3ae9a1c4f3c256de269979a810aace862988daab64b41a",
+      "bytes": 4143
+    },
+    {
+      "path": "changes/amend/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "path": "changes/amend/amendments/A-1/candidate.json",
+      "hash": "83b7386a7bc82831b9a65c0c5023ca94b1c0f46cd50903a7e6d314a0dad6fdbf",
+      "bytes": 707
+    },
+    {
+      "path": "changes/amend/amendments/A-1/candidate/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "path": "changes/amend/amendments/A-1/old/acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "path": "changes/amend/amendments/A-1/state.json",
+      "hash": "d7ce3aed4b751087476d0579058a6f4759ca604e27d4e8317320d2f527c5b76d",
+      "bytes": 278
+    },
+    {
+      "path": "changes/amend/change.json",
+      "hash": "9db747e8b4721910dd1b4a27391ee35ddbefd9fe83fe8f99664c1c3376c64c93",
+      "bytes": 290
+    },
+    {
+      "path": "changes/amend/design.md",
+      "hash": "cfeb235b01eb2a130f56bb2fa07dfcddab8a1774b45d35814481902e4e6fe36e",
+      "bytes": 633
+    },
+    {
+      "path": "changes/amend/findings/F-1.json",
+      "hash": "437fa5c16963d4fa95556bd0c65f86cb5cd2789a8a03aceddcdf8c500a48c149",
+      "bytes": 1022
+    },
+    {
+      "path": "changes/amend/proposal.md",
+      "hash": "63760b1c3380b42ab0b422b718611b1ced15a127a5876a1ae49ca1e2d91430ef",
+      "bytes": 714
+    },
+    {
+      "path": "changes/amend/reviews/R-amend-design-1/review.json",
+      "hash": "734bd5686ff3e1b4d9d64b975f81a63b2e185bd9f862e7c4e4b0f5927c63557b",
+      "bytes": 465
+    },
+    {
+      "path": "changes/amend/reviews/R-amend-equivalence-1/review.json",
+      "hash": "b3c6369563e11f809db0418747b300dd5c9cfb913fba27fea1d5dabeaff1b35d",
+      "bytes": 477
+    },
+    {
+      "path": "changes/amend/tasks.md",
+      "hash": "dc7b5af15bfc5e0af2b70225e4b18c0056ecffc52bf5d3663ae6d1b211ad27c3",
+      "bytes": 362
+    },
+    {
+      "path": "changes/high/acceptance.md",
+      "hash": "9d28bd4a48bc215616b176af72c39cbb8dde193c904d050600f6d5113407c841",
+      "bytes": 680
+    },
+    {
+      "path": "changes/high/change.json",
+      "hash": "ac6b835168b19344344d5d603257ae97383a275ace09ad589d7196196ab82020",
+      "bytes": 428
+    },
+    {
+      "path": "changes/high/design.md",
+      "hash": "abfa4d0c546347ad8d9ce3f4be57612c1482c16658eea6520c29772661b18b53",
+      "bytes": 7159
+    },
+    {
+      "path": "changes/high/lanes/L-01.json",
+      "hash": "3697e6a8b82a5a85a7c9efbbcb81630226c5b0ba6f0e574dd78d8907a311edf0",
+      "bytes": 334
+    },
+    {
+      "path": "changes/high/proposal.md",
+      "hash": "cf8a2b6f74302dfbcd1af719da9bb6635beee611145fb79ad1e6d3dafeaf8f8b",
+      "bytes": 1186
+    },
+    {
+      "path": "changes/high/reviews/R-high-architect-1/review.json",
+      "hash": "0147bcfe05024fb9986406581d00ae82b45c600e4909f62d71773a5117cf094e",
+      "bytes": 484
+    },
+    {
+      "path": "changes/high/reviews/R-high-critic-1/review.json",
+      "hash": "7517027c26164c24c35183c317fd47683c7f15918882918359c0c675ba17a2fd",
+      "bytes": 471
+    },
+    {
+      "path": "changes/high/reviews/R-high-planner-1/review.json",
+      "hash": "1e17f2ceb5c5751898992ea1e876443beda077413cd3084e76eb66ffff5ef7cc",
+      "bytes": 477
+    },
+    {
+      "path": "changes/high/spec-base.json",
+      "hash": "c19d50d342f928bed363d4dcc81b77556f4ac52d0f62d4be7d501731978f566b",
+      "bytes": 289
+    },
+    {
+      "path": "changes/high/specs/cli-output/spec.md",
+      "hash": "34cbe7bf04540eaa919ff45284a68b7d2e0430cd2dab5d0e5f172b5d2e4ed483",
+      "bytes": 628
+    },
+    {
+      "path": "changes/high/tasks.md",
+      "hash": "341e88f8e90a0640c42eb645caef4566943a5a13d1c727b3164498c589da7a8e",
+      "bytes": 902
+    },
+    {
+      "path": "changes/medium/acceptance.md",
+      "hash": "6ee4b005f95b2c92676e2e17891947114163475f278ad1dd7e6f9a4117dacec2",
+      "bytes": 184
+    },
+    {
+      "path": "changes/medium/change.json",
+      "hash": "197b451a6de2869b978267b41894ac181193946d247752fa125974500a8f76b2",
+      "bytes": 816
+    },
+    {
+      "path": "changes/medium/design.md",
+      "hash": "b7f6ff9a26dbae71908b28e9bda8fac36a3002eb325c4f3df26a15555ce3cd0a",
+      "bytes": 1276
+    },
+    {
+      "path": "changes/medium/lanes/L-01.json",
+      "hash": "65109dd0e7d99ee798de9b153a3205fe2dfef45e96a198d48e2ffd1073179e0c",
+      "bytes": 376
+    },
+    {
+      "path": "changes/medium/proposal.md",
+      "hash": "31d3fc245cb217e81794d09bfff726203427fc22de38086bc2e872959542cf7f",
+      "bytes": 601
+    },
+    {
+      "path": "changes/medium/reviews/R-medium-critic-1/review.json",
+      "hash": "b2353a45ccfcfcdbca0d084416efb925db5e1d483a1ed2437f9137b3a4361c00",
+      "bytes": 464
+    },
+    {
+      "path": "changes/medium/spec-base.json",
+      "hash": "bc44ac68157a13808e3639de8bf134fb1e58d284508f7ca83e47992c9446d8b1",
+      "bytes": 277
+    },
+    {
+      "path": "changes/medium/specs/labels/spec.md",
+      "hash": "7376a994c5dd4152adeb719633295ac203f7f856b0be02945af648dba38d764d",
+      "bytes": 237
+    },
+    {
+      "path": "changes/medium/tasks.md",
+      "hash": "52d25de634013cb6b6f5097e6d826dfe745b1e34282944ec100bacbafd2815ea",
+      "bytes": 149
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__acceptance.md",
+      "hash": "6ee4b005f95b2c92676e2e17891947114163475f278ad1dd7e6f9a4117dacec2",
+      "bytes": 184
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__change.json",
+      "hash": "745a79e0c69faf76019a7ae5f8cf3f9a602b4c50473785c9710ebc950c3cd3a2",
+      "bytes": 248
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__design.md",
+      "hash": "b7f6ff9a26dbae71908b28e9bda8fac36a3002eb325c4f3df26a15555ce3cd0a",
+      "bytes": 1276
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__proposal.md",
+      "hash": "31d3fc245cb217e81794d09bfff726203427fc22de38086bc2e872959542cf7f",
+      "bytes": 601
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__spec-base.json",
+      "hash": "bc44ac68157a13808e3639de8bf134fb1e58d284508f7ca83e47992c9446d8b1",
+      "bytes": 277
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__specs__labels__spec.md",
+      "hash": "6d1cf8088e44f0d33b9d06f08e081b61706a6e91d2ebb726aa1141a4a967aeea",
+      "bytes": 235
+    },
+    {
+      "path": "changes/medium/verify/V-1/report.md",
+      "hash": "8b56964ed45e7936ddc40cf0cc30bb05deca86cf76ecff02d9c714ecd80c9e69",
+      "bytes": 2933
+    },
+    {
+      "path": "changes/medium/verify/V-1/request.json",
+      "hash": "6c0e654f534e3475ccab274fe2f948a7cd7094f395b6d3468e8d17868c1a07bc",
+      "bytes": 853
+    },
+    {
+      "path": "changes/medium/verify/V-1/result.json",
+      "hash": "b12db201d2eeed1dc86f83eca8859e52fe6762db13c9900932d749c7e9a7e716",
+      "bytes": 1390
+    },
+    {
+      "path": "changes/medium/verify/V-1/target.json",
+      "hash": "1a7792df6771d84729e0cac2aba1908024a8d9b06ef7cb5305ae79297abc4c6c",
+      "bytes": 4964
+    },
+    {
+      "path": "changes/verify/acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "path": "changes/verify/change.json",
+      "hash": "4f1ec53f24302a2fb037df12dac836f382bfd667c283a6150ca968eeae7f0ddf",
+      "bytes": 632
+    },
+    {
+      "path": "changes/verify/design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "path": "changes/verify/proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "path": "changes/verify/tasks.md",
+      "hash": "2bf665c84a8f1d4a30b1826a1e32019e5f19b7837f8db2b821e35beb541aa316",
+      "bytes": 342
+    },
+    {
+      "path": "changes/verify/verify/V-1/artifacts/baseline-verifier.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__acceptance.md",
+      "hash": "7f38c43af8140a58b743487fa5cd5be0ef93843450c2b17b73e74bf71c3a4fa4",
+      "bytes": 152
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__change.json",
+      "hash": "14d6b47bb4994399ebd95d0143b1c20cc72a3f46bf92b9ccbe62b00758b0090f",
+      "bytes": 105
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "path": "changes/verify/verify/V-1/report.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "path": "changes/verify/verify/V-1/request.json",
+      "hash": "9bb673a65448e7539c8acb190d5119aeb75bf66602242417e47c09b7ed8b689d",
+      "bytes": 874
+    },
+    {
+      "path": "changes/verify/verify/V-1/result.json",
+      "hash": "ef3b4cedbdc9d9677d760c5256c18c7e7cd7e1b56cf3d691a8813f1dfb17dcd7",
+      "bytes": 1390
+    },
+    {
+      "path": "changes/verify/verify/V-1/target.json",
+      "hash": "68f4f3bd69249759f25173cebc7d965b4af4fdd9fc495255753a66b5184c802d",
+      "bytes": 4596
+    },
+    {
+      "path": "cli.mjs",
+      "hash": "8887a46a8d35daef84ed545181790d4cebca8f7249b1a7b1201cf493f37bb4dc",
+      "bytes": 31
+    },
+    {
+      "path": "fixture-settings.json",
+      "hash": "dd0f39d2e3f139e178d9a5f27cd6f810fcd516799777d78f44d2102cfbfea8db",
+      "bytes": 67
+    },
+    {
+      "path": "native-probe.txt",
+      "hash": "9168b830ad0e2626d4591ed397d8e13ebb242239eb3c93d7fc1d4466a4b3de53",
+      "bytes": 19
+    },
+    {
+      "path": "scenario-inputs.json",
+      "hash": "c1711357e1d239a60de44f24cdeca3a1092bd28b5e3e300ff6711fa5e841fc0f",
+      "bytes": 522
+    },
+    {
+      "path": "scripts/check-a.mjs",
+      "hash": "7a7ebbd999913bc673940e5ae455e63625d3847a6f9b5643229604ae88c134d8",
+      "bytes": 141
+    },
+    {
+      "path": "source/a.mjs",
+      "hash": "40fb93ee46905bf772d9f2ae37697f9e03004c1492f5bbe6f522ed0c96fff06e",
+      "bytes": 32
+    },
+    {
+      "path": "source/answer.mjs",
+      "hash": "a2098bd92b10bf8b816d24b7556b1ce8c49a879d130489065ef1051c17e042f6",
+      "bytes": 26
+    },
+    {
+      "path": "source/b.mjs",
+      "hash": "93d1618aefe39d12b07558f5ddf8b6b7f2427d56cd9b6bfcb9c0712b9a31c535",
+      "bytes": 32
+    },
+    {
+      "path": "source/c.mjs",
+      "hash": "99b34f7ace2245a4b015c9ea787559c59ad64c4cefa5e3b3c036f462f30a69ab",
+      "bytes": 32
+    },
+    {
+      "path": "source/left.mjs",
+      "hash": "02f31091bb308d5eb654d7256fe6dfdb4933c8a6747230bab692656aba871fb1",
+      "bytes": 35
+    },
+    {
+      "path": "source/right.mjs",
+      "hash": "2ccd48398ae2f84e5606e0a5af8b1ac587166b9b36ff140aee23b27420a5f6b7",
+      "bytes": 36
+    },
+    {
+      "path": "test/amend-a.test.mjs",
+      "hash": "386bc9d26109fa5d66e8695e9663bae0f66f1056b59f73aab0b53504b2d5dd12",
+      "bytes": 174
+    },
+    {
+      "path": "test/amend-b.test.mjs",
+      "hash": "22629b8f5916fecd71be21dc51911d10c7c6b9c9e906f6696b13dd6f042bb7a9",
+      "bytes": 174
+    },
+    {
+      "path": "test/amend-c.test.mjs",
+      "hash": "f80cf7f6cf8f9c58d6765b68fc5f9d4ca8d83c24360c2d411b75a7ab6bef2f3a",
+      "bytes": 174
+    },
+    {
+      "path": "test/high.test.mjs",
+      "hash": "0f028136f9ea60aaccdafc4574108e24f275a0bd8bd2ca3fa99a6cc4c2c6e660",
+      "bytes": 719
+    },
+    {
+      "path": "test/medium.test.mjs",
+      "hash": "9f589f38251de514413f5a569eeadc550a4962ef87c133e6599fa81cf3b464ec",
+      "bytes": 322
+    },
+    {
+      "path": "test/verify.test.mjs",
+      "hash": "bbe222c12a2f19412f1a86b82ee932eaa8d86fb9eeb5ce8bf3f75a527a347616",
+      "bytes": 176
+    }
+  ],
+  "leases": [],
+  "inventoryScope": "tracked and nonignored untracked files, excluding transient intent.lock",
+  "gitStatus": " M changes/amend/acceptance.md\n M changes/amend/change.json\n M changes/amend/tasks.md\n M changes/high/acceptance.md\n M changes/high/change.json\n M changes/high/design.md\n M changes/high/proposal.md\n M changes/high/tasks.md\n M changes/medium/change.json\n M changes/medium/design.md\n M changes/medium/tasks.md\n M changes/verify/acceptance.md\n M changes/verify/change.json\n M changes/verify/tasks.md\n M source/left.mjs\n M source/right.mjs\n?? changes/.transactions/\n?? changes/amend/amendments/\n?? changes/amend/findings/\n?? changes/amend/reviews/\n?? changes/high/lanes/\n?? changes/high/reviews/\n?? changes/high/spec-base.json\n?? changes/high/specs/\n?? changes/medium/lanes/\n?? changes/medium/reviews/\n?? changes/medium/spec-base.json\n?? changes/medium/specs/\n?? changes/medium/verify/\n?? changes/verify/verify/\n"
+}

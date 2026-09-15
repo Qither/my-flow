@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "capturedAt": "2026-09-14T18:07:27.167Z",
+  "entries": [
+    {
+      "capability": "context-efficiency",
+      "requirement": "Context packets are selective and versioned",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "context-efficiency",
+      "requirement": "Usage accounting preserves unknowns and excludes double counting",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "dashboard",
+      "requirement": "Constrained intent APIs",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "dashboard",
+      "requirement": "Task-oriented views and stable typed routes",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "dashboard",
+      "requirement": "Edit lock during stage execute",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "854f0b3eeee4da97dd7aae3ac23659ad400595ed956093a26d2a68f974ab7f9f",
+      "baseText": "### Requirement: Edit lock during stage execute\n\nWhile `.my-flow/state/current-change.json` records the stage `execute`, the whole dashboard SHALL\nbe read-only, because an agent is writing files continuously and a browser save in that window is\nthe concurrent write the modification-time guard was never meant to resolve. Every `POST /api/file`\nSHALL be refused with status 423 and an error naming the change and the stage, before any check\nthat discloses the target's existence, modification time or content, and after the checks that\njudge the request itself, so that a malformed or non-writable request keeps its own error. A read\nthrough `GET /api/file` SHALL report the file as not writable and SHALL carry a human-readable\nreason for a file that would otherwise be writable. The lock SHALL be evaluated from the state file\non every request, so that it lifts as soon as the stage changes, with no server restart and no page\nreload. No other stage SHALL restrict editing.\n\n#### Scenario: A save during execute is refused and changes nothing\n- **WHEN** a save is posted for a file under an active change while the recorded stage is `execute`\n- **THEN** the response is 423 with an error naming the lock, the change and the stage, and the\n  file on disk is byte-identical to what it was before the request\n\n#### Scenario: A read during execute reports the reason\n- **WHEN** a file under an active change is read through the file endpoint while the recorded stage\n  is `execute`\n- **THEN** the response reports the file as not writable and carries a reason naming the change,\n  while a file that is not writable for another reason carries no lock reason\n\n#### Scenario: The lock lifts when the stage changes\n- **WHEN** the recorded stage changes from `execute` to another stage while the server keeps\n  running\n- **THEN** the next read reports the file as writable with no reason, and the next save succeeds,\n  without restarting the server or reloading the page\n\n#### Scenario: A non-writable target keeps its own refusal\n- **WHEN** a save is posted during stage `execute` for a file under `changes/archive/`, under\n  `.my-flow/`, or for a target that is not markdown\n- **THEN** the request is refused as not writable rather than as locked, so a client error is not\n  hidden by the lock\n\n#### Scenario: The lock precedes the modification-time check\n- **WHEN** a save carrying a stale modification time is posted during stage `execute`\n- **THEN** the response is the lock refusal and carries no on-disk content, because the request is\n  refused before the file is read"
+    },
+    {
+      "capability": "dashboard",
+      "requirement": "Guarded save endpoint",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "53299610d81bc65c904d1f9d620bd33e28ae34acf9b52cac3ba47c804e4780f8",
+      "baseText": "### Requirement: Guarded save endpoint\n\nThe system SHALL accept edits only through `POST /api/file`, and SHALL allow a write only when\nthe target is a `*.md` file that already exists, resolves inside the project root, and lies\neither under `specs/` or under an active `changes/<name>/`. Files under `changes/archive/` and\nunder `.my-flow/` SHALL never be writable. A path that is absolute, that escapes the root once\nresolved, or that is not a string SHALL be rejected without touching the filesystem. A write SHALL\nadditionally be refused while the recorded stage is `execute`, as required by the edit lock, and\nthat refusal SHALL come after the checks that judge the request itself and before any check that\ndiscloses the target's existence, modification time or content. Reading is governed by a wider\nallow-list that also covers `changes/archive/` and the `ask`, `verify` and `interviews` directories\nunder `.my-flow/`, and a read response SHALL state whether that file is writable and, when a lock\nis the reason it is not, why.\n\n#### Scenario: An active change file is saved\n- **WHEN** a save is posted for `changes/<name>/proposal.md` of an active change with the\n  current modification time, and the recorded stage is not `execute`\n- **THEN** the response is successful, the file on disk carries the submitted content, and the\n  response returns the new modification time for the next save\n\n#### Scenario: The archive is never writable\n- **WHEN** a save is posted for a file under `changes/archive/`\n- **THEN** the request is refused as not writable and the file on disk is unchanged\n\n#### Scenario: The scratch directory is never writable\n- **WHEN** a save is posted for a file under `.my-flow/ask/`\n- **THEN** the request is refused as not writable and the file on disk is unchanged\n\n#### Scenario: A traversing path is refused before any write\n- **WHEN** a save is posted with a path containing `..` that would resolve outside the project\n  root, or with an absolute path\n- **THEN** the request is refused with a bad-path error and no file is created or modified\n  anywhere outside the project root\n\n#### Scenario: A non-markdown target is refused\n- **WHEN** a save is posted for a file under an active change whose name does not end in `.md`\n- **THEN** the request is refused as not writable\n\n#### Scenario: A read-only file is marked as such\n- **WHEN** a file under `.my-flow/verify/` is read through the file endpoint\n- **THEN** the response succeeds and reports that the file is not writable, and a file outside\n  every read allow-list is refused\n\n#### Scenario: A writable target is refused while the run is in progress\n- **WHEN** a save is posted for a file that the allow-list would accept, while the recorded stage\n  is `execute`\n- **THEN** the request is refused as locked rather than written, and the file on disk is unchanged"
+    },
+    {
+      "capability": "execute-goal",
+      "requirement": "Execute-guard is armed when the task loop starts",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "ae84ac3f1d9529b6a7beec237edca030e113caa627a8c95b405aaf427a6ccc4b",
+      "baseText": "### Requirement: Execute-guard is armed when the task loop starts\n\n`execute` SHALL run `spec stage <name> execute` for the first time as the first step of its\ntask loop, after the goal handoff has been answered, and SHALL NOT run it in its Load section.\nThe per-task refresh after each ticked task SHALL stay. As a result the state file SHALL NOT\nsay `stage: execute` with a fresh timestamp while `execute` is waiting for the user's `/goal`\nin a run that started from a non-execute stage.\n\n#### Scenario: State is not armed while waiting\n- **WHEN** `execute <name>` has printed the goal handoff and is waiting, and the previous\n  stage of that change was `mf-plan`\n- **THEN** `.my-flow/state/current-change.json` still reports the previous stage, and it\n  reports `stage: execute` only after the user's reply, before task 1 is implemented\n\n#### Scenario: Skill text carries the order\n- **WHEN** `src/skills/execute.md` is read\n- **THEN** its `## 1. Load` section contains no `spec ... stage` call and its `## 3. Task loop`\n  section contains the `stage <name> execute` call twice (once before task 1, once as the\n  per-task refresh)"
+    },
+    {
+      "capability": "linked-tasks",
+      "requirement": "Graph diagnostics identify actionable locations",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "linked-tasks",
+      "requirement": "Stable task identities and typed relationships",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "mf-plan-fast",
+      "requirement": "`--go` continues into execute through the goal handoff",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "93faa5991cadbdc6759dee4a354cb2d45309736dd690429a4c97d6532e6354da",
+      "baseText": "### Requirement: `--go` continues into execute through the goal handoff\n\n`--go` SHALL be valid only together with `--fast`. After the handoff has printed, `mf-plan`\nSHALL continue into the `execute` flow for the same change in the same conversation, and\nSHALL NOT run `spec stage <name> execute` itself nor print the goal statement as a standing\ninstruction. The task loop and the final gate SHALL come from the `execute` skill's own text\nand SHALL NOT be restated or recalled: on Claude the fast lane SHALL invoke\n`my-flow:execute <name>` through the Skill tool and follow the loaded text including its\n`/goal` print-and-stop, recording the hand-over with the line\n`Continuing into execute (--go): goal handoff applies.`; on Codex it SHALL follow\n`$my-flow-execute` by reference with `get_goal` / `create_goal` running normally. `execute`\nitself arms the Stop-hook execute-guard before task 1. Nothing else in `execute` SHALL\nchange, and `tasks.md` SHALL remain the only progress ledger. `--team` and `--worktree`\nSHALL NOT be reachable through `--go`; when the user wants either, the fast lane SHALL stop\nafter the handoff and point at `execute <name>`.\n\n#### Scenario: Fast planning runs into execute and pauses once for the goal\n- **WHEN** the user invokes `mf-plan --fast --go <name>` on a change that passes the guard\n- **THEN** the transcript contains the hand-over line, then exactly one `Paste this` block\n  with a `/goal` line, the run waits for the user, and after the reply\n  `.my-flow/state/current-change.json` reports stage `execute` and the first task of\n  `tasks.md` is implemented, verified and ticked\n\n#### Scenario: `--go` without `--fast` is refused\n- **WHEN** the user invokes `mf-plan --go <name>` without `--fast`\n- **THEN** `mf-plan` prints one line saying `--go` requires `--fast`, does not enter the execute\n  flow, and plans the change in the full mode\n\n#### Scenario: `--fast` together with `--deliberate` is refused\n- **WHEN** the user invokes `mf-plan --fast --deliberate <name>`\n- **THEN** `mf-plan` prints one line in the same wording as the high-risk guard saying\n  `--deliberate` wins, and plans the change in the full mode with the pre-mortem and the test\n  plan\n\n#### Scenario: The completion backstop stays armed during the task loop\n- **WHEN** a `--go` run has passed the goal handoff, `execute` has run `spec stage <name>\n  execute`, and a message claims completion while `tasks.md` still has unticked, unblocked\n  tasks\n- **THEN** the Stop hook blocks that message and lists the remaining tasks"
+    },
+    {
+      "capability": "mf-plan-fast",
+      "requirement": "`Plan mode: fast` marker in design.md",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "5c1e73dfa66fc9118ff1cb7ec4ce1b1917b0becb5ceaeb22034bb2052afc05b7",
+      "baseText": "### Requirement: `Plan mode: fast` marker in design.md\n\nA change planned by the fast lane SHALL record it in `changes/<name>/design.md` as the first line\nunder `## Context`, in the form `Plan mode: fast (one critic pass, no architect).`. The full mode\nSHALL write no marker, so the absence of the line means the change was planned with the full\nplanner / architect / critic loop. `templates/change/design.md` SHALL NOT carry the line.\n\n#### Scenario: Marker is present after a fast run and absent after a full run\n- **WHEN** `design.md` has been written by `mf-plan --fast`\n- **THEN** `grep -c \"Plan mode: fast\" changes/<name>/design.md` prints 1, and the same grep over\n  a change planned without `--fast` prints 0\n\n#### Scenario: The template is unchanged\n- **WHEN** `node scripts/spec.mjs new <name>` creates a change\n- **THEN** the new `design.md` contains no `Plan mode:` line and the golden template render test\n  in `test/markdown.test.mjs` still passes"
+    },
+    {
+      "capability": "mf-plan-fast",
+      "requirement": "Documented as a stage-table row",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "b90c1274357e0ff15178e88de97a0d49f3c38dd362c4a31b56ce9436946c86d7",
+      "baseText": "### Requirement: Documented as a stage-table row\n\nThe stage table in `src/core/core.md` and in all eight READMEs SHALL carry the row\n`Concrete, multi-file, design already clear -> mf-plan --fast [--go] -> execute -> mf-verify`,\nthe skill table SHALL show the `[--fast [--go]]` flags with a one-sentence description of the\nlane, and the comparison between the flow skills and the built-ins SHALL mention it. The rendered\n`claude/CLAUDE.block.md` and `codex/AGENTS.block.md` SHALL contain the new row.\n\n#### Scenario: Rendered core block documents the fast lane\n- **WHEN** `node scripts/build.mjs` has run\n- **THEN** `claude/CLAUDE.block.md` and `codex/AGENTS.block.md` each contain the fast-lane stage\n  row once, `node scripts/build.mjs --check` exits 0, and `npm test` is green\n\n#### Scenario: Every README mentions the lane\n- **WHEN** the eight `README*.md` files are checked\n- **THEN** each one contains `--fast` in its stage table, its `mf-plan` skill row and its\n  built-in comparison, and each one mentions `--go`"
+    },
+    {
+      "capability": "mf-plan-fast",
+      "requirement": "Fast lane produces the full artifact set with one critic pass",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "32a2d40543fc81122c63daabab6a9c72062fe8a71ba09d6b51a277e9eed4eb49",
+      "baseText": "### Requirement: Fast lane produces the full artifact set with one critic pass\n\n`mf-plan --fast <change-name | free text>` SHALL be planned by the main conversation: it reads the\nfiles the proposal names and writes `proposal.md` (free-text input only), `design.md`, `tasks.md`\nand any delta specs itself. It SHALL NOT delegate to the `planner` or `architect` roles and SHALL\nNOT emit a PLAN-DR header. It SHALL run exactly one read-only `critic` review of the draft. On\n`OKAY` planning ends; on `REJECT` the main conversation SHALL apply the fixes once, SHALL NOT run\na second review, and SHALL list every finding it did not fix in the handoff. The artifacts SHALL\nkeep the shape the full mode produces, so that `spec validate`, `execute`, `mf-verify` and\n`spec archive` need no change, and `design.md` SHALL contain the required sections including\n`## Do-Not-Touch` and `## Rebuild / Re-run After Change`.\n\n#### Scenario: Fast planning of a concrete change\n- **WHEN** the user invokes `mf-plan --fast <name>` on a change whose `proposal.md` names its\n  files and its acceptance checks, and no high-risk category applies\n- **THEN** exactly one subagent runs and it is the `critic`, no `planner` and no `architect`\n  subagent runs, `changes/<name>/design.md` and `changes/<name>/tasks.md` exist,\n  `design.md` contains no `PLAN-DR` heading, and `node scripts/spec.mjs validate <name>` exits 0\n\n#### Scenario: Critic rejects the fast draft\n- **WHEN** the single `critic` review returns `REJECT`\n- **THEN** the main conversation applies the fixes once, runs no further review, and the handoff\n  reads `Review: fast (critic REJECT-fixed, no architect)` followed by a `Remaining findings:`\n  line whenever a finding was left unfixed"
+    },
+    {
+      "capability": "mf-plan-fast",
+      "requirement": "High-risk guard refuses the fast lane",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "d4db1268eca1246d4a1cfa1c55780141182c0530e4640c7d8fea1699b0678535",
+      "baseText": "### Requirement: High-risk guard refuses the fast lane\n\n`--fast` SHALL be honoured only when the user passes it; the model SHALL NOT select it on its own\nand MAY only suggest it in a handoff. When the proposal or the free text touches any of the\nhigh-risk categories (auth, migrations, destructive operations, public API changes, build config\nor shader pipeline changes, engine modules), `mf-plan` SHALL refuse `--fast`, SHALL state the\nmatching category in one line, and SHALL continue planning in the full mode. The category list\nSHALL exist once in the skill and SHALL be the same list that auto-enables `--deliberate`.\n\n#### Scenario: Migration request is refused\n- **WHEN** the user invokes `mf-plan --fast` on a request that adds a database migration\n- **THEN** the reply prints a single line naming migrations as the reason `--fast` was refused,\n  the fast lane is not used, and planning continues through the `planner`, `architect` and\n  `critic` roles\n\n#### Scenario: One list serves both flags\n- **WHEN** `src/skills/mf-plan.md` is read\n- **THEN** the category list appears exactly once, and both the `--deliberate` input line and the\n  `--fast` guard reference that one section"
+    },
+    {
+      "capability": "spec-helper",
+      "requirement": "Explicit legacy upgrade",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "spec-helper",
+      "requirement": "Recoverable archive transactions",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "spec-helper",
+      "requirement": "Safe archive publication",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "spec-helper",
+      "requirement": "Shared status and validate library",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "aa0d7ebcaebdca8eed964f11835217ee1931c46569b97356e2b0f1e83ec6a689",
+      "baseText": "### Requirement: Shared status and validate library\n\nThe status and validate logic SHALL live in a library module under `scripts/lib/`, consumed by\nboth `scripts/spec.mjs` and any other in-process caller such as the dashboard server, so that a\nsingle definition produces both surfaces. The library SHALL be usable inside a long-lived\nprocess: every function SHALL take the project root as an explicit argument, SHALL NOT read\n`process.argv`, SHALL NOT call `process.exit`, and SHALL NOT retain state between calls, so that\ntwo calls separated by an edit on disk return different results. The status and validate entry\npoints SHALL each return both the JSON value and the exact text the CLI prints, from one code\npath, so the two renderings cannot diverge. The observable behavior of `spec status` and\n`spec validate` SHALL be unchanged: identical text, identical JSON, identical exit codes.\n\n#### Scenario: The CLI output is unchanged by the extraction\n- **WHEN** `spec status`, `spec status --json`, `spec validate` and `spec validate --json` are\n  run against a project before and after the logic moves into the library\n- **THEN** each pair of outputs is byte-identical and each pair of exit codes is equal, and the\n  pre-existing test suite passes without modification\n\n#### Scenario: A second caller gets the same values as the CLI\n- **WHEN** an in-process caller invokes the library's status entry point for a project root and\n  `spec status --json` is run against the same root\n- **THEN** the library's JSON value and the parsed CLI output are deeply equal\n\n#### Scenario: Repeated calls in one process see fresh state\n- **WHEN** the library's status entry point is called, a delta spec is then added on disk that\n  creates an overlap with another active change, and the entry point is called again in the same\n  process\n- **THEN** the second call reports the new overlap warning, because the overlap index is\n  computed per call rather than cached for the life of the process\n\n#### Scenario: The library never terminates its caller\n- **WHEN** the library is called for a project whose `changes/` directory is missing, or for a\n  change name that does not exist\n- **THEN** it returns a value describing that situation and the calling process stays alive,\n  rather than exiting or throwing"
+    },
+    {
+      "capability": "spec-helper",
+      "requirement": "State-file warning in status",
+      "operation": "MODIFIED",
+      "destination": null,
+      "baseHash": "29f3d9ebdbb4d16cc86ccdebfb49bf77f7018feec2494230110bf63d356a735d",
+      "baseText": "### Requirement: State-file warning in status\n\nThe system SHALL warn when `.my-flow/state/current-change.json` names a change that is stale or\nno longer exists, and SHALL suppress that warning when the recorded stage is `archived`.\n\n#### Scenario: The current change has gone stale\n- **WHEN** `spec status` runs while the state file names a change that is marked stale\n- **THEN** a warning line naming that change appears after the change rows, and the same string\n  appears in the JSON top-level `warnings` array\n\n#### Scenario: The current change no longer exists\n- **WHEN** `spec status` runs while the state file names a change with no directory under\n  `changes/` and no `docs/changes/<name>.md`\n- **THEN** a warning names the missing change\n\n#### Scenario: A just-archived change does not warn\n- **WHEN** `spec status` runs immediately after a successful `spec archive`, so the state file\n  names a directory that has been moved and records stage `archived`\n- **THEN** no state warning is emitted"
+    },
+    {
+      "capability": "verification-evidence",
+      "requirement": "Independent evidence is bound to immutable inputs",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "verification-evidence",
+      "requirement": "Latest attempts and bookkeeping have distinct semantics",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "workflow-governance",
+      "requirement": "Amendments preserve authority and affected scope",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "workflow-governance",
+      "requirement": "Repeated causes trigger design review",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "workflow-sessions",
+      "requirement": "Session bindings are separate from change lifecycle",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    },
+    {
+      "capability": "workflow-sessions",
+      "requirement": "Umbrella integration is independent of child completion",
+      "operation": "ADDED",
+      "destination": null,
+      "baseHash": null,
+      "baseText": null
+    }
+  ]
+}

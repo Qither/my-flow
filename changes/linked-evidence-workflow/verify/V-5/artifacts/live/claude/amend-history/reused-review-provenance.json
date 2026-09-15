@@ -1,0 +1,125 @@
+{
+  "note": "Existing judgments reused against identical contract and candidate; no new role call is claimed.",
+  "design": {
+    "schemaVersion": 2,
+    "id": "R-1",
+    "changeId": "ba122291-a8c7-408a-a6ad-e767fb2b3b17",
+    "contractDigest": "b5b17d4f5c1eb2b2ec1b57381b4b866e6532b8901191feba4dfd56640c2cdb57",
+    "amendment": null,
+    "role": "architect",
+    "actorId": "subagent:my-flow:architect",
+    "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "verdict": "WATCH",
+    "sourceRef": "foreground Agent dispatch, subagent_type my-flow:architect, design review for finding F-1 (escalation lane 'design'); transcript at tasks/af97db3af5149e6a8.output",
+    "findings": [
+      {
+        "id": "premise",
+        "blocking": false,
+        "summary": "Premise checked first: nothing is failing live. node --test on amend-a/b/c each report pass 1 / fail 0, and node scripts/check-a.mjs prints 'A is ready' and exits 0. F-1-a and F-1-b were not executed or observed in this session; they are fixture inputs at scenario-inputs.json failedApproaches[0..1] and the recorded finding already says so in its cause and both evidenceRefs."
+      },
+      {
+        "id": "Q1-grouping",
+        "blocking": false,
+        "summary": "Root-cause grouping GENUINE: both fixture attempts leave the AC-01 command-to-contract binding untouched. F-1-a edits prose (acceptance.md:7 is the contract text, acceptance.md:5 the binding), F-1-b re-executes the same binding and is a no-op on the cause by construction. Cause statement honest, with one caveat: it names the symptom class (a mismatch) but not the invariant - an AC's checks command must be one whose pass/fail is decided by exactly the proposition the AC states."
+      },
+      {
+        "id": "Q2-scope",
+        "blocking": false,
+        "summary": "INSIDE SCOPE; this does not return to the user. proposal.md:15 Decision Boundaries pre-authorizes every element verbatim - target (A's command only), replacement command, amendment type, hold pattern, and this review - and design.md:7 (D-01) mirrors it. No trust boundary moves: no new actor, input source or privilege (F-1.json trustBoundaryChanged false, confirmed independently)."
+      },
+      {
+        "id": "Q3-type",
+        "blocking": false,
+        "summary": "equivalent-check is the RIGHT type. Not locator: a locator repoints at the same artifact on executor authority alone, whereas this substitutes a different artifact as the evidence producer, which would skip the very equivalence review this change must not skip. Not scope: the guarantee text, required flag, evidence mode and asserted proposition are all unchanged, so the user-scope authority and lane review that scope demands are not the applicable gate."
+      },
+      {
+        "id": "Q4-third-patch",
+        "blocking": false,
+        "summary": "A third patch of the same shape is NOT justified; the design change is the correct next move. Structurally the only levers on AC-01's binding are the test file and the checks command, the test file is Do-Not-Touch (design.md:11), and F-1-a and F-1-b already consumed the two non-binding shapes. By rule, mf-plan SKILL.md:160 requires design review before a third patch 'not a weaker check' - which also forbids using this review to substitute a laxer check."
+      },
+      {
+        "id": "Q5-equivalence-conditions",
+        "blocking": false,
+        "summary": "For the independent critic to discharge: (a) NOT YET DEMONSTRATED - scripts/check-a.mjs must be shown to exit nonzero when source/a.mjs does not export 'A ready', without mutating source/ or test/ (the architect verified only the pass path); (g) protection asymmetry - scripts/ is not in Do-Not-Touch and is not among the tracked source locators (only the three test files are), so the file that will carry AC-01's guarantee is neither edit-protected nor digest-watched; record it as a tracked locator if the schema allows, and defer rather than widen the amendment if it does not. Confirmed by the architect for re-confirmation: (b) strict equality against the exact literal (check-a.mjs:3 matches amend-a.test.mjs:4), (c) both resolve the same module via '../source/a.mjs', (d) the assert is top-level and unconditional so it cannot pass vacuously, (e) console.log is after the assert so the pass signal of record should still be the exit code, (f) both commands share the same cwd precondition, (h) oldDigest must match the approved AC-01 text, the candidate digest must be recorded, and the critic must be independent - the architect is not the right actor for that equivalence review."
+      },
+      {
+        "id": "ledger-inconsistency",
+        "blocking": false,
+        "summary": "Flagged not blocking: tasks.md:3 ticks T-01 while line 8 carries the F-1 blocker, and spec.mjs context amend raises it itself as 'notice checked-but-blocked'. This is the tooling working as designed - finding record deliberately leaves ticked boxes ticked and applyAmendment resolves it at apply time - but the apply step MUST actually untick T-01. If the amendment is applied and T-01 stays ticked, that is a real defect."
+      }
+    ],
+    "independent": true,
+    "reviewedAt": "2026-09-15T07:00:41.875Z"
+  },
+  "critic": {
+    "schemaVersion": 2,
+    "id": "R-2",
+    "changeId": "ba122291-a8c7-408a-a6ad-e767fb2b3b17",
+    "contractDigest": "26746df20995eb3678e6d8f6fe15894d17405dc14e889b6fd9344486bd4ddaaf",
+    "amendment": "A-1",
+    "role": "critic",
+    "actorId": "subagent:my-flow:critic",
+    "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "verdict": "OKAY",
+    "sourceRef": "foreground Agent dispatch, subagent_type my-flow:critic, independent equivalence review of amendment A-1; transcript at tasks/af6304d2cfa71f68c.output",
+    "findings": [
+      {
+        "id": "condition-a",
+        "blocking": false,
+        "summary": "DEMONSTRATED, not reasoned. In a scratch tree outside every protected path (scripts/ + source/ + test/ laid out so the '../source/a.mjs' specifier resolves inside scratch), six perturbations of source/a.mjs were run against both commands side by side: 'A not ready', 'A Ready' (case), 'A ready ' (trailing space), export absent, undefined, and new String('A ready'). Both commands exited 1 in all six; the control run of node scripts/check-a.mjs exits 0 printing 'A is ready'. The export-absent case fails at module link time, the rest on AssertionError ERR_ASSERTION, and the boxed-String probe confirms the comparison is reference-strict rather than coercing. Originals proven unchanged by sha256 before and after (source/a.mjs 40fb93ee4690..., scripts/check-a.mjs 7a7ebbd99991..., test/amend-a.test.mjs 386bc9d26109...), with git diff --stat and git status --porcelain empty over those paths."
+      },
+      {
+        "id": "condition-b",
+        "blocking": false,
+        "summary": "CONFIRMED: both files import node:assert/strict (check-a.mjs:1, amend-a.test.mjs:1), under which assert.equal is strictEqual; check-a.mjs:3 and amend-a.test.mjs:4 assert the identical literal 'A ready'. Character-identical propositions, confirmed empirically by the case, whitespace and boxed-String probes."
+      },
+      {
+        "id": "condition-c",
+        "blocking": false,
+        "summary": "CONFIRMED: both specify '../source/a.mjs' (check-a.mjs:2, amend-a.test.mjs:3); ESM resolves relative to the importing module, and both files sit one level below the workspace root, so both reach <root>/source/a.mjs."
+      },
+      {
+        "id": "condition-d",
+        "blocking": false,
+        "summary": "CONFIRMED and the candidate is STRICTLY STRONGER: check-a.mjs:3 is a top-level unconditional assert, while the old assert sits inside a callback at amend-a.test.mjs:4. Probed: node --test on a file registering zero tests exits 0, so the old command had a silent-pass mode the candidate does not have."
+      },
+      {
+        "id": "condition-e",
+        "blocking": false,
+        "summary": "CONFIRMED two ways: console.log('A is ready') is at check-a.mjs:4, after the assert at :3, and on a failing run grep -c over combined stdout+stderr returns 0, so the success line cannot leak. Structurally the runtime records a check as passed on status === 0 (evidence.mjs:60,64), never by scanning output, so nothing downstream depended on node --test TAP text."
+      },
+      {
+        "id": "condition-f",
+        "blocking": false,
+        "summary": "CONFIRMED: both commands name a relative entry path from the workspace root; from a wrong cwd both exit 1. Identical precondition, identical failure mode, no regression."
+      },
+      {
+        "id": "condition-h",
+        "blocking": false,
+        "summary": "CONFIRMED by independent recomputation rather than trusting the record: live contract digest b5b17d4f5c1e... equals candidate.json oldDigest and amend status; the contract with the candidate file overlaid is 26746df20995... equals the recorded candidateDigest. Apply re-checks this itself and refuses on drift (evidence.mjs:1092-1093)."
+      },
+      {
+        "id": "condition-g",
+        "blocking": false,
+        "summary": "HALF SELF-DISCHARGES. The locator list is derived from the acceptance checks commands (context.mjs:154 pathsIn(c.checks), PATH_RE at context.mjs:54), confirmed empirically by building a packet over a scratch change dir carrying the candidate acceptance: scripts/check-a.mjs (7a7ebbd99991..., 141 bytes) becomes newly tracked and test/amend-a.test.mjs correctly drops out, with no amendment widening needed. What does NOT self-discharge is edit protection: design.md:11 names 'test files' but not scripts/. Net effect is mixed rather than a pure loss - the file gains a mechanically checked digest watch and loses a prose Do-Not-Touch mention."
+      },
+      {
+        "id": "type-check",
+        "blocking": false,
+        "summary": "Stays within equivalent-check; nothing reaches into scope. The guarantee text, required: true and evidence-mode: automated are byte-identical between old/acceptance.md and candidate/acceptance.md; the sole diff is the checks line. proposal.md:15 pre-authorizes this verbatim, mirrored at design.md:7 (D-01). No trust boundary moves. Nothing needs the user."
+      },
+      {
+        "id": "residual-1",
+        "blocking": false,
+        "summary": "scripts/ is outside Do-Not-Touch. After apply, AC-01's evidence producer is digest-watched but not edit-protected by design.md:11. Remedy: add scripts/ to that Do-Not-Touch list as its own separate edit, NOT by widening A-1, whose changed.design is correctly [] and whose files is correctly just changes/amend/acceptance.md."
+      },
+      {
+        "id": "residual-2",
+        "blocking": false,
+        "summary": "R-1's ledger-inconsistency no longer reproduces: tasks.md:3 and :9 now both read '- [ ]' with 'blocked: amendment A-1 pending', so amend propose unticked T-01 at propose time rather than at apply. Its forward-looking half still stands: apply must leave T-01 and T-02 reopened, and they must be re-run against the new command before being ticked."
+      }
+    ],
+    "independent": true,
+    "reviewedAt": "2026-09-15T07:06:34.625Z"
+  }
+}

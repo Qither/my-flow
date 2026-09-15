@@ -1,0 +1,12 @@
+{
+  "supportingContractPaths": [
+    "changes/linked-evidence-workflow/contracts.md",
+    "changes/linked-evidence-workflow/live-host-protocol.md",
+    "changes/linked-evidence-workflow/follow-ups.md"
+  ],
+  "extraImplementationPaths": [],
+  "repositories": [],
+  "requiredEnvironment": ["node", "git", "os"],
+  "declaredTools": [],
+  "allowNonGit": false
+}

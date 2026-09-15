@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 2,
+  "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+  "sequence": 1,
+  "requestDigest": "2a59072ced67d2131c52b382cb1e92080b071a86390359704d9317f7d2661e35",
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E5",
+        "E10"
+      ],
+      "note": "2 pass / 0 fail / 0 skipped / 0 todo, against an acceptance test proven blob-identical to HEAD, with both values independently re-derived outside the test runner."
+    },
+    {
+      "id": "T-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E3"
+      ],
+      "note": "Both literals replaced with the export const label form preserved; the ticked box is backed by the task's own named verification."
+    },
+    {
+      "id": "G-1",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E10"
+      ],
+      "note": "source/left.mjs exports label === 'Left ready'."
+    },
+    {
+      "id": "G-2",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E10"
+      ],
+      "note": "source/right.mjs exports label === 'Right ready'."
+    },
+    {
+      "id": "G-3",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "skipped 0, todo 0, cancelled 0, suites 0 - no test was skipped or filtered."
+    },
+    {
+      "id": "D-01",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E2",
+        "E4"
+      ],
+      "note": "Fixture boundary held: only the two named modules changed."
+    },
+    {
+      "id": "D-02",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E2",
+        "E3"
+      ],
+      "note": "String literal edited in place; no shared-constants module and no new file outside changes/."
+    },
+    {
+      "id": "D-03",
+      "status": "VERIFIED",
+      "modes": [
+        "static",
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "tasks.md carries exactly one task accepting AC-01, verified by the single acceptance command."
+    },
+    {
+      "id": "DNT",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E2",
+        "E4",
+        "E5",
+        "E7"
+      ],
+      "note": "test/, cli.mjs, scripts/ and the four sibling source modules are untouched; nothing untracked exists outside changes/."
+    },
+    {
+      "id": "RERUN",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "The single Rebuild / Re-run step was executed by the verifier after the last edit; no build, cook or cache step exists in this workspace."
+    },
+    {
+      "id": "NG-1",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E2",
+        "E4",
+        "E5"
+      ],
+      "note": "No change to the candidate plugin, host configuration, test files or external files. The changes/high/ modifications were read and cleared as a separate change's planning artifacts from the same session."
+    },
+    {
+      "id": "NG-2",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E5"
+      ],
+      "note": "test/medium.test.mjs is blob-identical to HEAD."
+    },
+    {
+      "id": "NG-3",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E3"
+      ],
+      "note": "The export remains a single named label string constant; no module-shape refactor."
+    },
+    {
+      "id": "SC-1",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "2 pass / 0 fail / 0 skipped."
+    },
+    {
+      "id": "SC-2",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E2"
+      ],
+      "note": "The diff touches only source/left.mjs and source/right.mjs."
+    }
+  ],
+  "commands": [
+    {
+      "id": "E1",
+      "command": "node --test test/medium.test.mjs",
+      "result": "exit 0; tests 2 / pass 2 / fail 0 / cancelled 0 / skipped 0 / todo 0"
+    },
+    {
+      "id": "E2",
+      "command": "git status --porcelain --untracked-files=all | grep -v '^.. changes/'",
+      "result": "only ' M source/left.mjs' and ' M source/right.mjs'; no untracked file outside changes/"
+    },
+    {
+      "id": "E3",
+      "command": "git diff -- source/",
+      "result": "two one-line literal replacements; export const label form preserved; od -c confirms exact bytes and a single trailing newline"
+    },
+    {
+      "id": "E4",
+      "command": "git diff --name-only HEAD -- cli.mjs scripts/ source/a.mjs source/b.mjs source/c.mjs source/answer.mjs test/",
+      "result": "empty"
+    },
+    {
+      "id": "E5",
+      "command": "git rev-parse HEAD:test/medium.test.mjs; git hash-object test/medium.test.mjs",
+      "result": "both 7145033d3a518d3613440d540574eccbc2632cf0; the acceptance test is blob-identical to HEAD"
+    },
+    {
+      "id": "E6",
+      "command": "grep -E over source/left.mjs and source/right.mjs for TODO|FIXME|XXX|HACK|test.skip|test.only|test.todo|.only(|it.skip|describe.skip|not implemented|unimplemented|throw new Error(|return null;|return undefined;|placeholder|stub|leading //",
+      "result": "no matches (rc=1)"
+    },
+    {
+      "id": "E7",
+      "command": "sha256 of the live tree vs changes/medium/verify/V-1/target.json",
+      "result": "all nine pinned files identical; the tested tree matches implementation digest b57e7fca0a84"
+    },
+    {
+      "id": "E8",
+      "command": "read changes/medium/reviews/R-1/review.json",
+      "result": "contractDigest 6df15429080d... equals the attempt acceptance digest; critic OKAY; independent true"
+    },
+    {
+      "id": "E9",
+      "command": "spec.mjs context medium; ls changes/medium/specs; ls -d specs",
+      "result": "AC-01 is the complete criteria set; no delta specs and no base specs/ directory exist"
+    },
+    {
+      "id": "E10",
+      "command": "node -e \"import('./source/left.mjs')...\"",
+      "result": "{\"left\":\"Left ready\",\"right\":\"Right ready\"}; no package.json, node_modules or NODE_OPTIONS, so the green suite is not a runner artifact"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "subagent:my-flow:verifier",
+    "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "sourceRef": "foreground Agent dispatch, subagent_type my-flow:verifier, attempt V-1; report at .my-flow/verify/medium-20260915T054643Z.md; transcript at tasks/a412d061f7e4ec22f.output"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "d125cb12007931a17554c057e83c68f8dbc508a63faa859f525b8aafca8e73f7",
+  "finished": "2026-09-15T05:52:52.152Z"
+}

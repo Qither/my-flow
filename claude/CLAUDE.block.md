@@ -29,7 +29,7 @@ artifact. (The mf- prefixed skills are deliberately distinct from the built-in `
 |---|---|
 | Concrete, single file, clear acceptance | `execute` only (or just do it) |
 | Concrete, multi-file or multi-module | `mf-plan -> execute -> mf-verify` |
-| Concrete, multi-file, design already clear | `mf-plan --fast [--go] -> execute -> mf-verify` |
+| Concrete, multi-file, design already clear | `mf-plan` (automatic medium lane) `-> execute -> mf-verify` |
 | Vague, no acceptance criteria, or "should we..." | `interview -> mf-plan -> execute -> mf-verify` |
 | Touches build config, shaders, engine modules, migrations, auth | never skip `mf-plan` and `mf-verify` |
 
@@ -38,8 +38,15 @@ Rules:
   are explicit. Do not re-open the interview inside `mf-plan`.
 - `mf-plan` never implements. `execute` never redesigns; if the design is wrong, stop and
   go back.
-- `mf-plan --fast` is a fast lane the user asks for (one critic pass, no planner or
-  architect); the model never selects it, and it is never used for the high-risk row.
+- `mf-plan` selects low, medium or high review automatically from the actual scope and risk.
+  Medium uses a main-context short draft and an independent critic; high or uncertain work
+  keeps planner, architect and critic plus a pre-mortem. Use the category list in /my-flow:mf-plan.
+- The literal `--fast` flag is a user request for medium, not a prerequisite for automatic
+  medium. `--deliberate` forces high; high risk refuses fast. A rejected medium draft needs
+  focused critic re-review, and repeated rejection escalates within the bounded review loop.
+- Automatic selection never authorizes implementation. Only explicitly supplied and accepted
+  `--fast --go` can continue after approval through the normal execute goal handoff; a high-risk
+  or deliberate refusal also refuses go.
 - `mf-verify` runs in a separate context from the one that wrote the code.
 - Skills: /my-flow:interview, /my-flow:mf-plan, /my-flow:execute, /my-flow:mf-verify, /my-flow:ask,
   /my-flow:learn, /my-flow:spec, /my-flow:mf-audit. When the user says "interview me", "plan this
@@ -49,7 +56,8 @@ Rules:
 ## 3. The intent layer (specs/ and changes/)
 
 Structure borrowed from OpenSpec; no external tool is involved. /my-flow:spec handles
-`new / status / validate / abandon / archive / stage`.
+`new / status / validate / abandon / archive / stage`, and, for a change that has been upgraded
+to linked intent, `lane / review / finding / amend / evidence / context / usage / session`.
 
 - `specs/<capability>/spec.md` is the current truth about behavior (requirements with
   WHEN / THEN scenarios).
@@ -66,6 +74,10 @@ Structure borrowed from OpenSpec; no external tool is involved. /my-flow:spec ha
 - When every box is ticked and `mf-verify` passed, `/my-flow:spec archive <name>` merges the
   delta specs into `specs/` and moves the change to `changes/archive/`.
 - Simplified fallback for small projects: one `docs/changes/<name>.md` with the same sections.
+- A change upgraded to linked intent adds `acceptance.md` (criteria with their evidence modes)
+  and `change.json` (a stable UUID and the recorded review lane). Tasks then carry `id`,
+  `depends-on` and `accepts` fields, and the order comes from those, never from the numbering.
+  Legacy changes keep working unchanged; the upgrade is explicit.
 
 ## 4. Tool-specific notes
 
@@ -84,6 +96,8 @@ Claude Code is the primary interactive executor.
   `isolation: worktree`.
 - Subagent roles provided by this plugin: `my-flow:planner`, `my-flow:architect`,
   `my-flow:critic`, `my-flow:verifier`. Architect, critic, and verifier are read-only.
+  Invoke these configured roles as ordinary Agent subagents without name/team_name; named
+  teammates are reserved for explicitly planned execution teams and may not inherit the role.
 
 ## 5. Verification and completion
 
@@ -96,6 +110,12 @@ Claude Code is the primary interactive executor.
 - Final gate, in order: (1) targeted verification of the change, (2) cleanup of your own
   diff only, (3) re-verify, (4) independent review (/my-flow:mf-verify or /my-flow:ask),
   (5) declare done and tick the last box.
+- Risk decides how much review a contract needs, never how much evidence a claim needs. The
+  lane can be low and the final verification is still a separate, fresh pass.
+- Two materially different approaches failing for the same reason is a design question. Record
+  the finding and let a reviewer choose the remedy; a third blind attempt is not progress.
+- What the work cost is imported from what a host actually reported. A number nobody measured
+  stays unknown: no estimate from character counts, no price, no claimed saving.
 
 ## 6. Cross-model rules
 

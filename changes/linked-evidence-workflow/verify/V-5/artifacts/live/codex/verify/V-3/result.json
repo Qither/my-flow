@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 2,
+  "changeId": "8e009cf7-5d78-4690-bc20-e28d6fd6d72e",
+  "sequence": 3,
+  "requestDigest": "15683af364a6b275114a7a6fe061304a9addef803a9c355a091f2d73adf65a56",
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "exec_command:81eb74",
+        ".my-flow/verify/verify-V3-live.md#E-01"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "VERIFIED",
+      "modes": [
+        "live"
+      ],
+      "evidenceRefs": [
+        "exec_command:45b77a",
+        ".my-flow/verify/verify-V3-live.md#E-02"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --test test/verify.test.mjs",
+      "exitCode": 0,
+      "output": "tests 1, pass 1, fail 0; chunk_id 81eb74"
+    },
+    {
+      "command": "Get-Content -Raw -LiteralPath ./native-probe.txt",
+      "exitCode": 0,
+      "output": "LIVE_FIXTURE_READY\n; native verifier chunk_id 45b77a"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/verify_live_v3",
+    "writerActorId": "/root",
+    "sourceRef": "C:/Users/qiujm/AppData/Local/Temp/my-flow-candidate-mUUp25/homes/codex/sessions/2026/09/15/rollout-2026-09-15T15-48-00-01a0a409-7ed8-7ea3-8fe1-5be9d45dd73c.jsonl"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": null,
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "c72c1b1d9ddd6d1b814fb899e3ce4e26da0ca6b70d153c4d3d4e002792b6dedb",
+  "finished": "2026-09-15T07:52:45.095Z"
+}

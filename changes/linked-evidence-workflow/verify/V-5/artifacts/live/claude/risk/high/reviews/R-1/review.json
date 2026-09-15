@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "R-1",
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "contractDigest": "072f681dde292e279860edea5bfdc13a94201d06e11e1ab628356aa314169e40",
+  "amendment": null,
+  "role": "planner",
+  "actorId": "subagent:my-flow:planner",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "DRAFT",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:planner, round 1; wrote changes/high/{proposal,design,tasks,acceptance}.md and changes/high/specs/cli-output/spec.md; transcript at tasks/a55ecc80dab393375.output",
+  "findings": [],
+  "independent": true,
+  "reviewedAt": "2026-09-15T04:32:53.663Z"
+}

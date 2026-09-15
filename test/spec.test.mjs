@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, rmSync, statSync, utimesSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { TEMPLATES, cleanEnv, cleanup, makeTmp, readState, readText, runSpec, runSpecJson, write } from './helpers.mjs';
 
+const NL = String.fromCharCode(10);
+const NL2 = NL + NL;
 const scenario = (name) => `#### Scenario: ${name}\n- **WHEN** something happens\n- **THEN** something follows\n`;
 const requirement = (name, sc = `${name}-basic`) => `### Requirement: ${name}\nThe system SHALL ${name}.\n\n${scenario(sc)}\n`;
 const mainSpec = (...names) => `# cap Specification\n\n## Purpose\nTest capability.\n\n## Requirements\n\n${names.map((n) => requirement(n)).join('')}`;
@@ -12,6 +15,17 @@ function fresh(t, prefix = 'spec') {
   const root = makeTmp(prefix);
   t.after(() => cleanup(root));
   return root;
+}
+/**
+ * A legacy change: three documents, no stable identity and no linked contract. Archive keeps
+ * serving these through its pre-v2 path, and they are how that path is tested.
+ */
+function newLegacy(root, name) {
+  write(root, `changes/${name}/proposal.md`, '## Why' + NL2 + 'Fixture.' + NL2 + '## Non-Goals' + NL2 + 'None.' + NL2 + '## Decision Boundaries' + NL2 + 'None.' + NL);
+  write(root, `changes/${name}/design.md`, '## Context' + NL2 + 'Fixture.' + NL2 + '## Do-Not-Touch' + NL2 + 'none' + NL2 + '## Rebuild / Re-run After Change' + NL2 + 'none' + NL);
+  write(root, `changes/${name}/tasks.md`, '- [ ] 1.1 do the work and verify it' + NL + '- [ ] 1.2 do more and verify it' + NL);
+  runSpec(root, ['stage', name, 'new']);
+  return join(root, 'changes', name);
 }
 function tickAll(root, name) {
   const p = join(root, 'changes', name, 'tasks.md');
@@ -132,7 +146,7 @@ test('status: warns when the state file names a stale or missing change, not aft
   assert.match(r.stdout, /^no active changes.*\nstate: current change "quiet" no longer exists under changes\/$/m);
   assert.deepEqual(runSpecJson(root, ['status']).json.warnings, ['state: current change "quiet" no longer exists under changes/']);
 
-  runSpec(root, ['new', 'demo']);
+  newLegacy(root, 'demo');
   tickAll(root, 'demo');
   write(root, '.my-flow/verify/demo-2026.md', '## Verification Report\n### Verdict: PASS\n');
   assert.equal(runSpec(root, ['archive', 'demo']).status, 0);
@@ -195,8 +209,9 @@ test('usage: an unknown subcommand prints the usage naming abandon and exits 1',
   const root = fresh(t);
   const r = runSpec(root, ['bogus']);
   assert.equal(r.status, 1);
-  assert.match(r.stderr, /usage: spec\.mjs <.*abandon <name> \[--reason "\.\.\."\].*stage <name> <stage>>/);
+  assert.match(r.stderr, /usage: spec\.mjs <.*abandon <name> \[--reason "\.\.\."\].*stage <name> <stage>.*>/);
   assert.match(r.stderr, /--stale-days n/);
+  assert.match(r.stderr, /recover \[tx-id\]/);
 });
 
 // ---------------------------------------------------------------- audit nudge
@@ -394,7 +409,7 @@ test('validate: scenarios must use exactly four hashes and WHEN / THEN', (t) => 
 // ---------------------------------------------------------------- archive
 test('archive: refuses while tasks are unticked or no PASS report exists, then succeeds', (t) => {
   const root = fresh(t);
-  runSpec(root, ['new', 'demo']);
+  newLegacy(root, 'demo');
   let r = runSpec(root, ['archive', 'demo']);
   assert.equal(r.status, 1);
   assert.match(r.stderr, /task\(s\) still unticked/);
@@ -415,13 +430,14 @@ test('archive: refuses while tasks are unticked or no PASS report exists, then s
 
 test('archive --force: merges ADDED / MODIFIED / REMOVED into the main spec', (t) => {
   const root = fresh(t);
-  runSpec(root, ['new', 'merge']);
+  newLegacy(root, 'merge');
   write(root, 'specs/cap/spec.md', mainSpec('Old', 'Gone'));
   write(
     root,
     'changes/merge/specs/cap/spec.md',
     `## ADDED Requirements\n\n${requirement('New')}## MODIFIED Requirements\n\n${requirement('Old', 'Old-v2')}## REMOVED Requirements\n\n### Requirement: Gone\n- **Reason**: obsolete\n`
   );
+  assert.equal(runSpec(root, ['baseline', 'merge']).status, 0, 'a delta is publishable only against a captured base');
   const r = runSpec(root, ['archive', 'merge', '--force']);
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /removed requirement "Gone"/);
@@ -445,9 +461,10 @@ function blockLines(spec, name) {
 
 test('archive: stamps exactly one via-marker directly after each merged requirement heading', (t) => {
   const root = fresh(t);
-  runSpec(root, ['new', 'merge']);
+  newLegacy(root, 'merge');
   write(root, 'specs/cap/spec.md', mainSpec('Old', 'Keep'));
   write(root, 'changes/merge/specs/cap/spec.md', `## ADDED Requirements\n\n${requirement('New')}## MODIFIED Requirements\n\n${requirement('Old', 'Old-v2')}`);
+  assert.equal(runSpec(root, ['baseline', 'merge']).status, 0);
   assert.equal(runSpec(root, ['archive', 'merge', '--force']).status, 0);
   const merged = readText(join(root, 'specs', 'cap', 'spec.md'));
   const date = new Date().toISOString().slice(0, 10);
@@ -462,13 +479,14 @@ test('archive: stamps exactly one via-marker directly after each merged requirem
 
 test('archive: a stale via-marker inside a MODIFIED delta block is replaced, not stacked', (t) => {
   const root = fresh(t);
-  runSpec(root, ['new', 'first']);
+  newLegacy(root, 'first');
   write(root, 'changes/first/specs/cap/spec.md', `## ADDED Requirements\n\n${requirement('Foo')}`);
   assert.equal(runSpec(root, ['archive', 'first', '--force']).status, 0);
-  runSpec(root, ['new', 'second']);
+  newLegacy(root, 'second');
   // A hand-edited copy of the current block: old marker several lines below the heading, mid-text.
   const copied = `### Requirement: Foo\nThe system SHALL Foo, revised.\n\nMore normative text here.\n<!-- via: 2020-01-01-old -->\n\n${scenario('Foo-v2')}`;
   write(root, 'changes/second/specs/cap/spec.md', `## MODIFIED Requirements\n\n${copied}`);
+  assert.equal(runSpec(root, ['baseline', 'second']).status, 0);
   const r = runSpec(root, ['archive', 'second', '--force']);
   assert.equal(r.status, 0, r.stderr);
   const merged = readText(join(root, 'specs', 'cap', 'spec.md'));
@@ -484,8 +502,8 @@ test('archive: a stale via-marker inside a MODIFIED delta block is replaced, not
 
 test('archive: leaves the state alone when another change is current', (t) => {
   const root = fresh(t);
-  runSpec(root, ['new', 'first']);
-  runSpec(root, ['new', 'second']);
+  newLegacy(root, 'first');
+  newLegacy(root, 'second');
   const r = runSpec(root, ['archive', 'first', '--force']);
   assert.equal(r.status, 0, r.stderr);
   assert.deepEqual([readState(root).change, readState(root).stage], ['second', 'new']);
@@ -495,6 +513,10 @@ test('archive: leaves the state alone when another change is current', (t) => {
 test('stage: sets the stage and refreshes updated', (t) => {
   const root = fresh(t);
   runSpec(root, ['new', 'demo']);
+  // an untouched template is not an executable contract, and `stage execute` says so; this test
+  // is about the timestamp, so give it the finished plan a real run would have by then
+  write(root, 'changes/demo/tasks.md', '- [ ] 1.1 do the thing and verify the suite passes\n  - id: T-01\n  - depends-on: none\n  - accepts: AC-01\n');
+  write(root, 'changes/demo/acceptance.md', '### AC-01 — The thing works\n\n- evidence-mode: automated\n- checks: test/demo.test.mjs\n');
   const before = readState(root).updated;
   const r = runSpec(root, ['stage', 'demo', 'execute']);
   assert.equal(r.status, 0, r.stderr);
@@ -537,4 +559,175 @@ test('stage: accepts a simple-mode change (docs/changes/<name>.md)', (t) => {
   const r = runSpec(root, ['stage', 'simple', 'interview']);
   assert.equal(r.status, 0, r.stderr);
   assert.deepEqual([readState(root).change, readState(root).stage], ['simple', 'interview']);
+});
+
+// ---------------------------------------------------------------- v2 templates and explicit upgrade (T-05)
+const LEGACY_TASKS = `## 1. Group
+
+- [x] 1.1 Do the first thing and verify the suite passes
+  - a historical note that must survive untouched
+- [ ] 1.2 Do the second thing and verify it by hand
+
+## 2. Later
+
+- [ ] 2.1 Do the third thing and verify the build succeeds
+`;
+
+function legacyChange(root, name = 'legacy') {
+  write(root, `changes/${name}/proposal.md`, '## Why\n\nBecause.\n\n## Non-Goals\n\nNone.\n\n## Decision Boundaries\n\nNone.\n');
+  write(root, `changes/${name}/design.md`, '## Context\n\nFixture.\n\n## Do-Not-Touch\n\nnone\n\n## Rebuild / Re-run After Change\n\nnone\n');
+  write(root, `changes/${name}/tasks.md`, LEGACY_TASKS);
+  return join(root, 'changes', name);
+}
+
+test('new: a project with no customized templates gets the linked-intent set and a stable identity', (t) => {
+  const root = fresh(t, 'tpl-v2');
+  const r = runSpecJson(root, ['new', 'demo']);
+  assert.equal(r.status, 0);
+  assert.equal(r.json.schemaVersion, 2);
+  for (const f of ['proposal.md', 'design.md', 'tasks.md', 'acceptance.md', 'change.json']) {
+    assert.ok(existsSync(join(root, 'changes', 'demo', f)), `${f} was created`);
+  }
+  const manifest = JSON.parse(readText(join(root, 'changes', 'demo', 'change.json')));
+  assert.match(manifest.id, /^[0-9a-f-]{36}$/);
+  assert.equal(manifest.slug, 'demo');
+  assert.equal(manifest.stage, 'new');
+  const inspect = runSpecJson(root, ['inspect', 'demo']);
+  assert.equal(inspect.json.schemaVersion, 2);
+  assert.equal(inspect.json.identity.id, manifest.id);
+});
+
+test('new: a customized pre-v2 template set keeps making legacy changes and says how to move on', (t) => {
+  const root = fresh(t, 'tpl-legacy');
+  for (const f of ['proposal.md', 'design.md', 'tasks.md']) write(root, `changes/.templates/${f}`, `# our own ${f}\n`);
+  const r = runSpec(root, ['new', 'demo']);
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /customized template set/);
+  assert.match(r.stdout, /\.template-version/);
+  assert.equal(existsSync(join(root, 'changes', 'demo', 'acceptance.md')), false);
+  assert.equal(existsSync(join(root, 'changes', 'demo', 'change.json')), false);
+  assert.equal(readText(join(root, 'changes', 'demo', 'tasks.md')), '# our own tasks.md\n');
+
+  // and once the project opts in by adding the marker, new changes are v2 again
+  write(root, 'changes/.templates/.template-version', '2\n');
+  write(root, 'changes/.templates/acceptance.md', '# our acceptance\n');
+  const second = runSpecJson(root, ['new', 'later']);
+  assert.equal(second.json.schemaVersion, 2);
+  assert.equal(readText(join(root, 'changes', 'later', 'acceptance.md')), '# our acceptance\n');
+});
+
+test('upgrade: a dry run writes nothing and lists the decisions that remain', (t) => {
+  const root = fresh(t, 'upgrade-dry');
+  const dir = legacyChange(root);
+  const before = readText(join(dir, 'tasks.md'));
+  const r = runSpecJson(root, ['upgrade', 'legacy']);
+  assert.equal(r.status, 0);
+  assert.equal(r.json.applied, false);
+  assert.equal(r.json.counts.tasks, 3);
+  assert.equal(r.json.counts.idsAdded, 3);
+  assert.match(r.json.decisions.join('\n'), /no dependency was inferred/);
+  assert.match(r.json.decisions.join('\n'), /no ticked box was treated as newly verified/);
+  assert.equal(readText(join(dir, 'tasks.md')), before, 'the dry run changed nothing');
+  assert.equal(existsSync(join(dir, 'change.json')), false);
+  assert.equal(existsSync(join(dir, 'migration')), false);
+});
+
+test('upgrade --apply: ids are added, every other byte and checkbox is preserved, originals are kept', (t) => {
+  const root = fresh(t, 'upgrade-apply');
+  const dir = legacyChange(root);
+  const before = readText(join(dir, 'tasks.md'));
+  const r = runSpecJson(root, ['upgrade', 'legacy', '--apply']);
+  assert.equal(r.status, 0);
+  assert.equal(r.json.applied, true);
+
+  const after = readText(join(dir, 'tasks.md'));
+  assert.deepEqual(
+    after.split('\n').filter((l) => !/^\s+- id: T-\d+$/.test(l)),
+    before.split('\n'),
+    'the only new lines are the id lines'
+  );
+  assert.match(after, /- \[x\] 1\.1 Do the first thing/);
+  assert.match(after, /  - a historical note that must survive untouched/);
+  assert.equal(/- depends-on:/.test(after), false, 'no dependency is invented');
+  assert.equal(/- accepts:/.test(after), false, 'no acceptance reference is invented');
+
+  assert.equal(readText(join(dir, 'migration', 'original', 'tasks.md')), before);
+  assert.ok(existsSync(join(dir, 'migration', 'original', 'proposal.md')));
+  assert.ok(existsSync(join(dir, 'migration', 'original', 'design.md')));
+
+  const inspect = runSpecJson(root, ['inspect', 'legacy']);
+  assert.equal(inspect.json.schemaVersion, 2);
+  assert.deepEqual(inspect.json.tasks.map((x) => x.id), ['T-01', 'T-02', 'T-03']);
+  assert.deepEqual(inspect.json.tasks.map((x) => x.checked), [true, false, false]);
+  assert.deepEqual(inspect.json.tasks.map((x) => x.readiness), ['complete', 'unknown', 'unknown'], 'prerequisites stay unknown, not none');
+  assert.deepEqual(inspect.json.acceptance, [], 'the draft inventory is commented out, so nothing is in force');
+  assert.match(readText(join(dir, 'acceptance.md')), /Draft, unapproved/);
+  assert.match(readText(join(dir, 'acceptance.md')), /<!--\n### AC-01/);
+});
+
+test('upgrade: refuses an archived change, a simple-mode change and a change already upgraded', (t) => {
+  const root = fresh(t, 'upgrade-refuse');
+  legacyChange(root, 'active-one');
+  write(root, 'changes/archive/2026-01-01-old/tasks.md', LEGACY_TASKS);
+  write(root, 'docs/changes/simple.md', '# simple\n\n- [ ] 1.1 do it and verify it\n');
+  write(root, 'changes/simple/tasks.md', LEGACY_TASKS);
+
+  const archived = runSpec(root, ['upgrade', '2026-01-01-old']);
+  assert.equal(archived.status, 1);
+  assert.match(archived.stderr, /not-active: .*archived; historical changes are preserved/);
+
+  const simple = runSpec(root, ['upgrade', 'simple']);
+  assert.equal(simple.status, 1);
+  assert.match(simple.stderr, /simple-mode/);
+
+  assert.equal(runSpec(root, ['upgrade', 'active-one', '--apply']).status, 0);
+  const again = runSpec(root, ['upgrade', 'active-one']);
+  assert.equal(again.status, 1);
+  assert.match(again.stderr, /already-v2/);
+});
+
+test('upgrade: an interrupted migration is recoverable and rolls forward exactly once', (t) => {
+  const root = fresh(t, 'upgrade-recover');
+  const dir = legacyChange(root);
+  const before = readText(join(dir, 'tasks.md'));
+
+  const crashed = runSpec(root, ['upgrade', 'legacy', '--apply'], cleanEnv({ MY_FLOW_IO_FAILPOINT: 'before-file' }));
+  assert.equal(crashed.status, 1);
+  assert.match(crashed.stderr, /failpoint/);
+  assert.equal(readText(join(dir, 'tasks.md')), before, 'nothing was published before the failure');
+
+  // the unfinished journal blocks ordinary reads and writes until it is resolved
+  const blocked = runSpecJson(root, ['status']);
+  assert.equal(blocked.status, 1);
+  assert.equal(blocked.json.error, 'recovery-pending');
+
+  const list = runSpecJson(root, ['recover']);
+  assert.equal(list.json.pending.length, 1);
+  const id = list.json.pending[0].id;
+
+  const recovered = runSpecJson(root, ['recover', id]);
+  assert.equal(recovered.status, 0);
+  assert.equal(recovered.json.phase, 'committed');
+  assert.match(readText(join(dir, 'tasks.md')), /- id: T-01/);
+  assert.equal(readText(join(dir, 'migration', 'original', 'tasks.md')), before);
+  assert.ok(existsSync(join(dir, 'change.json')));
+
+  const again = runSpecJson(root, ['recover', id]);
+  assert.equal(again.json.applied, 0, 're-entry is idempotent');
+  assert.equal(runSpecJson(root, ['status']).status, 0);
+});
+
+test('upgrade: historical archives and their bytes are never touched', (t) => {
+  const root = fresh(t, 'upgrade-archives');
+  legacyChange(root, 'active-one');
+  write(root, 'changes/archive/2026-01-01-old/tasks.md', LEGACY_TASKS);
+  write(root, 'changes/archive/2026-01-01-old/proposal.md', '# old\n');
+  const hashOf = (p) => createHash('sha256').update(readText(p)).digest('hex');
+  const archiveBefore = ['tasks.md', 'proposal.md'].map((f) => hashOf(join(root, 'changes', 'archive', '2026-01-01-old', f)));
+
+  assert.equal(runSpec(root, ['upgrade', 'active-one', '--apply']).status, 0);
+
+  const archiveAfter = ['tasks.md', 'proposal.md'].map((f) => hashOf(join(root, 'changes', 'archive', '2026-01-01-old', f)));
+  assert.deepEqual(archiveAfter, archiveBefore);
+  assert.equal(existsSync(join(root, 'changes', 'archive', '2026-01-01-old', 'change.json')), false);
 });

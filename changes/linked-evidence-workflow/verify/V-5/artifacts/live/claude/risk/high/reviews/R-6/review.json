@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 2,
+  "id": "R-6",
+  "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+  "contractDigest": "f840808e0f59e4c8f61971241b3777ff3d04c677f8b7d4cfa8828f4a478d730f",
+  "amendment": null,
+  "role": "critic",
+  "actorId": "subagent:my-flow:critic",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "REJECT",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:critic, round 2; transcript at tasks/a5633e7ed82691a9c.output",
+  "findings": [
+    {
+      "id": "C1",
+      "blocking": true,
+      "summary": "NEW: T-02 (tasks.md:13) says to compare the status output line-by-line against .my-flow/scope/high-baseline.txt but names no command, and the obvious spelling is broken in this session's primary shell - in PowerShell 'diff' is an alias for Compare-Object and 'git status --porcelain | diff - .my-flow/scope/high-baseline.txt' errors 16 times, while the same line works in Git Bash. Round 1's F3 forced AC-03 to name its mechanism; AC-02's differential half never got the same treatment."
+    },
+    {
+      "id": "A1",
+      "blocking": true,
+      "summary": "CONFIRMED with a timing correction that changes the fix: the attempt directory is published at attempt START (evidence.mjs:349 attemptDir, :477 staging mkdir, :507-508 rename, :622 cancel path), changes/high/verify/ does not exist today and is not git-ignored. It therefore does NOT fail at T-02 (no attempt is open during execute) - it fails only when mf-verify re-evaluates the required AC-02 from inside an open attempt, so the executor reports green and the verifier gets red on a byte-identical tree. No fix confined to T-02 helps; AC-02 itself must change. Attempt start also rewrites changes/high/change.json (evidence.mjs:470,510), surviving only because that file is already modified in the baseline."
+    },
+    {
+      "id": "A4-tasks",
+      "blocking": true,
+      "summary": "CONFIRMED and raised to blocking: changes/high/tasks.md is declared writable (design.md:366) and the working agreement makes ticking it mandatory, but it is absent from the AC-02 allow-list (acceptance.md:54-57). It passes today only because it is already modified. Once this contract is committed before execute - the normal thing to do - T-01 captures a clean tasks.md, the first tick becomes a new entry in no category, and T-02 fails on the ledger the workflow requires it to write. This fires during execute, not at verify."
+    },
+    {
+      "id": "A2",
+      "blocking": false,
+      "summary": "Mechanism CONFIRMED (default porcelain shows '?? changes/high/specs/', -uall expands to the file, so a mid-execute rewrite of the delta spec is invisible), classification gap CONFIRMED, but the framing is overstated (design.md:337 says the second/third distinction is load-bearing, not 'partition') and the proposed remedy is wrong: adding changes/high/specs/ to an allow-list fixes nothing, because git status cannot see a content change inside an already-untracked collapsed directory. It needs a content hash pin, not a status category."
+    },
+    {
+      "id": "A3",
+      "blocking": false,
+      "summary": "CONFIRMED: changes/medium/ is in two mutually exclusive categories (design.md:344 and :357) and is allow-listed at acceptance.md:55, so a new file under changes/medium/ passes AC-02 and editing an already-modified file there produces no status change at all."
+    },
+    {
+      "id": "A4-collapse",
+      "blocking": false,
+      "summary": "CONFIRMED but genuinely non-blocking: the dependency on git's default -unormal collapse is unstated in acceptance.md:36, tasks.md:13 and D-07, but since T-01 and T-02 both specify the same bare form a literal executor stays consistent."
+    },
+    {
+      "id": "T-01,T-03",
+      "blocking": false,
+      "summary": "CLEAN: T-01 executes with zero guessing and its baseline was reproduced exactly; T-03's spawnSync probe was run in both PowerShell and Git Bash with byte-identical output matching acceptance.md:117-119, and require resolves inside node -e because no package.json exists."
+    },
+    {
+      "id": "FIX-SET",
+      "blocking": false,
+      "summary": "Minimum fix set: (1) delete AC-02's differential half - baseline, allow-list and both comparison scenarios (acceptance.md:41-57, :75-90) - and replace with four absolute commands verified against the real tree: 'git status --porcelain -- . \":(exclude)changes\"' must be exactly ' M cli.mjs' (empty today); 'git diff --stat -- . \":(exclude)changes\"' must name cli.mjs only (empty today); 'git status --porcelain -- changes/verify changes/amend' must be empty (empty today); 'git diff --stat -- changes/medium' must be non-empty as the anti-revert guard (5 files, 83 insertions today). (2) Delete T-01's baseline capture and rewrite T-02 as those four commands with expected outputs inline, dropping .my-flow/scope/high-baseline.txt from the writable set and Rebuild/Re-run. (3) Pin changes/high/specs/cli-output/spec.md by sha256 in T-01 and re-verify in T-02, since git status structurally cannot see it. (4) Move changes/medium/ out of Do-Not-Touch category 1 and add a category covering changes/high/**. (5) Cite evidence.mjs:349,477,507 alongside the intent-io.mjs journal citation. Judgement: keep AC-02 as a required criterion (AC-01 cannot catch pre-mortem scenario 3) but reduce it to the four absolute commands; git show HEAD:changes/high/proposal.md has no Success Criteria section, so the scope gate is planner-authored and every one of its three rounds of defects lives in the differential half."
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-15T05:03:56.780Z"
+}

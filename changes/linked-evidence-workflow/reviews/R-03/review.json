@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "id": "R-03",
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "contractDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+  "amendment": null,
+  "role": "planner",
+  "actorId": "agent:my-flow:planner",
+  "writerActorId": "agent:claude-code:executor",
+  "verdict": "DRAFT-CONFIRMED",
+  "sourceRef": "agent:my-flow:planner#t32-reconfirmation-after-one-digest-fix",
+  "findings": [
+    {
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "restates R-01 against the one true digest: the planner recomputed fe714caa from the change's own declared scope, confirmed the three supporting contract files are byte-identical, and proved by overlay that the two new blocked annotations in tasks.md are digest-neutral while a change to contracts.md is not"
+    },
+    {
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "contracts.md is now genuinely inside the digest, so any future edit to it invalidates high-lane approval; this is intended, and it raises the price of the cosmetic - tasks: back-reference drift in acceptance.md, which should be folded into the next substantive amendment rather than fixed on its own"
+    },
+    {
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "verification-inputs.json declares no tools, so a host CLI upgrade is not environment drift; [] remains the only correct value until T-29 runs, and the binding belongs to the reviewed revision C-07 already requires"
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-14T18:52:11.715Z"
+}

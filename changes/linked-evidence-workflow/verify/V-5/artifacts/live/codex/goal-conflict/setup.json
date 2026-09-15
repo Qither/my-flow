@@ -1,0 +1,47 @@
+{
+  "at": "2026-09-15T06:12:27.272Z",
+  "cwd": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\codex-goal-conflict",
+  "session": "41c08851-49b8-4682-967b-48e837f3f738",
+  "candidateDigest": "04347c5229fbd8b3f8a3dc1a794f4e0d5749290937066a5d5757b9cd4c40215b",
+  "baseline": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\observations\\live\\goal-v4-before\\codex",
+  "approval": {
+    "declared": true,
+    "lane": "medium",
+    "digest": "5ab87c3665fc97759889bd7b96e50b9d93596fa93afa41003c1a8bd1e0725a7b",
+    "approved": true,
+    "via": "direct",
+    "chain": [],
+    "reasons": [],
+    "requirements": {
+      "lane": "medium",
+      "roles": [
+        "critic"
+      ],
+      "summary": "an independent critic OKAY"
+    },
+    "used": [
+      "R-medium-critic-1"
+    ],
+    "history": [
+      {
+        "schemaVersion": 2,
+        "sequence": 1,
+        "changeId": "8dbfeef3-6bc3-430a-a176-ad1c05ecbce2",
+        "lane": "medium",
+        "reason": "Two reversible label modules; no public interface or high-risk category",
+        "paths": [
+          "source/left.mjs",
+          "source/right.mjs"
+        ],
+        "previous": null,
+        "direction": "initial",
+        "forced": false,
+        "recordedAt": "2026-09-15T04:14:40.797Z"
+      }
+    ]
+  },
+  "originalWorkspacePreserved": true,
+  "authenticationHome": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\homes\\codex",
+  "status": "prepared-not-launched",
+  "scope": "Seed one unrelated native goal in a new logical session, invoke execute medium, require refusal without replacing that goal or editing implementation/tasks."
+}

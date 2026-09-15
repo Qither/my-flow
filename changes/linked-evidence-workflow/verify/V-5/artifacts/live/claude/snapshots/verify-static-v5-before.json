@@ -1,0 +1,425 @@
+{
+  "at": "2026-09-15T07:26:43.445Z",
+  "label": "verify-static-v5-before",
+  "host": "claude",
+  "workspace": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\claude",
+  "session": "44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "candidateDigest": "edacd5fe23ae307e2599dc64a29c91840d42ae2a2b1016c4d0b79dfce7b0a040",
+  "observerHash": "77e9adc2073ff2117032b33f0e91a6e4d7a5fab8026f7211e3af39e1b4db2d82",
+  "settingsHash": "2555934feb705f71890a3934778acbcd3c3c46efb5b7dd3dfefbeb6b6b240a15",
+  "files": [
+    {
+      "path": ".gitignore",
+      "hash": "5d4ab1e359a28cc1f9bcc5e73065d57bde756b0332e33916a4c2b0c47e153acb",
+      "bytes": 10
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T04-16-14-252Z-i81kgf/journal.json",
+      "hash": "774137d8fd893e9a17fd9d0ee2c7c5896225b396fd92aa22ffdce3306153a6a2",
+      "bytes": 1315
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T04-20-40-779Z-2dfzyg/journal.json",
+      "hash": "877180c039de982f715ef122b9a4d82c1ee059f6c1af5fa6803e7c7f2c088116",
+      "bytes": 1269
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T06-55-50-768Z-j8dpup/journal.json",
+      "hash": "fe6199d9a8dce797ea3b5966a5a1a7986675fb4a66c234b88be4ab131120fea8",
+      "bytes": 1637
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T06-56-01-756Z-gona2s/journal.json",
+      "hash": "516c4f1bc1de309a54e62375ffc4e4220c6028302a2c695ca8220bc51c51e733",
+      "bytes": 4655
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T07-00-52-343Z-lo7odx/journal.json",
+      "hash": "b8331a568700879bd90425d5f5cce5b3023f51304c7a09a9161a66f8c36e5ea8",
+      "bytes": 5715
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T07-01-07-935Z-xfhysk/journal.json",
+      "hash": "09ee6cb1c313cf63ea2d20852f7602c02e54f2b5b34110df1d11d4cce2f4e147",
+      "bytes": 5821
+    },
+    {
+      "path": "changes/.transactions/tx-2026-09-15T07-06-43-569Z-qvl06y/journal.json",
+      "hash": "632174f40f3ac4236306d86427899404d227fe495fdb7cc2709f0cb3b4b8a194",
+      "bytes": 4143
+    },
+    {
+      "path": "changes/amend/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "path": "changes/amend/amendments/A-1/candidate.json",
+      "hash": "ed602decac89de223fc6157e81ca10a1091bb451ff4725e2b2806fb03b28883c",
+      "bytes": 1085
+    },
+    {
+      "path": "changes/amend/amendments/A-1/candidate/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "path": "changes/amend/amendments/A-1/old/acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "path": "changes/amend/amendments/A-1/state.json",
+      "hash": "ce6875b7be480a4713452c3b71bba1f2a5939ef459dc97eb795f9ad4954f25ab",
+      "bytes": 278
+    },
+    {
+      "path": "changes/amend/change.json",
+      "hash": "b85434c32edc1f5774e465ac72c921b0bef8791c8bd6d1ab01a10be3daf1e461",
+      "bytes": 290
+    },
+    {
+      "path": "changes/amend/design.md",
+      "hash": "cfeb235b01eb2a130f56bb2fa07dfcddab8a1774b45d35814481902e4e6fe36e",
+      "bytes": 633
+    },
+    {
+      "path": "changes/amend/findings/F-1.json",
+      "hash": "268d8af855f3ef03612becdb6f4dd07ce09e4cecde42e199d70d74f1d0133818",
+      "bytes": 1598
+    },
+    {
+      "path": "changes/amend/proposal.md",
+      "hash": "63760b1c3380b42ab0b422b718611b1ced15a127a5876a1ae49ca1e2d91430ef",
+      "bytes": 714
+    },
+    {
+      "path": "changes/amend/reviews/R-1/review.json",
+      "hash": "36565b4c55f8353ae7cc8af3f90475afea65a34599794c57f9dc5168c0dbeb0e",
+      "bytes": 5012
+    },
+    {
+      "path": "changes/amend/reviews/R-2/review.json",
+      "hash": "f3a4a59bcc8dc3fb7cac03d729d464f6799258bc62256225e996f618885a5ec1",
+      "bytes": 5802
+    },
+    {
+      "path": "changes/amend/tasks.md",
+      "hash": "391330e58e8db459c218afed354359b66e247eded01a42e66a9d4ba1936e22ef",
+      "bytes": 808
+    },
+    {
+      "path": "changes/high/acceptance.md",
+      "hash": "7d7bef72be9453aebe694ed5079e2de438c5dc983809a8b049c314182698942e",
+      "bytes": 11131
+    },
+    {
+      "path": "changes/high/change.json",
+      "hash": "290d3343c5f268383b405ac2ee230d3ec4dde8adba2c51af5ff8dcbbab85ab7d",
+      "bytes": 633
+    },
+    {
+      "path": "changes/high/design.md",
+      "hash": "433c032ec80a9edc17158a03c958124c7cff4969c2ac0a50c410c11ae85ec8dc",
+      "bytes": 31000
+    },
+    {
+      "path": "changes/high/lanes/L-01.json",
+      "hash": "af8971da337f94007e3160763068b6e167e9777a2fddb2622eadfbe4c4d47b8c",
+      "bytes": 539
+    },
+    {
+      "path": "changes/high/proposal.md",
+      "hash": "339a62532fb7ac3b766a622e80c45a4c33e3f758e5a801a247213bf019925edf",
+      "bytes": 2849
+    },
+    {
+      "path": "changes/high/reviews/R-1/review.json",
+      "hash": "73365020dfd3e025a30184e0547a126bf194b2637878c30e9f786301b0170f97",
+      "bytes": 681
+    },
+    {
+      "path": "changes/high/reviews/R-2/review.json",
+      "hash": "517b4a1c8509a47818b8222f66ec780a990fee01310b8f843e50d90d0de67968",
+      "bytes": 3012
+    },
+    {
+      "path": "changes/high/reviews/R-3/review.json",
+      "hash": "2ea8708a3862ff3683da8fcd7c347c6a0ba920a88ab9e53d86ee1bdec365afc8",
+      "bytes": 4141
+    },
+    {
+      "path": "changes/high/reviews/R-4/review.json",
+      "hash": "753fa1d88a96c916de48f10cf2673994a2b681f90856d2b77563f4599801a33f",
+      "bytes": 1720
+    },
+    {
+      "path": "changes/high/reviews/R-5/review.json",
+      "hash": "9a629dc7d4bc37a6b8b2b257a9384aa6b048dddcd9715c8d18b6cbda7ba353a1",
+      "bytes": 3997
+    },
+    {
+      "path": "changes/high/reviews/R-6/review.json",
+      "hash": "acf78959c81251637958a78a9b56c818b35ecf1d27f6de3d46aa3a044d1bd1da",
+      "bytes": 5647
+    },
+    {
+      "path": "changes/high/reviews/R-7/review.json",
+      "hash": "0fb3617e09aabf51e56e88c084b16abe512df9bf4bccb32fdbb0b1b1740bd717",
+      "bytes": 2927
+    },
+    {
+      "path": "changes/high/reviews/R-8/review.json",
+      "hash": "c34aca5f1ea5a163f4f8473372bbbc5d25e4f413d6e1dd657ba386c31a01b583",
+      "bytes": 4139
+    },
+    {
+      "path": "changes/high/reviews/R-9/review.json",
+      "hash": "416c5a4ab09814043dc30593ccff9e6bf493a3857f9fb418d8a9022e2c98cb57",
+      "bytes": 4519
+    },
+    {
+      "path": "changes/high/specs/cli-output/spec.md",
+      "hash": "9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc",
+      "bytes": 3023
+    },
+    {
+      "path": "changes/high/tasks.md",
+      "hash": "f82f941d844300e36ed50dd64b972443f2fc0b12178d4609f4c0dd5b65775b12",
+      "bytes": 4149
+    },
+    {
+      "path": "changes/medium/acceptance.md",
+      "hash": "0aad3975ca026f1d3addadcf499de1e70eb030330259b9ce0e740b125c80091f",
+      "bytes": 387
+    },
+    {
+      "path": "changes/medium/change.json",
+      "hash": "244983c81a0b02b0979e0310634bc2ba2255909380e779951ddaefcf99210651",
+      "bytes": 1012
+    },
+    {
+      "path": "changes/medium/design.md",
+      "hash": "06f495fdccef433250f94efdae7e00487fa8d27cb42870499942b5474373aea8",
+      "bytes": 2863
+    },
+    {
+      "path": "changes/medium/lanes/L-01.json",
+      "hash": "aae20f4bab0aaf2f0ab8bcdedef199a86a4e8ed28b7038c16929b7178153cc2b",
+      "bytes": 572
+    },
+    {
+      "path": "changes/medium/proposal.md",
+      "hash": "43a24874da4c3668341866c232203ef0089d1e9e1d858a233335a9546fff0ecb",
+      "bytes": 930
+    },
+    {
+      "path": "changes/medium/reviews/R-1/review.json",
+      "hash": "cc258b3ae603b6f3ac10a7f73f7e15a6469d2e2f69c2943034c8bd675641d044",
+      "bytes": 691
+    },
+    {
+      "path": "changes/medium/tasks.md",
+      "hash": "2456fe809ce70d1585a88bae12e04776a475cd84ee4e382b2479f808e48cddfc",
+      "bytes": 339
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__acceptance.md",
+      "hash": "0aad3975ca026f1d3addadcf499de1e70eb030330259b9ce0e740b125c80091f",
+      "bytes": 387
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__change.json",
+      "hash": "7e6f3f867fc0105add84de512a7d469b859d007aa9179432b8792ca638810954",
+      "bytes": 444
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__design.md",
+      "hash": "06f495fdccef433250f94efdae7e00487fa8d27cb42870499942b5474373aea8",
+      "bytes": 2863
+    },
+    {
+      "path": "changes/medium/verify/V-1/contract/changes__medium__proposal.md",
+      "hash": "43a24874da4c3668341866c232203ef0089d1e9e1d858a233335a9546fff0ecb",
+      "bytes": 930
+    },
+    {
+      "path": "changes/medium/verify/V-1/report.md",
+      "hash": "d125cb12007931a17554c057e83c68f8dbc508a63faa859f525b8aafca8e73f7",
+      "bytes": 8900
+    },
+    {
+      "path": "changes/medium/verify/V-1/request.json",
+      "hash": "f6398e8b116daca7b2272b0884103a7066de5f96a23ed94d521b86c65883377b",
+      "bytes": 853
+    },
+    {
+      "path": "changes/medium/verify/V-1/result.json",
+      "hash": "99c594dcbdff2ab78ff473ad43b31f1c98a23135b4758fd197cccff0a2700988",
+      "bytes": 7313
+    },
+    {
+      "path": "changes/medium/verify/V-1/target.json",
+      "hash": "a7f228280c317abbac676fd81f8e3892f411b3daf12559940f516a8c35db4c77",
+      "bytes": 5216
+    },
+    {
+      "path": "changes/verify/acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "path": "changes/verify/change.json",
+      "hash": "23bf2fd8214b61cac858436d60b82b369538d793362bdef6ab896fdc12bda782",
+      "bytes": 632
+    },
+    {
+      "path": "changes/verify/design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "path": "changes/verify/proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "path": "changes/verify/tasks.md",
+      "hash": "2bf665c84a8f1d4a30b1826a1e32019e5f19b7837f8db2b821e35beb541aa316",
+      "bytes": 342
+    },
+    {
+      "path": "changes/verify/verify/V-1/artifacts/baseline-verifier.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__acceptance.md",
+      "hash": "7f38c43af8140a58b743487fa5cd5be0ef93843450c2b17b73e74bf71c3a4fa4",
+      "bytes": 152
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__change.json",
+      "hash": "bf09168d0e14d96cc090856d08546be1ad4e26a272a67cb26e940e8690ee8d30",
+      "bytes": 105
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "path": "changes/verify/verify/V-1/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "path": "changes/verify/verify/V-1/report.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "path": "changes/verify/verify/V-1/request.json",
+      "hash": "ccfa25a0dcfe5ede06e735fc0fbcdc9a828ecc863a449e42716670932634ba1c",
+      "bytes": 874
+    },
+    {
+      "path": "changes/verify/verify/V-1/result.json",
+      "hash": "03650977a2fa773334d42d74193523a43668d007f7518f17721a79978c0204a2",
+      "bytes": 1390
+    },
+    {
+      "path": "changes/verify/verify/V-1/target.json",
+      "hash": "03b49d751406840f7d72663160f9b7da025ffbf0fbb703c4434a603b01177418",
+      "bytes": 4596
+    },
+    {
+      "path": "cli.mjs",
+      "hash": "8887a46a8d35daef84ed545181790d4cebca8f7249b1a7b1201cf493f37bb4dc",
+      "bytes": 31
+    },
+    {
+      "path": "fixture-settings.json",
+      "hash": "dd0f39d2e3f139e178d9a5f27cd6f810fcd516799777d78f44d2102cfbfea8db",
+      "bytes": 67
+    },
+    {
+      "path": "native-probe.txt",
+      "hash": "9168b830ad0e2626d4591ed397d8e13ebb242239eb3c93d7fc1d4466a4b3de53",
+      "bytes": 19
+    },
+    {
+      "path": "scenario-inputs.json",
+      "hash": "c1711357e1d239a60de44f24cdeca3a1092bd28b5e3e300ff6711fa5e841fc0f",
+      "bytes": 522
+    },
+    {
+      "path": "scripts/check-a.mjs",
+      "hash": "7a7ebbd999913bc673940e5ae455e63625d3847a6f9b5643229604ae88c134d8",
+      "bytes": 141
+    },
+    {
+      "path": "source/a.mjs",
+      "hash": "40fb93ee46905bf772d9f2ae37697f9e03004c1492f5bbe6f522ed0c96fff06e",
+      "bytes": 32
+    },
+    {
+      "path": "source/answer.mjs",
+      "hash": "a2098bd92b10bf8b816d24b7556b1ce8c49a879d130489065ef1051c17e042f6",
+      "bytes": 26
+    },
+    {
+      "path": "source/b.mjs",
+      "hash": "93d1618aefe39d12b07558f5ddf8b6b7f2427d56cd9b6bfcb9c0712b9a31c535",
+      "bytes": 32
+    },
+    {
+      "path": "source/c.mjs",
+      "hash": "99b34f7ace2245a4b015c9ea787559c59ad64c4cefa5e3b3c036f462f30a69ab",
+      "bytes": 32
+    },
+    {
+      "path": "source/left.mjs",
+      "hash": "02f31091bb308d5eb654d7256fe6dfdb4933c8a6747230bab692656aba871fb1",
+      "bytes": 35
+    },
+    {
+      "path": "source/right.mjs",
+      "hash": "2ccd48398ae2f84e5606e0a5af8b1ac587166b9b36ff140aee23b27420a5f6b7",
+      "bytes": 36
+    },
+    {
+      "path": "test/amend-a.test.mjs",
+      "hash": "386bc9d26109fa5d66e8695e9663bae0f66f1056b59f73aab0b53504b2d5dd12",
+      "bytes": 174
+    },
+    {
+      "path": "test/amend-b.test.mjs",
+      "hash": "22629b8f5916fecd71be21dc51911d10c7c6b9c9e906f6696b13dd6f042bb7a9",
+      "bytes": 174
+    },
+    {
+      "path": "test/amend-c.test.mjs",
+      "hash": "f80cf7f6cf8f9c58d6765b68fc5f9d4ca8d83c24360c2d411b75a7ab6bef2f3a",
+      "bytes": 174
+    },
+    {
+      "path": "test/high.test.mjs",
+      "hash": "0f028136f9ea60aaccdafc4574108e24f275a0bd8bd2ca3fa99a6cc4c2c6e660",
+      "bytes": 719
+    },
+    {
+      "path": "test/medium.test.mjs",
+      "hash": "9f589f38251de514413f5a569eeadc550a4962ef87c133e6599fa81cf3b464ec",
+      "bytes": 322
+    },
+    {
+      "path": "test/verify.test.mjs",
+      "hash": "bbe222c12a2f19412f1a86b82ee932eaa8d86fb9eeb5ce8bf3f75a527a347616",
+      "bytes": 176
+    }
+  ],
+  "leases": [],
+  "inventoryScope": "tracked and nonignored untracked files, excluding transient intent.lock",
+  "gitStatus": " M changes/amend/acceptance.md\n M changes/amend/change.json\n M changes/amend/tasks.md\n M changes/high/acceptance.md\n M changes/high/change.json\n M changes/high/design.md\n M changes/high/proposal.md\n M changes/high/tasks.md\n M changes/medium/acceptance.md\n M changes/medium/change.json\n M changes/medium/design.md\n M changes/medium/proposal.md\n M changes/medium/tasks.md\n M changes/verify/acceptance.md\n M changes/verify/change.json\n M changes/verify/tasks.md\n M source/left.mjs\n M source/right.mjs\n?? changes/.transactions/\n?? changes/amend/amendments/\n?? changes/amend/findings/\n?? changes/amend/reviews/\n?? changes/high/lanes/\n?? changes/high/reviews/\n?? changes/high/specs/\n?? changes/medium/lanes/\n?? changes/medium/reviews/\n?? changes/medium/verify/\n?? changes/verify/verify/\n"
+}

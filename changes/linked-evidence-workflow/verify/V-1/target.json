@@ -1,0 +1,1427 @@
+{
+  "implementation": {
+    "records": [
+      {
+        "path": ".claude-plugin/marketplace.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "f7c328e194b9ecca750258cb9ad14a57fbfda8f88a5f06623b7a33a4f014c545"
+      },
+      {
+        "path": ".claude-plugin/plugin.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "0ff17c222fbe6dcc4f9a8014aec89714b12f680521680c2c7445be7a6bd16e31"
+      },
+      {
+        "path": ".gitattributes",
+        "type": "file",
+        "mode": "file",
+        "hash": "91c171a7f4e295966f6e40aba83b0a11a56b4c99b59b9c55fcf54f15df207bc0"
+      },
+      {
+        "path": ".gitignore",
+        "type": "file",
+        "mode": "file",
+        "hash": "f4dbc8fb28f318d0916a257bc3f9a28b8f0455a6db5a3d8fece7d20c164f23a4"
+      },
+      {
+        "path": "README.de.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "2bee43439f9a5873dea4d33dfe681ab4cea5d4f8b2d61a877ddf5ded83837f5b"
+      },
+      {
+        "path": "README.es.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "52ec15adaf23bd699a2174077385dfee47a46e310570b7c41bb68743729f83ad"
+      },
+      {
+        "path": "README.fr.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "74a7d4176a32bc7a70a74192c0978c4ca67a7da30bf0db42c2538d98733622e2"
+      },
+      {
+        "path": "README.ja.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "5d00db93160e093103eaa5348853115b256f592ecfc077be44b68862089f9a82"
+      },
+      {
+        "path": "README.ko.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "d769c12e29ee52d39e6baf1b9686bff2d5009cb3f8bd3005e5041b48f0343146"
+      },
+      {
+        "path": "README.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "110c7094492dac6c638a0ef15091ef00428d99e39fbd93f823101cf68e3dfa15"
+      },
+      {
+        "path": "README.zh-CN.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "abea6d077d96ec8fc164e61fc24f5f0b5a6b206dd73462701d9d283e07f7a6d5"
+      },
+      {
+        "path": "README.zh-TW.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "b3dc5203881b41122eee14d54a118c863fa7fa8ff69fc5335db6b3d8f67d96ec"
+      },
+      {
+        "path": "agents/architect.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "f61ec5cefaa55f4566b911bb2b65090c9c7598c54c47c57b56e5222dbb00a50a"
+      },
+      {
+        "path": "agents/critic.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "f8784e467c5412a59e27337fb2c4d63a4d3fdabaa1f0febb018e600022cbfd09"
+      },
+      {
+        "path": "agents/planner.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "57146ef2b3e282aa19b319b8983da60494fe84ef74b119bfae052185b77c5f8c"
+      },
+      {
+        "path": "agents/verifier.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "ad927747ad2dc01d5594ccb01add04e348911524ddb1a72f3178a3c5a6bb800b"
+      },
+      {
+        "path": "claude/CLAUDE.block.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "97ab9dc9cc157bb5779a48e648067d5f480298510d78471eb05c7205527192e0"
+      },
+      {
+        "path": "codex/AGENTS.block.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "1cbcec63355ab5dd060bd7baa7cbcec3d83fe993c43c1d8c8398f0b454d76fa6"
+      },
+      {
+        "path": "codex/agents/architect.toml",
+        "type": "file",
+        "mode": "file",
+        "hash": "cec6deb40f5f5190310e51a3a157f9a7f0fb0f63e98802e350911d0998b5e256"
+      },
+      {
+        "path": "codex/agents/critic.toml",
+        "type": "file",
+        "mode": "file",
+        "hash": "4349c5c946cb2af954c97e767a0853e7646c4aad26d9c83922b123b01f91b821"
+      },
+      {
+        "path": "codex/agents/planner.toml",
+        "type": "file",
+        "mode": "file",
+        "hash": "ebaebd3e7095dcc96d96db8a9ea736a41f3508feca268b51d240ec11acc2d2cb"
+      },
+      {
+        "path": "codex/agents/verifier.toml",
+        "type": "file",
+        "mode": "file",
+        "hash": "74aff475418bdc0892d56d015465f0b5eaf2a145adf1b9775804606da65a0675"
+      },
+      {
+        "path": "codex/hooks.template.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "4b82389659beeda724fefb0cff6f028913dd9d3a7a673b6a7fd4bf854e2fdc17"
+      },
+      {
+        "path": "codex/skills/my-flow-ask/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "0d1cd36f4a387fb4ccdb67b3697c2e346303f487355b7a66cc289619960130db"
+      },
+      {
+        "path": "codex/skills/my-flow-dashboard/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "1d9bade3a0a562857af3be25130b54dbb566b829e7a8146795507a6b5d051641"
+      },
+      {
+        "path": "codex/skills/my-flow-execute/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "c7dd56fd5b78e7e58924d1ff763f1900d378f80111c0dbee982705b7d68a4654"
+      },
+      {
+        "path": "codex/skills/my-flow-interview/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "041611d8ede65357a9236270c4e227f0441c50215e7143e95a7c6e04ac01f888"
+      },
+      {
+        "path": "codex/skills/my-flow-learn/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "a46646087e4788e9837f71f5a62444e850515f176aba682d4aa627c9b93aa8ff"
+      },
+      {
+        "path": "codex/skills/my-flow-mf-audit/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "4899bf8c7d359f3c0ff2153c3e1703f91414e37876ee24f469b158d86c9be778"
+      },
+      {
+        "path": "codex/skills/my-flow-mf-plan/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "646b804e5680c3ba87335b3e286f6d6566a4a4590ae28881884ef48cfa890b0a"
+      },
+      {
+        "path": "codex/skills/my-flow-mf-verify/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "c5915ced61f2ce65a81cd3dbdf3aff79203bbf9472fc69baaeb9d818340ebff8"
+      },
+      {
+        "path": "codex/skills/my-flow-spec/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "4f92035d9c5b72c39f4704ae460d7c4fd454c45f6a6861cc1127d1ac56c7d7aa"
+      },
+      {
+        "path": "hooks/codex-shim.ps1",
+        "type": "file",
+        "mode": "file",
+        "hash": "f7bc5983118bf7f387bdbb32f3ed7cf858446f4e90969c9ee29768772eecc2a5"
+      },
+      {
+        "path": "hooks/completion-guard.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "772946ca57d1e3a00488cbab5c84d4704571d4755412b63186a8d38fd3549d7c"
+      },
+      {
+        "path": "hooks/hooks.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "88e173fabb38a3d403b867bda07bbcea8a62c3c519b4a3031cfa844ffe1c7d77"
+      },
+      {
+        "path": "hooks/lib/intent-view.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "b4a4e8287007389882ecbee390aada4260a3e4cd3951730b2c886ab395457933"
+      },
+      {
+        "path": "hooks/lib/stdin.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "49a4d019995d0478b115e2a6a9107a3484f367c14df703ed809ca262a28ddb08"
+      },
+      {
+        "path": "hooks/session-context.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "fa91e0cb6a98d84942312641dd8a326ae6dc46252712fd5da31d03f64e377916"
+      },
+      {
+        "path": "manifest.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "2d5c318ee03f0a7c5a8b1690e8ee9913750057dffb81734a6a6305dac61aa979"
+      },
+      {
+        "path": "package.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "999e72cfe3e705b3e372d9a7d7a11f5a9bb6c3628bc604182e5ecea686283941"
+      },
+      {
+        "path": "scripts/ask.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "750293c27216a0f1910e5c6f643d11f3069582e6c2e983e22595f6e3c5a4ac70"
+      },
+      {
+        "path": "scripts/build.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "cad158532db4bd8a2c8e7902eeaec7439cf3237b9cabe7244e49761690ee68fb"
+      },
+      {
+        "path": "scripts/cli.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "c45bc0d389dbc005254261ccb12f18375fe6aec8a11d3b5bc14574b5d7204046"
+      },
+      {
+        "path": "scripts/dashboard.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "a356050ced02dfdfa352df271e1f15f38f68db28423ea1131a9f5465705765a3"
+      },
+      {
+        "path": "scripts/init.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "6437073415d5d2e0adf6345329cdbaa21a065f0360437d114b488b65a24ed1b6"
+      },
+      {
+        "path": "scripts/install.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "5862840798e0c2b867b932fa58dae0c1c7de91b1fc7c66d1faad410aeeec089b"
+      },
+      {
+        "path": "scripts/lib/archive.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "7d67931eb42d0c8c51400c2b5679fd8b33824e52ff298822480082c3a5c554c6"
+      },
+      {
+        "path": "scripts/lib/context.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "4715e75128c5ba28abfab65d8b34a81da8d519aa34b4532dea38567b5971ac6c"
+      },
+      {
+        "path": "scripts/lib/evidence.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "902021f54ac730b1358b99fdb4048f563722a0dcf15f21844136b6e353c31898"
+      },
+      {
+        "path": "scripts/lib/intent-graph.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "d2090ef5e7a60d1777aac7e695b49f623a564307a836ed6217aea2d0308d5e78"
+      },
+      {
+        "path": "scripts/lib/intent-io.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "6551976a37c85bee09b20ca31ad854ed2fa27db469dbacea79563a8031a373ed"
+      },
+      {
+        "path": "scripts/lib/intent-state.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "da2fe378a74db61c74749559be377f2e5556c81324c3cd91955442df453ab1e2"
+      },
+      {
+        "path": "scripts/lib/intent.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "4cb84de290b35ee80e8b18809352c196f284c4540d4cc7d8be471319c6b61bb0"
+      },
+      {
+        "path": "scripts/lib/models.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "ba6d66677ff6a6173a486fc3ef53c991afbd460ced267bce061b68cccfbbe0df"
+      },
+      {
+        "path": "scripts/lib/plugins.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "92dd39c7c6ebc9016b99024c4a8f0de6885e790ecf873932788cf57437ca7631"
+      },
+      {
+        "path": "scripts/lib/spawn.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "aefc36053c04291eb8213e7c0276708a69017eae856512c29099a4884dbfdd34"
+      },
+      {
+        "path": "scripts/lib/usage.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "5eeeca51e2d2f70787cf1b63e2fda122d8dbb110b27f2b890769aab9f6a304eb"
+      },
+      {
+        "path": "scripts/models.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "cafe48ccb5e56ab4de1bb19e0dbf23f402619c904b2d24b98e32018fbfab1f23"
+      },
+      {
+        "path": "scripts/plugin.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "442d1a205bd1c3cf78214680022aceda3d1937454dbfaf1ce4eb5f7a6cb24964"
+      },
+      {
+        "path": "scripts/spec.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "0411f3e46b2c712a57116b73fb05a70eae7b72125a3d18221d1a852933e7e63e"
+      },
+      {
+        "path": "skills/ask/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "24769f74883d58e242388bb5234023c04500192a397717a977df3782bb6c6488"
+      },
+      {
+        "path": "skills/dashboard/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "03d274d44586fd230ad0c25d85a02b703489c5298d7c7aaff72b78551f370c8f"
+      },
+      {
+        "path": "skills/execute/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "44de13f88b010d3c1c218ca29c4e5fdcd7fe49d32dc2ea6e3854ad5937401763"
+      },
+      {
+        "path": "skills/interview/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "754b2c229cbafafd29d3493094f77911213d831e4f565346f148c3e4bbe85538"
+      },
+      {
+        "path": "skills/learn/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "114aecdba42467bbeb5fcf08a018022d0d4ec52baa077cfea30f0cbac08bc509"
+      },
+      {
+        "path": "skills/mf-audit/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "2d0e9ac67fa6e6218808e8f13755ec785f8abe0af32b23b73088bf28305f486f"
+      },
+      {
+        "path": "skills/mf-plan/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "9cd0fc3661f45298522228d6fd9d41d909ca6b73cce23ab48b0cbe482c912d0d"
+      },
+      {
+        "path": "skills/mf-verify/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "063a8a1355ea2a17e04c6f55aa008556a03a68d1d53036ef188d7fa2f58d27e1"
+      },
+      {
+        "path": "skills/spec/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "58f60f01ddb7894ee4b10bdb692384412535837e5c74d7a8256f076b4165bb09"
+      },
+      {
+        "path": "src/agents/architect.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "239128ece120b761872c4df27e71fbdc7559d3c561e3f51958f626e38becb244"
+      },
+      {
+        "path": "src/agents/critic.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "d6ebaae57d5d4481c2b5e551d293c743499351d4206667abf724337b9bba9c62"
+      },
+      {
+        "path": "src/agents/planner.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "3003854602a3609132b80fbaeff1d065d3a7a752080fe724a01752e12079a40f"
+      },
+      {
+        "path": "src/agents/verifier.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "ed5206f952330b35b4334b840f11ae1edbb23bc37793b84e7fafee785f59941f"
+      },
+      {
+        "path": "src/core/core.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "4998307bbd4c1cc13de17bbd49c99192cee851cb8381fa3d00d8a4954735a2ca"
+      },
+      {
+        "path": "src/rules/coding-style.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "2dfa2c2e0e8512ef90b65eed616a97c8d5723c86ab2e6c412191a463d3402de4"
+      },
+      {
+        "path": "src/rules/git-workflow.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "047429e78fe92c4ae93b48942f3ec95bfceff7a1d77f8cae14e821117fe05689"
+      },
+      {
+        "path": "src/rules/testing.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "5f261d808fc0b31dc5aa336da79a188911d415da46ac0fad901cc8186c59944f"
+      },
+      {
+        "path": "src/skills/ask.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "34a0d89ce278e245a6819221b88f547efc3c5d9df63b6bc2ad67d88017ccd88a"
+      },
+      {
+        "path": "src/skills/dashboard.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "ccaf619ec821f7a1a4e5cc82019933a7551e424e4acfa8dc4525cc3b264bf488"
+      },
+      {
+        "path": "src/skills/execute.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "ce8487e4b19d1048082d03e316c4b653d449b42e708715c74b14603f9a30eae7"
+      },
+      {
+        "path": "src/skills/interview.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "7d2347fe28d9d406e21e28d2ae3805926f48436820100c42ba770ca1ab84b3ae"
+      },
+      {
+        "path": "src/skills/learn.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "c3cda65cd6f35501495b367d136228bb386886d67c573c50f40a878abdbf1947"
+      },
+      {
+        "path": "src/skills/mf-audit.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "ebf5f3c16514d9de6314c45a27e08af340f68825770186480642143b9c61dd93"
+      },
+      {
+        "path": "src/skills/mf-plan.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "5ce217ea17b0067f68aa31448717dfcf0b5e17232a70d709ca31d519057e96e6"
+      },
+      {
+        "path": "src/skills/mf-verify.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "d16199e08e6e2b25e379ec12407bfe6c7dd77eb6f3e16f7b3faebab1f39115c4"
+      },
+      {
+        "path": "src/skills/spec.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "0f6ee4d498d5a00b89f2d4a6c23f8e11108e4465072e147f44d03e5141d482e1"
+      },
+      {
+        "path": "templates/change/.template-version",
+        "type": "file",
+        "mode": "file",
+        "hash": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+      },
+      {
+        "path": "templates/change/acceptance.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "7d06cd9155152f31b0cb931778cae67d429fe10243b7971061cea2764c92e40d"
+      },
+      {
+        "path": "templates/change/design.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "f646e2ff9b3ba784c881079b39d41a209bfbddc1fae845ba34420598093cec89"
+      },
+      {
+        "path": "templates/change/proposal.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "887a6e73003e43d4c16b3a87c53e109bb4fdabe6f1c5946ffcf9fe75dc94ef0d"
+      },
+      {
+        "path": "templates/change/tasks.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "1ea77407510e3efc6f66de592bc4f634c069293c1895b9c2c1ae5c4ba650a2f4"
+      },
+      {
+        "path": "templates/project/AGENTS.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "cf8da08d634486beffb539f2ab71322fed744445744dc0eee841e95e4396a59a"
+      },
+      {
+        "path": "templates/project/CLAUDE.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "8c48bc883241db0c3048c144b8368a90d06c9058d3aac591c7614d9a4451f6a3"
+      },
+      {
+        "path": "templates/project/rules/specs.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "4f777f0e185d7fbe8d7fc4e26175f30616f8f34b724f30e7dd74471acbe48e22"
+      },
+      {
+        "path": "templates/simple/change.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "144dbece5db10df44bf17ccaf62c51a70b1e4e9cb193f4616e378437095b7bb4"
+      },
+      {
+        "path": "templates/specs-README.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "edda82014e16c124e4c74a44aa67f4fb36aba0e910e21209f810e366b43bdda1"
+      },
+      {
+        "path": "test/archive.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "cfd3026d427a41ab23c8591c2a12a167c776eedb8b7044440364bd61e3e713e6"
+      },
+      {
+        "path": "test/completion-guard.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "be593e50c286ee5a13bc1a01ba7120536131b151dedfa9c47213f7b9b1a159b6"
+      },
+      {
+        "path": "test/context.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "9448421dc04ed44bf3b2dc52e9776560f0708f7010740348fca2b073d87d9346"
+      },
+      {
+        "path": "test/dashboard.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "a786eafa63b813025a8965a03a9733ba878adf46a914604734188e3e72b79d4f"
+      },
+      {
+        "path": "test/diff.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "350184aec824d252d30f8c826609586e709bb51adf48d6066ea1cb9f44cb1890"
+      },
+      {
+        "path": "test/evidence.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "9b1e4c900ff0376297b6402ba21f5fc9d81fcdb9492c5ad48571b20880c53a48"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/.claude-plugin/marketplace.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "ebfe13108cf2145f8d6d3d831b0cb8f712cb8c7ef6468c0bc7f76029527e3554"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/.claude-plugin/plugin.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "5384ee4936ce3b2f35b0fa620e6310ce649ad99cd4f921becf5362dd8397ef6b"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/README.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "67cee482c5cbc74110250c06e912767578768f4f94d6476d278a95a816ff6520"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/agents/demo-reviewer.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "2e675996afd668a213b778fa463fa9bfc603eba1b0cfa41b3e9461593b06331a"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/hooks/demo-hook.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "6572d42860c864c959df215c2b81f4932607d33d41285d014f0a198195d17999"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/hooks/hooks.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "8bc507b4f3e56c68da10c586f0c1e8c0813474f7bdec2050d7f239c0e8d039f8"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/my-flow-plugin.json",
+        "type": "file",
+        "mode": "file",
+        "hash": "48afcd5e05348d21b262ac0b830b75b79c5e40c14109bc148b7696ef94320224"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/scripts/hello.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "e097e9359185f81b07d1b03b9874adaecca4ef672552707ea68232bac1267408"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/server/mcp.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "5b20f926af38f83e39739fbcf546f9bf55b81e6a4a128df0b7094ee26cddff23"
+      },
+      {
+        "path": "test/fixtures/plugin-demo/skills/demo/SKILL.md",
+        "type": "file",
+        "mode": "file",
+        "hash": "4387d8db4a92167d6a6586cd7bf9c1eb20fff2d517505e1aec80eef300acdc59"
+      },
+      {
+        "path": "test/helpers.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "6b41f2f4635c216e5507c70bda331dd2b2c6d8288f662999537013545bf5dd85"
+      },
+      {
+        "path": "test/intent-graph.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "6934d92d90b4966934dc7f93eea50e05ae15dee0e2f02d562f7753b4372e7043"
+      },
+      {
+        "path": "test/intent-io.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "b39d65420c10faa7b32f9fe14a7baea8d096a051d0124a4cf41ad867563941cf"
+      },
+      {
+        "path": "test/intent-state.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "047f6978710891e220a1ee6d410888efa19287e7d575914ed59106fce178fb16"
+      },
+      {
+        "path": "test/markdown.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "617616610597b7530853d24aaf04be7e40ced6d6f341704250bb740f6d014f8a"
+      },
+      {
+        "path": "test/models.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "399530b38605ed97f73c73c2aaa6064086c957726d1542ea012b6e466e7d2a29"
+      },
+      {
+        "path": "test/plugin.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "fbc589b973f56b64d0d8b9be283d9d88d61b0175b47cfc27c3c0984d80775b23"
+      },
+      {
+        "path": "test/spec.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "b85bef8b1a30b490910554d1afe30b81875b65c3df605bd7de9c6a6fada348b6"
+      },
+      {
+        "path": "test/styles.lib.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "87fd5a6f4a7b17287fffdddf1811915b4a087d8700008e0f0f03bb78f2d0a7da"
+      },
+      {
+        "path": "test/styles.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "742cff64d1ead392807c1ce2078e2dafa25d35041f94c3acfeab2253089172db"
+      },
+      {
+        "path": "test/ui.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "5545b516e55a091418945c4b88dce8ae674a5bbd7d8883015cfacd726f3b2449"
+      },
+      {
+        "path": "test/usage.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "b8fbb62db9ad2966a8206b9aeb0d787bba28efad5fdb1195707d739a7cb94bff"
+      },
+      {
+        "path": "test/workflow.test.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "be65b425f6c1ada6d36248c1f1d615564cdca07d1ae7c960fea80e5a71f68019"
+      },
+      {
+        "path": "web/app.css",
+        "type": "file",
+        "mode": "file",
+        "hash": "ee609e68fa1705049a53e0da32261ffe27c60af783e5591462f064e0d6bc9b34"
+      },
+      {
+        "path": "web/app.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "0eae503e96829b21f2358d1a0f20af5abdc18bc5bd4be566eccb50a18b919915"
+      },
+      {
+        "path": "web/index.html",
+        "type": "file",
+        "mode": "file",
+        "hash": "c3ef383a73385c61c62228fcebbe90ef4a649b78d32ac2894447820d0f416720"
+      },
+      {
+        "path": "web/md.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "a1fcfa9c2ac2539aabaf3fc75e2d8b86c893a551a62b08211c059817ff7c92cb"
+      },
+      {
+        "path": "web/ui.mjs",
+        "type": "file",
+        "mode": "file",
+        "hash": "e549e10d0562475487b55d26d4ffa099d580e6aef17df891a47ef08ebb2568ee"
+      }
+    ],
+    "git": {
+      "head": "6a84be89c1d2d7fe129f23dc384dce7b43287842",
+      "ref": "main",
+      "dirty": true
+    },
+    "declared": [],
+    "digest": "c83c357ae117c22238c4ea860088e5cce2d839ed0e71f2f11c941f38d936e475"
+  },
+  "acceptance": {
+    "digest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+    "tasks": [
+      {
+        "id": "T-29",
+        "number": "0.1",
+        "title": "Preflight both live hosts and verify authentication, goals and independent agents are available",
+        "kind": "work",
+        "dependsOn": [],
+        "accepts": [
+          "AC-05",
+          "AC-09",
+          "AC-10",
+          "AC-12"
+        ],
+        "design": [
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-30",
+        "number": "1.0",
+        "title": "Add shared I/O coordination and verify paused readers, competing writers and recovery",
+        "kind": "work",
+        "dependsOn": [
+          "T-29"
+        ],
+        "accepts": [
+          "AC-06",
+          "AC-07",
+          "AC-12"
+        ],
+        "design": [
+          "D-04",
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-01",
+        "number": "1.1",
+        "title": "Parse stable task fields and verify graph parsing fixtures",
+        "kind": "work",
+        "dependsOn": [
+          "T-30"
+        ],
+        "accepts": [
+          "AC-01",
+          "AC-03"
+        ],
+        "design": [
+          "D-01"
+        ]
+      },
+      {
+        "id": "T-02",
+        "number": "1.2",
+        "title": "Resolve typed references and readiness and verify graph edge and cycle cases",
+        "kind": "work",
+        "dependsOn": [
+          "T-01"
+        ],
+        "accepts": [
+          "AC-02",
+          "AC-03"
+        ],
+        "design": [
+          "D-01",
+          "D-02"
+        ]
+      },
+      {
+        "id": "T-03",
+        "number": "1.3",
+        "title": "Add change identities and lifecycle reads and verify identity and archive lookup fixtures",
+        "kind": "work",
+        "dependsOn": [
+          "T-01"
+        ],
+        "accepts": [
+          "AC-02",
+          "AC-12"
+        ],
+        "design": [
+          "D-01",
+          "D-05"
+        ]
+      },
+      {
+        "id": "T-04",
+        "number": "1.4",
+        "title": "Expose shared intent inspection and verify CLI and API projection parity",
+        "kind": "work",
+        "dependsOn": [
+          "T-02",
+          "T-03"
+        ],
+        "accepts": [
+          "AC-02",
+          "AC-03",
+          "AC-12"
+        ],
+        "design": [
+          "D-02"
+        ]
+      },
+      {
+        "id": "T-05",
+        "number": "1.5",
+        "title": "Add explicit upgrades and v2 templates and verify legacy preservation and upgrade recovery",
+        "kind": "work",
+        "dependsOn": [
+          "T-04"
+        ],
+        "accepts": [
+          "AC-01",
+          "AC-12"
+        ],
+        "design": [
+          "D-01",
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-06",
+        "number": "2.1",
+        "title": "Show concise task rows and details and verify observable result text and labeled links",
+        "kind": "work",
+        "dependsOn": [
+          "T-04"
+        ],
+        "accepts": [
+          "AC-01",
+          "AC-02"
+        ],
+        "design": [
+          "D-01",
+          "D-02"
+        ]
+      },
+      {
+        "id": "T-07",
+        "number": "2.2",
+        "title": "Add stable routes and reverse dependencies and verify renumbered and archived navigation",
+        "kind": "work",
+        "dependsOn": [
+          "T-06"
+        ],
+        "accepts": [
+          "AC-02",
+          "AC-03"
+        ],
+        "design": [
+          "D-02"
+        ]
+      },
+      {
+        "id": "T-08",
+        "number": "2.3",
+        "title": "Refresh linked views accessibly and verify keyboard, SSE and both palette cases",
+        "kind": "work",
+        "dependsOn": [
+          "T-07"
+        ],
+        "accepts": [
+          "AC-01",
+          "AC-02",
+          "AC-12"
+        ],
+        "design": [
+          "D-02"
+        ]
+      },
+      {
+        "id": "T-09",
+        "number": "3.1",
+        "title": "Capture exact verification targets and verify source drift and exclusion fixtures",
+        "kind": "work",
+        "dependsOn": [
+          "T-05"
+        ],
+        "accepts": [
+          "AC-06",
+          "AC-08"
+        ],
+        "design": [
+          "D-03"
+        ]
+      },
+      {
+        "id": "T-10",
+        "number": "3.2",
+        "title": "Record verification attempts and verify coverage, durable head and missing-directory failures",
+        "kind": "work",
+        "dependsOn": [
+          "T-09"
+        ],
+        "accepts": [
+          "AC-05",
+          "AC-06",
+          "AC-08"
+        ],
+        "design": [
+          "D-03"
+        ]
+      },
+      {
+        "id": "T-11",
+        "number": "3.3",
+        "title": "Capture spec bases and diagnose conflicts and verify all four delta operations",
+        "kind": "work",
+        "dependsOn": [
+          "T-09"
+        ],
+        "accepts": [
+          "AC-07",
+          "AC-12"
+        ],
+        "design": [
+          "D-04"
+        ]
+      },
+      {
+        "id": "T-12",
+        "number": "3.4",
+        "title": "Preflight archive eligibility and verify stale evidence and force cannot grant trust",
+        "kind": "work",
+        "dependsOn": [
+          "T-10",
+          "T-11"
+        ],
+        "accepts": [
+          "AC-05",
+          "AC-06",
+          "AC-07",
+          "AC-12"
+        ],
+        "design": [
+          "D-03",
+          "D-04"
+        ]
+      },
+      {
+        "id": "T-13",
+        "number": "3.5",
+        "title": "Publish through a recoverable journal and verify crash and external-edit recovery cases",
+        "kind": "work",
+        "dependsOn": [
+          "T-12"
+        ],
+        "accepts": [
+          "AC-07",
+          "AC-08",
+          "AC-12"
+        ],
+        "design": [
+          "D-04"
+        ]
+      },
+      {
+        "id": "T-14",
+        "number": "3.6",
+        "title": "Display versioned evidence and conflicts and verify old targets remain readable after archive",
+        "kind": "work",
+        "dependsOn": [
+          "T-08",
+          "T-10",
+          "T-13"
+        ],
+        "accepts": [
+          "AC-02",
+          "AC-06",
+          "AC-07",
+          "AC-08"
+        ],
+        "design": [
+          "D-02",
+          "D-03",
+          "D-04"
+        ]
+      },
+      {
+        "id": "T-15",
+        "number": "4.1",
+        "title": "Isolate session leases and verify precedence, ambiguity, expiry and concurrent writes",
+        "kind": "work",
+        "dependsOn": [
+          "T-03",
+          "T-13"
+        ],
+        "accepts": [
+          "AC-09",
+          "AC-12"
+        ],
+        "design": [
+          "D-05"
+        ]
+      },
+      {
+        "id": "T-16",
+        "number": "4.2",
+        "title": "Share task and session data with hooks and verify goal handoff and legacy fallback cases",
+        "kind": "work",
+        "dependsOn": [
+          "T-15"
+        ],
+        "accepts": [
+          "AC-09",
+          "AC-12"
+        ],
+        "design": [
+          "D-05"
+        ]
+      },
+      {
+        "id": "T-17",
+        "number": "4.3",
+        "title": "Scope dashboard edit locks and verify independent changes and pre-disclosure refusals",
+        "kind": "work",
+        "dependsOn": [
+          "T-15",
+          "T-08"
+        ],
+        "accepts": [
+          "AC-09",
+          "AC-12"
+        ],
+        "design": [
+          "D-05"
+        ]
+      },
+      {
+        "id": "T-18",
+        "number": "4.4",
+        "title": "Resolve umbrella children and verify missing repos, child failures and integration acceptance",
+        "kind": "work",
+        "dependsOn": [
+          "T-14",
+          "T-15"
+        ],
+        "accepts": [
+          "AC-02",
+          "AC-09"
+        ],
+        "design": [
+          "D-02",
+          "D-05"
+        ]
+      },
+      {
+        "id": "T-19",
+        "number": "5.1",
+        "title": "Stage and apply amendments and verify reopened descendants and unaffected execution",
+        "kind": "work",
+        "dependsOn": [
+          "T-10",
+          "T-15"
+        ],
+        "accepts": [
+          "AC-04",
+          "AC-05"
+        ],
+        "design": [
+          "D-06"
+        ]
+      },
+      {
+        "id": "T-20",
+        "number": "5.2",
+        "title": "Route repeated causes to design review and verify independent tasks remain runnable",
+        "kind": "work",
+        "dependsOn": [
+          "T-19"
+        ],
+        "accepts": [
+          "AC-04",
+          "AC-10"
+        ],
+        "design": [
+          "D-06"
+        ]
+      },
+      {
+        "id": "T-21",
+        "number": "5.3",
+        "title": "Add risk-based review lanes and verify high-risk and explicit handoff scenarios",
+        "kind": "work",
+        "dependsOn": [
+          "T-19"
+        ],
+        "accepts": [
+          "AC-10",
+          "AC-12"
+        ],
+        "design": [
+          "D-07"
+        ]
+      },
+      {
+        "id": "T-22",
+        "number": "5.4",
+        "title": "Produce versioned context packets and verify closure, delta and full-verifier coverage",
+        "kind": "work",
+        "dependsOn": [
+          "T-19",
+          "T-02"
+        ],
+        "accepts": [
+          "AC-03",
+          "AC-10"
+        ],
+        "design": [
+          "D-07"
+        ]
+      },
+      {
+        "id": "T-23",
+        "number": "5.5",
+        "title": "Import honest usage records and verify unknown, failed and inclusive-parent accounting",
+        "kind": "work",
+        "dependsOn": [
+          "T-03"
+        ],
+        "accepts": [
+          "AC-11"
+        ],
+        "design": [
+          "D-07"
+        ]
+      },
+      {
+        "id": "T-24",
+        "number": "5.6",
+        "title": "Wire focused handoffs and fresh verification and verify both host source contracts",
+        "kind": "work",
+        "dependsOn": [
+          "T-16",
+          "T-18",
+          "T-20",
+          "T-21",
+          "T-22",
+          "T-23"
+        ],
+        "accepts": [
+          "AC-04",
+          "AC-05",
+          "AC-06",
+          "AC-09",
+          "AC-10",
+          "AC-11"
+        ],
+        "design": [
+          "D-03",
+          "D-05",
+          "D-06",
+          "D-07"
+        ]
+      },
+      {
+        "id": "T-25",
+        "number": "6.1",
+        "title": "Update documentation and generated surfaces and verify build checks and temporary installs",
+        "kind": "work",
+        "dependsOn": [
+          "T-17",
+          "T-24"
+        ],
+        "accepts": [
+          "AC-10",
+          "AC-12"
+        ],
+        "design": [
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-31",
+        "number": "6.2",
+        "title": "Prepare disposable live fixtures and verify built plugins, session propagation and host isolation",
+        "kind": "work",
+        "dependsOn": [
+          "T-25",
+          "T-29"
+        ],
+        "accepts": [
+          "AC-05",
+          "AC-09",
+          "AC-10",
+          "AC-12"
+        ],
+        "design": [
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-32",
+        "number": "6.3",
+        "title": "Upgrade this plan explicitly and verify reviewed v2 contract, baseline and stage refresh",
+        "kind": "work",
+        "dependsOn": [
+          "T-31",
+          "T-19",
+          "T-13",
+          "T-15"
+        ],
+        "accepts": [
+          "AC-04",
+          "AC-06",
+          "AC-09",
+          "AC-12"
+        ],
+        "design": [
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-26",
+        "number": "6.4",
+        "title": "Exercise the complete linked workflow and verify acceptance scenarios in isolated fixtures",
+        "kind": "work",
+        "dependsOn": [
+          "T-32"
+        ],
+        "accepts": [
+          "AC-01",
+          "AC-02",
+          "AC-03",
+          "AC-04",
+          "AC-05",
+          "AC-06",
+          "AC-07",
+          "AC-08",
+          "AC-09",
+          "AC-10",
+          "AC-11",
+          "AC-12"
+        ],
+        "design": [
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06",
+          "D-07",
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-27",
+        "number": "6.5",
+        "title": "Clean the change and rerun required checks and verify the final diff and rebuild evidence",
+        "kind": "work",
+        "dependsOn": [
+          "T-26"
+        ],
+        "accepts": [
+          "AC-12"
+        ],
+        "design": [
+          "D-08"
+        ]
+      },
+      {
+        "id": "T-28",
+        "number": "6.6",
+        "title": "Obtain independent verification and verify fresh PASS evidence including both live hosts",
+        "kind": "closeout",
+        "dependsOn": [
+          "T-27"
+        ],
+        "accepts": [
+          "AC-01",
+          "AC-02",
+          "AC-03",
+          "AC-04",
+          "AC-05",
+          "AC-06",
+          "AC-07",
+          "AC-08",
+          "AC-09",
+          "AC-10",
+          "AC-11",
+          "AC-12"
+        ],
+        "design": [
+          "D-03",
+          "D-08"
+        ]
+      }
+    ],
+    "identity": {
+      "id": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+      "slug": "linked-evidence-workflow",
+      "kind": "change",
+      "children": [],
+      "review": {
+        "lane": "high",
+        "reason": "It changes the intent layer itself: the archive publication path, the verification-evidence semantics and the CLI/API surface other changes depend on",
+        "paths": [
+          "scripts/lib/intent-io.mjs",
+          "scripts/lib/evidence.mjs",
+          "scripts/lib/archive.mjs",
+          "scripts/spec.mjs",
+          "scripts/dashboard.mjs"
+        ]
+      }
+    }
+  },
+  "environment": {
+    "os": "win32 x64",
+    "node": "v24.1.0",
+    "git": "git version 2.45.1.windows.1",
+    "tools": {}
+  },
+  "contractFiles": {
+    "changes/linked-evidence-workflow/proposal.md": "changes__linked-evidence-workflow__proposal.md",
+    "changes/linked-evidence-workflow/design.md": "changes__linked-evidence-workflow__design.md",
+    "changes/linked-evidence-workflow/acceptance.md": "changes__linked-evidence-workflow__acceptance.md",
+    "changes/linked-evidence-workflow/verification-inputs.json": "changes__linked-evidence-workflow__verification-inputs.json",
+    "changes/linked-evidence-workflow/spec-base.json": "changes__linked-evidence-workflow__spec-base.json",
+    "changes/linked-evidence-workflow/specs/context-efficiency/spec.md": "changes__linked-evidence-workflow__specs__context-efficiency__spec.md",
+    "changes/linked-evidence-workflow/specs/dashboard/spec.md": "changes__linked-evidence-workflow__specs__dashboard__spec.md",
+    "changes/linked-evidence-workflow/specs/execute-goal/spec.md": "changes__linked-evidence-workflow__specs__execute-goal__spec.md",
+    "changes/linked-evidence-workflow/specs/linked-tasks/spec.md": "changes__linked-evidence-workflow__specs__linked-tasks__spec.md",
+    "changes/linked-evidence-workflow/specs/mf-plan-fast/spec.md": "changes__linked-evidence-workflow__specs__mf-plan-fast__spec.md",
+    "changes/linked-evidence-workflow/specs/spec-helper/spec.md": "changes__linked-evidence-workflow__specs__spec-helper__spec.md",
+    "changes/linked-evidence-workflow/specs/verification-evidence/spec.md": "changes__linked-evidence-workflow__specs__verification-evidence__spec.md",
+    "changes/linked-evidence-workflow/specs/workflow-governance/spec.md": "changes__linked-evidence-workflow__specs__workflow-governance__spec.md",
+    "changes/linked-evidence-workflow/specs/workflow-sessions/spec.md": "changes__linked-evidence-workflow__specs__workflow-sessions__spec.md",
+    "changes/linked-evidence-workflow/contracts.md": "changes__linked-evidence-workflow__contracts.md",
+    "changes/linked-evidence-workflow/live-host-protocol.md": "changes__linked-evidence-workflow__live-host-protocol.md",
+    "changes/linked-evidence-workflow/follow-ups.md": "changes__linked-evidence-workflow__follow-ups.md",
+    "changes/linked-evidence-workflow/change.json": "changes__linked-evidence-workflow__change.json"
+  }
+}

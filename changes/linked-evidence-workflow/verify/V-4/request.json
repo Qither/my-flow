@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "sequence": 4,
+  "started": "2026-09-15T04:10:24.145Z",
+  "inputs": {
+    "supportingContractPaths": [
+      "changes/linked-evidence-workflow/contracts.md",
+      "changes/linked-evidence-workflow/follow-ups.md",
+      "changes/linked-evidence-workflow/live-host-protocol.md"
+    ],
+    "extraImplementationPaths": [],
+    "repositories": [],
+    "requiredEnvironment": [
+      "git",
+      "node",
+      "os"
+    ],
+    "declaredTools": [],
+    "allowNonGit": false
+  },
+  "implementationDigest": "1daa4d3d2ab26316d7beaf9fdad584fb4921424ad87c1ce43dd3b5b37a187506",
+  "acceptanceDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+  "environment": {
+    "os": "win32 x64",
+    "node": "v24.1.0",
+    "git": "git version 2.45.1.windows.1",
+    "tools": {}
+  },
+  "requiredEnvironment": [
+    "node",
+    "git",
+    "os"
+  ],
+  "requiredCriteria": [
+    {
+      "id": "AC-01",
+      "modes": [
+        "automated",
+        "manual"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "modes": [
+        "automated",
+        "manual"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "modes": [
+        "automated"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "modes": [
+        "automated"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "modes": [
+        "automated"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "modes": [
+        "automated"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "modes": [
+        "automated",
+        "live"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "modes": [
+        "automated",
+        "manual"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "modes": [
+        "automated",
+        "static",
+        "manual"
+      ]
+    }
+  ],
+  "session": "01a0a276-46da-7a73-9717-61b3e1236541",
+  "actorId": "codex-executor-01a0a276"
+}

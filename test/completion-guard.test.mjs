@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { HOUR, cleanEnv, cleanup, gitInit, hasGit, iso, makeTmp, runHook, write, writeState } from './helpers.mjs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { HOUR, cleanEnv, cleanup, gitInit, hasGit, iso, makeTmp, runContextHook, runHook, write, writeState } from './helpers.mjs';
+import { withIntentLock } from '../scripts/lib/intent-io.mjs';
+import { acquireLease, resolveSessionIdentity, sessionPath } from '../scripts/lib/intent-state.mjs';
 
 const skip = hasGit() ? false : 'git is not available';
 const CLAIM = 'All tasks are done and verified.';
@@ -149,4 +152,105 @@ test('execute-guard wins over completion-guard when both would fire', { skip }, 
   const root = project(t);
   write(root, 'stub.js', '// TODO: implement this\n');
   assert.match(runHook(root, { last_assistant_message: CLAIM }).reason, /^\[my-flow execute-guard\]/);
+});
+
+// ---------------------------------------------------------------- shared session view (T-16, AC-09/AC-12)
+const bind = (root, sessionId, change, stage, extra = {}) =>
+  withIntentLock(root, (token) => {
+    const identity = resolveSessionIdentity({ option: sessionId });
+    return acquireLease(root, { key: identity.key, sessionId, changeId: change, stage, ...extra }, token);
+  });
+
+test('execute-guard: a session with its own execute lease is guarded by its own lease', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'execute');
+  const r = runHook(root, { last_assistant_message: CLAIM, session_id: 'session-a' });
+  assert.equal(r.decision, 'block');
+  assert.match(r.reason, /change "demo" is in stage execute/);
+  assert.match(r.reason, /1 unticked task/);
+});
+
+test('execute-guard: a session whose lease is for another stage is not guarded', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'mf-plan');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM, session_id: 'session-a' }), {});
+});
+
+test('execute-guard: one session is never guarded by another session lease', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'execute');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM, session_id: 'session-b' }), {}, 'a different identified session');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM }), {}, 'and an unidentified caller');
+});
+
+test('execute-guard: an unidentified caller is not guarded by the legacy pointer while a lease is live', { skip }, (t) => {
+  const root = project(t); // a fresh legacy pointer at stage execute
+  assert.equal(runHook(root, { last_assistant_message: CLAIM }).decision, 'block', 'precondition: the legacy backstop works');
+  bind(root, 'session-a', 'demo', 'execute');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM }), {}, 'a live lease exists, so the pointer is not read');
+});
+
+test('execute-guard: an expired lease stops guarding and the legacy pointer takes over again', { skip }, (t) => {
+  const root = project(t);
+  bind(root, 'session-a', 'demo', 'execute', { now: Date.now() - 20 * HOUR });
+  const r = runHook(root, { last_assistant_message: CLAIM, session_id: 'session-b' });
+  assert.equal(r.decision, 'block', 'no live lease remains, so the fresh legacy pointer applies');
+});
+
+test('execute-guard: the host session id wins over a transcript path', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'execute');
+  const transcript = write(root, 'transcript.jsonl', '{}\n');
+  assert.equal(runHook(root, { last_assistant_message: CLAIM, session_id: 'session-a', transcript_path: transcript }).decision, 'block');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM, session_id: 'session-other', transcript_path: transcript }), {});
+});
+
+test('execute-guard: MY_FLOW_SESSION_ID identifies the session when the host payload does not', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'env-session', 'demo', 'execute');
+  assert.equal(runHook(root, { last_assistant_message: CLAIM }, cleanEnv({ MY_FLOW_SESSION_ID: 'env-session' })).decision, 'block');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM }, cleanEnv({ MY_FLOW_SESSION_ID: 'somebody-else' })), {});
+});
+
+test('execute-guard: the goal handoff is still exempt when a lease is live', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'execute');
+  const handoff = '/goal Complete every unchecked task in changes/demo/tasks.md. Done only when every box is ticked.';
+  assert.deepEqual(runHook(root, { last_assistant_message: handoff, session_id: 'session-a' }), {}, 'the handoff quotes the goal, it does not claim a result');
+});
+
+test('execute-guard: a corrupt lease fails open rather than crashing the session', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'execute');
+  const identity = resolveSessionIdentity({ option: 'session-a' });
+  writeFileSync(sessionPath(root, identity.key), '{ not json');
+  assert.deepEqual(runHook(root, { last_assistant_message: CLAIM, session_id: 'session-a' }), {});
+});
+
+test('session-context: reports a live lease as this session, and ambiguity to an unidentified one', { skip }, (t) => {
+  const root = project(t, { state: null });
+  bind(root, 'session-a', 'demo', 'execute');
+  const mine = runContextHook(root, { session_id: 'session-a' });
+  assert.match(mine.systemMessage, /<- current \(stage: execute, this session\)/);
+  const stranger = runContextHook(root, {});
+  assert.match(stranger.systemMessage, /Another session holds a live lease/);
+  assert.equal(/<- current/.test(stranger.systemMessage), false, "another session's work is never shown as current here");
+});
+
+test('session-context: falls back to the legacy pointer when no lease exists', { skip }, (t) => {
+  const root = project(t);
+  const r = runContextHook(root, {});
+  assert.match(r.systemMessage, /<- current \(stage: execute, legacy pointer\)/);
+});
+
+test('session-context: isolates model routing from inherited user homes', { skip }, (t) => {
+  const root = project(t);
+  const external = makeTmp('external-model-state');
+  t.after(() => cleanup(external));
+  const state = JSON.stringify({ pending: { line: 'external state must stay untouched' }, lastSpawn: { at: new Date().toISOString() } });
+  const statePath = write(external, 'models-state.json', state);
+  const output = runContextHook(root, {}, cleanEnv({ MY_FLOW_HOME: external }));
+  assert.equal(readFileSync(statePath, 'utf8'), state, 'the hook must not mutate an inherited home');
+  assert.doesNotMatch(output.systemMessage ?? '', /external state must stay untouched/, 'outside model state must not leak into fixture context');
+  assert.match(output.systemMessage, /test-only model routing state/, 'routing remains active inside the fixture');
 });

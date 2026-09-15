@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "R-1",
+  "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+  "contractDigest": "6df15429080d19fc38cc8ae01d3850e427628ad21d7afac6f8efe343f0aa1d30",
+  "amendment": null,
+  "role": "critic",
+  "actorId": "subagent:my-flow:critic",
+  "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "verdict": "OKAY",
+  "sourceRef": "foreground Agent dispatch, subagent_type my-flow:critic, round 1; transcript at C--Users-qiujm-AppData-Local-Temp-my-flow-candidate-mUUp25-workspaces-claude/44a33a7a-18f7-4832-9ac2-98141fe75329/tasks/af5f74121e60673c9.output",
+  "findings": [],
+  "independent": true,
+  "reviewedAt": "2026-09-15T04:19:59.943Z"
+}

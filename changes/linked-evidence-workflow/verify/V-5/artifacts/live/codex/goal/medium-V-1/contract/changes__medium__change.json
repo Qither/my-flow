@@ -1,0 +1,1 @@
+{"children":[],"id":"8dbfeef3-6bc3-430a-a176-ad1c05ecbce2","kind":"change","review":{"lane":"medium","paths":["source/left.mjs","source/right.mjs"],"reason":"Two reversible label modules; no public interface or high-risk category"},"slug":"medium"}

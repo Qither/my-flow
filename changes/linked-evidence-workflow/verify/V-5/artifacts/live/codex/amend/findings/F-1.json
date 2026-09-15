@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "id": "F-1",
+  "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+  "cause": "Fixture-supplied A verification-contract mismatch; not a failure executed in this session",
+  "tasks": [
+    "T-01",
+    "T-02"
+  ],
+  "trustBoundaryChanged": false,
+  "attempts": [
+    {
+      "approach": "Change consumer wording",
+      "outcome": "failed",
+      "evidenceRef": "fixture:scenario-inputs.json#failedApproaches/F-1-a; preset input, not current execution",
+      "at": "2026-09-15T06:53:59.362Z"
+    },
+    {
+      "approach": "Rerun the unchanged original check",
+      "outcome": "failed",
+      "evidenceRef": "fixture:scenario-inputs.json#failedApproaches/F-1-b; preset input, not current execution",
+      "at": "2026-09-15T06:53:59.441Z"
+    }
+  ],
+  "resolvedBy": "R-amend-design-1",
+  "opened": "2026-09-15T06:53:59.362Z",
+  "remedy": "Stage equivalent-check replacement for AC-01; hold A/B pending independent critic; preserve A ready guarantee",
+  "resolvedAt": "2026-09-15T06:55:51.323Z"
+}

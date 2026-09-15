@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 2,
+  "id": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "slug": "linked-evidence-workflow",
+  "kind": "change",
+  "stage": "done",
+  "revision": 20,
+  "updated": "2026-09-15T08:12:20.917Z",
+  "children": [],
+  "review": {
+    "lane": "high",
+    "reason": "It changes the intent layer itself: the archive publication path, the verification-evidence semantics and the CLI/API surface other changes depend on",
+    "paths": [
+      "scripts/lib/intent-io.mjs",
+      "scripts/lib/evidence.mjs",
+      "scripts/lib/archive.mjs",
+      "scripts/spec.mjs",
+      "scripts/dashboard.mjs"
+    ]
+  },
+  "verification": {
+    "highWater": 5,
+    "head": {
+      "sequence": 5,
+      "state": "closed",
+      "requestDigest": "041cffe02bfd33ee5fe09db3bbe86f82a2b29cfbac62e6587cabf2168d711055",
+      "resultDigest": "cd85a499f26a37f6af75c3c10d67ac5ce0269f5826da43684f9ace0f625389e6",
+      "verdict": "PASS",
+      "started": "2026-09-15T06:43:11.765Z",
+      "finished": "2026-09-15T08:11:21.547Z"
+    }
+  }
+}

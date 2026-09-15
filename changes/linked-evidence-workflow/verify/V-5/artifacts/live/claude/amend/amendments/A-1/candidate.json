@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "id": "A-1",
+  "changeId": "ba122291-a8c7-408a-a6ad-e767fb2b3b17",
+  "type": "equivalent-check",
+  "cause": "F-1: AC-01's checks command did not decide the proposition AC-01 states (verification-contract mismatch). Two materially different fixture approaches failed for the same cause and the design review R-1 selected this remedy; the test file is Do-Not-Touch, so the checks command is the only remaining lever.",
+  "findingId": "F-1",
+  "oldDigest": "b5b17d4f5c1eb2b2ec1b57381b4b866e6532b8901191feba4dfd56640c2cdb57",
+  "candidateDigest": "26746df20995eb3678e6d8f6fe15894d17405dc14e889b6fd9344486bd4ddaaf",
+  "changed": {
+    "tasks": [],
+    "acceptance": [
+      "AC-01"
+    ],
+    "design": []
+  },
+  "affected": [
+    "T-01",
+    "T-02"
+  ],
+  "files": [
+    "changes/amend/acceptance.md"
+  ],
+  "proposedAt": "2026-09-15T07:01:07.934Z",
+  "authority": {
+    "kind": "review",
+    "reviewId": "R-1",
+    "note": "design review WATCH selected this remedy inside scope; an independent critic OKAY of this candidate is still required before apply"
+  }
+}

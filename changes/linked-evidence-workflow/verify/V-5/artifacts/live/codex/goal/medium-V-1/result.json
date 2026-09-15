@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "changeId": "8dbfeef3-6bc3-430a-a176-ad1c05ecbce2",
+  "sequence": 1,
+  "requestDigest": "45f5f11a7a99e3097053a2a0652db70adb907b592988c976bac8d9babc5678cf",
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "native-agent:/root/medium_execute_verifier/final-supplement",
+        ".my-flow/verify/medium-20260915-V1-supplement.md"
+      ]
+    },
+    {
+      "id": "Do-Not-Touch",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        ".my-flow/verify/medium-20260915-V1-supplement.md"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --test test/medium.test.mjs",
+      "exitCode": 0,
+      "output": "Independent V-1 run: 2 tests, 2 pass, 0 fail; all 18 implementation hashes unchanged on supplemental review"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/medium_execute_verifier",
+    "writerActorId": "/root",
+    "sourceRef": "native-agent:/root/medium_execute_verifier/final-supplement"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": null,
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "8b56964ed45e7936ddc40cf0cc30bb05deca86cf76ecff02d9c714ecd80c9e69",
+  "finished": "2026-09-15T06:16:09.966Z"
+}

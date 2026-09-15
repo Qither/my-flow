@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 2,
+  "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+  "sequence": 1,
+  "started": "2026-09-15T07:19:14.690Z",
+  "inputs": {
+    "supportingContractPaths": [],
+    "extraImplementationPaths": [],
+    "repositories": [],
+    "requiredEnvironment": [],
+    "declaredTools": [],
+    "allowNonGit": false
+  },
+  "implementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "acceptanceDigest": "fe3655ea31b0e1be11e59754c7014f61bd70fe33f251421970b75f8abf70833b",
+  "environment": {
+    "os": "win32 x64",
+    "node": "v24.1.0",
+    "git": "git version 2.45.1.windows.1",
+    "tools": {}
+  },
+  "requiredEnvironment": [],
+  "requiredCriteria": [
+    {
+      "id": "AC-01",
+      "modes": [
+        "automated"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "modes": [
+        "automated"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "modes": [
+        "automated"
+      ]
+    }
+  ],
+  "session": "a82457bc-a9ed-47e7-b593-36f0a2c887ad",
+  "actorId": "fixture-history-baseline-writer"
+}

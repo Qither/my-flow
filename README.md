@@ -92,7 +92,7 @@ The Codex side is optional; see [Installing into Codex](#installing-into-codex).
 |---|---|
 | Concrete, single file, clear acceptance | `execute` only (or just do it) |
 | Concrete but multi-file or multi-module | `mf-plan → execute → mf-verify` |
-| Concrete, multi-file, design already clear | `mf-plan --fast [--go] → execute → mf-verify` |
+| Concrete, multi-file, design already clear | `mf-plan` (automatic medium lane) `→ execute → mf-verify` |
 | Vague, no acceptance criteria, "should we..." | `interview → mf-plan → execute → mf-verify` |
 | Touches build config, shaders, engine modules, migrations, auth | never skip `mf-plan` and `mf-verify` |
 
@@ -122,6 +122,26 @@ In Claude Code, at most one `/goal` and at most one agent team per session. `exe
 
 Claude Code does the interactive work and runs the loops. Codex reviews, plans, verifies, and answers `ask` requests. It implements only when you explicitly invoke `$my-flow-execute`. No tmux, no team runtime, no state daemons are involved on either side.
 
+## Automatic review lanes
+
+`mf-plan` selects a lane from the actual files, acceptance and risk before dispatching reviewers.
+
+| Lane | Planning and review |
+| --- | --- |
+| Low | Main-context short plan for one reversible, well-defined file; independent final verification remains required |
+| Medium | Main-context short draft and an independent critic; rejected fixes need critic re-review |
+| High or uncertain | Planner, architect and critic in sequence, with pre-mortem and test plan |
+
+The [planning skill](src/skills/mf-plan.md#high-risk-categories) owns the high-risk category list.
+`--fast` explicitly requests medium; automatic medium does not require that flag. `--deliberate`
+forces high. High risk, uncertainty or retained high review cannot be weakened by fast.
+Repeated medium rejection escalates within the bounded review loop.
+
+Planning never authorizes implementation. Only explicitly supplied, accepted `--fast --go`
+continues after current-contract approval through the normal execute goal handoff. High-risk
+or deliberate refusal also refuses go. `mf-plan --amend <name>` uses staged, reviewed changes
+and preserves the approved contract for unaffected tasks while review is pending.
+
 ## CLI commands
 
 All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-flow <command>` after `npm link`) dispatches to them.
@@ -139,6 +159,18 @@ All commands are plain Node scripts. `node scripts/cli.mjs <command>` (or `my-fl
 | `spec archive <name> [--force]` | Requires all boxes ticked and a PASS report under `.my-flow/verify/`; merges delta specs into `specs/` and moves the change to `changes/archive/` | `--force` skips the gate |
 | `spec abandon <name> --reason "..." [--force]` | Third exit for a change that will not be finished: requires an `## Abandoned` section with a `**Reason**:` line (`--reason` appends it), moves the change to `changes/archive/<date>-<name>-abandoned/`, merges nothing | Refuses a fully ticked change (use `archive`). Also records a clean audit: `spec new audit-<cap>` then `spec abandon audit-<cap> --reason "..."` |
 | `spec stage <name> <stage>` | Writes `.my-flow/state/current-change.json` (`new`, `interview`, `mf-plan`, `execute`, `done`, `archived`) with a fresh `updated` timestamp | The execute-guard only fires while this file is younger than 12 h |
+| `spec inspect <name-or-uuid> [--task T-01]` | Linked tasks with their typed references, readiness and structural diagnostics | Same projection the dashboard shows |
+| `spec upgrade <name> [--apply]` | Explicit legacy -> linked-intent migration, dry run by default | Preserves the original files; never invents acceptance or dependencies |
+| `spec lane select\|set\|status <name>` | The risk lane and whether the current contract is approved for it | `select` records nothing; `status` exits 1 while the contract is unapproved |
+| `spec review record <name> --file <json>` | One immutable review record bound to the contract digest it reviewed | Marked independent only when the reviewer and the writer differ |
+| `spec finding record\|resolve\|status <name>` | A repeated root cause: two materially different failed approaches send the next attempt to design review | `record` exits 1 once escalation is due, and blocks only the tasks the cause defeated |
+| `spec amend propose\|apply\|cancel\|status <name>` | A staged change to the approved contract, with the authority its type requires | The approved text stays in force while a candidate is pending |
+| `spec evidence begin\|record\|cancel\|status <name>` | A verification attempt bound to exact inputs, with an immutable result and a durable head | An older PASS is never reinstated by scanning backwards |
+| `spec baseline <name>` / `spec conflicts <name>` | Capture the spec base each delta claim is written against, and compare every claim against it | Run before archive |
+| `spec context <name> [--task T-01] [--since <digest>]` | The derived context packet: constraints and the complete criteria index in full, plus the task closure, referenced blocks, hashed locators and open findings | Written to `.my-flow/context/`; `--since` compares inputs, not timestamps |
+| `spec usage <name>` / `spec usage import <name> --file <json>` | Measured usage keyed by the source event id | Unknowns stay unknown; no price, no quota, no claimed saving |
+| `spec session new\|show\|release\|recover <key>` | The session lease that keeps two sessions in one repository apart | |
+| `spec repo list\|add\|remove` / `spec recover [tx-id]` | Local cross-repository aliases; unfinished intent transactions, rolled forward | `recover` is how a `recovery-pending` error is cleared |
 | `ask <codex\|claude> [--diff] [--files a,b] [--model m] [--timeout ms] <question>` | Runs the other CLI read-only as an advisor; writes an artifact to `.my-flow/ask/` | Prompt goes through stdin; empty output counts as failure |
 | `dashboard [start\|stop\|status] [--port N] [--root dir] [--json]` | Local web dashboard over `specs/`, `changes/` and `.my-flow/`: live updates, guarded editing; `stop` verifies the recorded process before terminating it | Loopback only, default port 4321, no dependencies |
 | `models [status\|analyze\|apply\|reset] [--json] [--provider claude\|codex] [--dry-run]` | Subagent model routing: `status` shows the recorded CLI versions, the local override (or none) and the values read back from the installed agent files; `analyze` asks the strongest available CLI for a role -> model / effort map, validates it and applies it; `apply` re-renders the installed files from `~/.my-flow/models.json`; `reset` deletes the override and restores the inherit baseline | Writes only under `~/.my-flow/` (`MY_FLOW_HOME`), `~/.codex/agents/` and the installed Claude plugin `agents/`; never the repository |
@@ -151,20 +183,20 @@ Claude invokes them as `/my-flow:<name>`, Codex as `$my-flow-<name>`.
 | Skill | When | What it does | Output |
 |---|---|---|---|
 | `interview <idea> [--quick] [--change <name>]` | Vague request, no acceptance criteria | One question per round, intent before detail; scores ambiguity; exits when Non-Goals and Decision Boundaries are explicit | `changes/<name>/proposal.md`, transcript in `.my-flow/interviews/` |
-| `mf-plan <name \ | text> [--deliberate] [--fast [--go]]` | Multi-file changes; anything touching build config, shaders, engine modules, migrations, auth. With `--fast` you write the artifacts yourself, one critic pass, no planner or architect; refused for the high-risk categories (and together with `--deliberate`); `--go` continues straight into execute | planner drafts → architect reviews (`CLEAR / WATCH / BLOCK`) → critic reviews (`OKAY / REJECT`), up to three rounds | `design.md` (must contain Do-Not-Touch and Rebuild / Re-run), `tasks.md` |
+| `mf-plan <name-or-text> [--amend] [--deliberate] [--fast [--go]]` | Automatically selects the review lane from evidence; explicit flags cannot weaken high-risk review | Low: main-context plan; medium: main-context short draft + critic; high: planner → architect → critic. Rejected drafts require re-review | Full proposal/design/tasks/acceptance and applicable delta artifacts; see [automatic review lanes](#automatic-review-lanes) |
 | `execute <name> [--team] [--worktree]` | `tasks.md` has unticked boxes | Composes the goal statement; implements task by task, verifies, ticks; runs the fixed final gate. Can also be entered from `mf-plan --fast --go`, which also pauses for the `/goal` paste | Claude: prints `/goal …` for you to paste. Codex: `create_goal` |
 | `mf-verify <name \| criteria>` | Before any "done" claim | Delegates to the read-only verifier, which runs the checks itself and reports per criterion | `.my-flow/verify/<name>-<time>.md` with PASS / FAIL / INCOMPLETE |
 | `mf-audit <capability \| all>` | `spec status` prints `audit suggested`, or the user says "audit the spec" | Read-only architect pass comparing `specs/<cap>/spec.md` with code and tests: unimplemented requirements, undocumented behavior, contradictions, misplaced requirements; never edits `specs/` | `.my-flow/verify/audit-<cap>-<time>.md` with `Status: CLEAN / DRIFT / BROKEN` and a suggested change name ending in `audit-<cap>` |
 | `ask <codex\|claude> [--diff] [--files] <question>` | Second opinion on a design, diff review before the final gate, tie-break when planning stalls | Wraps the `ask` script, summarizes, and states whether it agrees | `.my-flow/ask/` |
 | `learn [name] [--dry-run]` | The session solved something project-specific and hard | Three-question quality gate, then extracts a SKILL.md | Written to both `.claude/skills/` and `.agents/skills/` |
-| `spec new\|status\|validate\|abandon\|archive\|stage` | Managing the intent layer | Wraps the `spec` script and interprets its output | same as the script |
+| `spec new\|status\|validate\|abandon\|archive\|stage` (plus `inspect\|upgrade\|lane\|review\|finding\|amend\|evidence\|baseline\|conflicts\|context\|usage\|session\|repo\|recover` for a linked change) | Managing the intent layer | Wraps the `spec` script and interprets its output | same as the script |
 | `dashboard start\|stop\|status` | Watching a change in a browser, editing a proposal or spec outside the terminal | Wraps the `dashboard` script: starts it detached and prints the URL, or stops it | `.my-flow/state/dashboard.json` |
 
 `learn` has `disable-model-invocation`; only you can call it.
 
 ### How the three flow skills differ from the built-ins
 
-- **`/plan` vs `mf-plan`**: plan mode is a read-only permission mode that writes one plan file outside the project and asks for approval. `mf-plan` produces committed artifacts (`design.md`, `tasks.md`) reviewed by three roles in sequence, with required sections and a task format that later drives `execute` and `mf-verify`. You can still enter `/plan` first to explore. The fast lane `mf-plan --fast` sits between the two: same committed artifacts and downstream flow, but only one critic pass instead of the three-role consensus.
+- **`/plan` vs `mf-plan`**: plan mode is a read-only exploration surface. `mf-plan` produces versioned planning artifacts and chooses the review roles by risk; its artifacts later drive `execute` and independent `mf-verify`. See [automatic review lanes](#automatic-review-lanes).
 - **`run` vs `execute`**: the built-in `run` launches the project's app. `execute` is a task loop over `tasks.md` under the Do-Not-Touch and Rebuild rules, wrapped in a native goal, ending with the fixed final gate (verify → cleanup → re-verify → independent review → done).
 - **`verify` vs `mf-verify`**: `mf-verify` always changes context (read-only verifier subagent), derives its criteria from `tasks.md`, spec scenarios and `design.md`, checks the diff against Do-Not-Touch, checks that Rebuild steps ran, scans for fake-completion patterns, and writes a report that `spec archive` requires.
 
@@ -287,6 +319,36 @@ changes/<name>/specs/<capability>/spec.md  delta: ## ADDED | MODIFIED | REMOVED 
 changes/archive/<date>-<name>/             archived changes (deltas merged into specs/)
 changes/.templates/                        templates used by `spec new`
 ```
+
+A change upgraded to linked intent (`spec upgrade <name> --apply`) adds these, and nothing else
+changes about how the change is read:
+
+```
+changes/<name>/acceptance.md               ### AC-01 criteria with evidence-mode, required, checks
+changes/<name>/change.json                 stable UUID, lifecycle metadata, the recorded review lane
+changes/<name>/reviews/R-<id>/             immutable review records with the contract text they saw
+changes/<name>/findings/F-<id>.json        repeated root causes and their attempts
+changes/<name>/amendments/A-<id>/          staged contract candidates with their old and new text
+changes/<name>/verify/V-<n>/               version-bound verification attempts, request and result
+changes/<name>/usage/<event-id>.json       imported usage records, one per source event
+```
+
+Tasks then carry indented `id`, `depends-on`, `accepts`, `design` and `evidence` fields, and the
+order comes from `depends-on`, never from the numbering:
+
+```markdown
+- [ ] 1.1 Make the writer atomic and verify the crash fixture recovers
+  - id: T-01
+  - depends-on: none
+  - accepts: AC-01
+  - design: D-03
+```
+
+**Compatibility.** Every one of these is additive. A change that was never upgraded keeps its
+old `tasks.md` grammar, keeps archiving through the same gate, and is reported with dependency
+state `unknown` rather than as an error; `changes/archive/**` is never rewritten. Simple mode
+(`init --simple`, one `docs/changes/<name>.md`) stays legacy on purpose and makes no v2 claim.
+A change with no recorded review lane is undeclared: the lane gate does not apply to it.
 
 Spec format:
 

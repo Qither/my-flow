@@ -4,7 +4,7 @@
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -91,4 +91,22 @@ export function writeState(root, state) {
 
 export function readState(root) {
   return JSON.parse(readText(join(root, '.my-flow', 'state', 'current-change.json')));
+}
+
+export const CONTEXT_HOOK = join(ROOT, 'hooks', 'session-context.mjs');
+
+/** Runs the SessionStart hook with a JSON payload on stdin and parses its output. */
+export function runContextHook(cwd, input = {}, env = cleanEnv()) {
+  // Session binding tests must not inherit the caller's real model-routing homes.
+  // Keep the routing hook active with a fresh throttled state; its launcher has its own suite.
+  const homes = join(cwd, '.my-flow', 'test-homes');
+  for (const name of ['my-flow', 'codex', 'claude']) mkdirSync(join(homes, name), { recursive: true });
+  const state = join(homes, 'my-flow', 'models-state.json');
+  if (!existsSync(state)) writeFileSync(state, JSON.stringify({ version: 1, lastSpawn: { at: new Date().toISOString() }, pending: { line: 'test-only model routing state' } }));
+  const recorder = join(homes, 'scheduler.mjs');
+  writeFileSync(recorder, `import { appendFileSync } from 'node:fs';\nappendFileSync(${JSON.stringify(join(homes, 'scheduler-calls.jsonl'))}, JSON.stringify(process.argv.slice(2)) + '\\n');\n`);
+  const hookEnv = { ...env, MY_FLOW_HOME: join(homes, 'my-flow'), CODEX_HOME: join(homes, 'codex'), CLAUDE_CONFIG_DIR: join(homes, 'claude'), MY_FLOW_SCHTASKS: recorder };
+  const r = spawnSync(process.execPath, [CONTEXT_HOOK], { ...SPAWN, cwd, env: hookEnv, input: JSON.stringify({ cwd, ...input }) });
+  assert.equal(r.status, 0, `session-context exited ${r.status}: ${r.stderr}`);
+  return JSON.parse(r.stdout);
 }

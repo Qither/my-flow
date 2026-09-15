@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "sequence": 1,
+  "changeId": "754e6308-ddc5-4a4e-8319-0261b788a2aa",
+  "lane": "high",
+  "reason": "Public CLI --json flag changes public interface; --fast refused",
+  "paths": [
+    "cli.mjs"
+  ],
+  "previous": null,
+  "direction": "initial",
+  "forced": false,
+  "recordedAt": "2026-09-15T04:15:52.437Z"
+}

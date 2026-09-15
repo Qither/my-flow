@@ -1,136 +1,206 @@
 ---
 name: mf-plan
-description: Consensus planning for a change - planner drafts design.md and tasks.md, architect and critic review in sequence until approved. Use for multi-file changes, anything touching build config, shaders, engine modules, migrations, or auth, or when the user says "plan this change". (Distinct from the built-in /plan mode.)
-argument-hint: "<change-name | free text> [--deliberate] [--fast [--go]]"
+description: Risk-based planning for a change with automatic low, medium and high review lanes. Produce design.md and tasks.md, retain full independent review for high-risk work, and never implement during planning.
+argument-hint: "<change-name | free text> [--amend] [--deliberate] [--fast [--go]]"
 ---
 
-# mf-plan (consensus plan)
+# mf-plan (risk-based planning)
 
-Produce `design.md` and `tasks.md` for one change, reviewed to consensus. Planning only:
-this skill never edits source files.
+Produce the complete planning artifacts for one change. Planning only: this skill never
+edits implementation files or starts execution merely because a lane was selected.
 
 Input: {{ARGS}}
 
 ## Inputs
 
 - A change name: load `changes/<name>/proposal.md`.
-- Free text: create the change with `{{CALL:spec}} new <name>` and write a short
-  `proposal.md` inline first (Why / What Changes / Non-Goals / Decision Boundaries / Success
-  Criteria). Do not start an interview here; if the text is too vague to write those
-  sections, stop and suggest {{CALL:interview}}.
-- `--deliberate`: add a three-scenario pre-mortem and an explicit test plan
-  (unit / integration / end-to-end / observability). Auto-enabled for the
-  `High-risk categories` section below.
-- `--fast`: the fast lane (`## Fast lane (--fast)` below): same artifacts, one critic pass,
-  no drafting role, no architect. Only the user passes it; the model never selects it and may
-  only suggest it in a handoff. Refused for the `High-risk categories`, and refused
-  together with `--deliberate` (`--deliberate` wins).
-- `--go`: only together with `--fast`; after the handoff, continue straight into the execute
-  flow (`## Continue into execute (--go)` below). `--go requires --fast`: without it, print
-  one line `--go requires --fast; planning in full mode.` and continue in full mode.
+- Free text: create the change with `{{CALL:spec}} new <name>` and write a short proposal
+  with Why, What Changes, Non-Goals, Decision Boundaries and Success Criteria. If the
+  request is too vague for these sections, suggest {{CALL:interview}} rather than guessing.
+- `--amend <name>`: use `## Amend an existing contract` instead of overwriting the
+  approved plan through the new-plan steps.
+- `--deliberate`: force the high lane, including a three-scenario pre-mortem and an
+  explicit unit/integration/end-to-end/observability test plan.
+- `--fast`: an explicit request for medium review. Only the user supplies this flag.
+  Automatic medium does not require or invent `--fast`. High risk, uncertainty, a retained
+  high lane or `--deliberate` refuses it. Accepted `--fast` is the
+  medium lane: record it as `medium`, never as `low`.
+- `--go`: requires explicitly supplied and accepted `--fast`. Otherwise report
+  `--go requires --fast` or the fast-refusal reason and remain in planning. Automatic
+  medium alone never enables execution. A high-risk or deliberate refusal also refuses go.
 
 ## High-risk categories
 
-auth, migrations, destructive operations, public API changes, build config or shader
-pipeline changes, engine modules. Judged from the proposal text and the paths it names (a
-judgement call, no keyword matcher). This single list drives both `--deliberate` (auto-enabled)
-and the `--fast` guard (refused), so adding or removing a category moves both flags together.
+Auth, migrations, destructive operations, public API changes, build configuration or shader
+pipeline changes, and engine modules. Judge the proposal and actual paths, not keywords
+alone. This is the single category list for both the high lane and the fast refusal.
+Uncertain risk also uses high. Use the category keys accepted by the lane CLI, including
+`public-api` for a public CLI contract.
 
 ## Boundary
 
-Writes only under `changes/<name>/` and `.my-flow/`. Ask the user only when a decision
-would change the task breakdown; look everything else up.
+Write only under `changes/<name>/` and `.my-flow/`. Preserve every Do-Not-Touch and
+Rebuild / Re-run constraint. Ask only when a decision materially changes scope or authority.
+Do not silently upgrade a legacy change; follow its explicit migration decision before
+using linked-only metadata commands.
 
-## Steps
+## Choose the lane before delegation
 
-1. Load `proposal.md`, related `specs/**/spec.md`, project `CLAUDE.md` / `AGENTS.md`.
-2. **Planner** drafts. Delegate to the `planner` role with the proposal and the paths it
-   touches. Expected output: PLAN-DR header (Principles 3-5, Decision Drivers top 3, Viable
-   Options >= 2 or explicit invalidation), `design.md`, `tasks.md`.
-3. **Architect** reviews (read-only). Give it the draft. Expected: `CLEAR | WATCH | BLOCK`,
-   evidence with `path:line`, antithesis, tension, required changes. Wait for it to finish.
-4. **Critic** reviews (read-only). Give it the draft plus the architect verdict. Expected:
-   `OKAY | REJECT`, simulated tasks, at most five fixes. Wait for it to finish.
-5. On `BLOCK` or `REJECT`: apply the fixes through the planner and repeat steps 3-4.
-   Maximum three iterations. After two failed iterations, offer {{CALL:ask}} as a
-   tie-breaker. If still not approved, present the best version and the open findings; do
-   not pretend consensus.
-6. Write the artifacts. Add delta specs under `changes/<name>/specs/<capability>/spec.md`
-   only if the proposal lists capabilities (ADDED / MODIFIED / REMOVED requirements with
-   WHEN / THEN scenarios). Run `{{CALL:spec}} validate <name>` and fix every error.
-7. Run `{{CALL:spec}} stage <name> mf-plan` to record the current stage.
+1. Read the proposal, relevant files/specs and applicable project instructions. Judge
+   `categories`, `paths`, `multiFile` and `uncertain`, and save that evidence as
+   `<risk.json>` in scratch. Several explicit files with a clear approach and no high-risk
+   category select medium automatically; one reversible known file with explicit acceptance
+   selects low. High risk or uncertainty selects high.
+2. Run `{{CALL:spec}} lane select <name> --file <risk.json> [--fast] [--deliberate] [--go]`,
+   passing only flags the user supplied. It records nothing and authorizes nothing.
+   Preserve the effective recorded lane as a floor and report any refused override.
+3. Record the result and rationale with
+   `{{CALL:spec}} lane set <name> --lane <low|medium|high> --reason "<why>" --paths <a,b>`.
+   A scope change can escalate review; never silently downgrade it to avoid reviewers.
+4. Dispatch only the selected lane below. Do not run the high-lane roles unconditionally.
+
+## Low lane
+
+The main context writes the short plan and explicit acceptance contract. No planning
+subagent is required. Preserve all required artifacts and constraints, record the low-risk
+reason, complete `## Prepare the review target`, then continue to `## Finish and record approval`. Final verification is still a fresh
+independent pass; a low lane does not authorize implementation.
+
+## Medium lane
+
+This lane is selected automatically for clear multi-file work or by accepted `--fast`.
+
+1. Draft in the main context using actual `path:line` evidence. Produce proposal, design,
+   tasks, acceptance and applicable delta specs with the same required constraints. No mandatory PLAN-DR
+   expansion, drafting planner or architect is needed. For v2, record the lane/reason/paths
+   in metadata and a concise `Review lane: medium` context line. Old `Plan mode: fast`
+   markers remain readable history, not new approval metadata.
+2. Complete `## Prepare the review target`, then give the complete short plan to an independent read-only critic. Require `OKAY | REJECT`,
+   simulated tasks and concrete fixes. Bind its result to the reviewed contract digest.
+3. On REJECT, fix the draft in the main context and obtain focused critic re-review before
+   approval. Supply the previous review, changed blocks and open findings. A fixed draft is
+   not approved until the critic returns OKAY for that current text. Repeat the review-target
+   preparation after each fix and before re-review.
+4. Repeated rejection escalates to the high lane. Count medium and high rounds within the
+   same maximum of three review iterations; after two failed medium rounds, use the remaining
+   round for full planning. If the budget ends without approval, report the open findings and
+   stop at an unapproved handoff. Do not enter execute.
+
+## High lane
+
+Use this lane for high risk, uncertainty, retained high review or explicit `--deliberate`.
+
+1. Delegate the draft to the planner. Require a PLAN-DR header (3-5 principles, top three
+   decision drivers, at least two viable options or explicit invalidation), complete proposal,
+   design, tasks, acceptance and applicable delta specs, three-scenario pre-mortem and the
+   explicit test plan. Record the planner's actual DRAFT against its completed target.
+2. Complete `## Prepare the review target`, then have an independent read-only architect review the draft: `CLEAR | WATCH | BLOCK`,
+   path/line evidence, antithesis, tension and required changes.
+3. Have an independent read-only critic review the same draft and architect result:
+   `OKAY | REJECT`, simulated tasks and concrete fixes. Run these roles sequentially.
+4. On BLOCK or REJECT, make fixes through the planner, repeat review-target preparation,
+   and repeat the independent reviews against the resulting target.
+   Use at most three review iterations total, including any preceding medium rounds.
+   After two failed iterations, offer {{CALL:ask}} as a tie-breaker. Unresolved findings
+   remain unapproved; do not claim consensus or continue into execute.
+
+## Prepare the review target
+
+Before any approval review, finish proposal, design, tasks, acceptance and applicable delta
+requirements with WHEN/THEN scenarios. Capture any required spec bases using the documented
+spec commands. Run `{{CALL:spec}} validate <name>` and fix every error. Then build
+`{{CALL:spec}} context <name>` and capture the current contract digest for the reviewers.
+Do not change contract text between the selected reviews and recording their approval.
+If preparation changes the high-lane planner's target, return it to the planner for a fresh
+DRAFT before architect and critic review. Any later contract edit returns to this preparation
+step and the selected lane's reviews; approval never carries across a changed digest.
+
+## Delegation and context
+
+Build `{{CALL:spec}} context <name>` for the planning handoff. For repeat reviews, use
+`--since <digest>` and include the previous review, changed blocks and unresolved findings.
+Reviewers can expand source reads; packets are derived context, not replacement authority.
 
 <!-- MY-FLOW:CLAUDE -->
-Delegation: use the Agent tool with `subagent_type` set to `my-flow:planner`,
-`my-flow:architect`, `my-flow:critic`. Run the three sequentially, never in one batch; each
-reviewer must see the previous output.
+Use ordinary foreground Agent calls with `subagent_type` set to the selected
+`my-flow:planner`, `my-flow:architect` or `my-flow:critic`. Omit `name`, `team_name`
+and `run_in_background`: named teammate dispatch must not replace a configured role.
+Medium dispatches only the critic; high dispatches planner, architect and critic in order.
 <!-- /MY-FLOW:CLAUDE -->
 <!-- MY-FLOW:CODEX -->
-Delegation: spawn the native subagents `planner`, `architect`, `critic` one at a time, in
-that order; each reviewer must see the previous output. Never batch them in parallel.
+Spawn only the native roles selected by the lane: no planning subagent for low, critic
+for medium, and planner then architect then critic for high. High-lane reviewers see the
+previous output; never batch that chain in parallel.
 <!-- /MY-FLOW:CODEX -->
 
-## Fast lane (--fast)
+## Finish and record approval
 
-Same artifacts and the same downstream flow, with the review cut to one pass. In order:
+1. Confirm review-target preparation and the selected reviews are complete for the current
+   digest. If any contract change is needed, return to preparation and re-review first.
+2. Record each actual review with
+   `{{CALL:spec}} review record <name> --file <review.json>`: include role, verdict,
+   actorId, writerActorId, contractDigest and the actual sourceRef. Do not invent reviews.
+   Any edit after review changes the digest and requires the appropriate re-review.
+3. `{{CALL:spec}} lane status <name>` must confirm approval of the current contract:
+   low has its explicit acceptance and rationale; medium requires critic OKAY; high requires
+   planner DRAFT, architect CLEAR/WATCH without blocking findings, and critic OKAY.
+4. Run `{{CALL:spec}} stage <name> mf-plan` with the existing session identity, then print
+   the handoff. Planning must not create an execute lease.
 
-1. Guard. If the proposal or free text touches a `High-risk categories` entry, print one
-   line `--fast refused: <category>; planning in full mode.` and continue at `## Steps`. If
-   `--deliberate` was also given, print `--fast refused: --deliberate wins; planning in full
-   mode.` and continue at `## Steps` with `--deliberate`.
-2. Author in this context. Read the files the proposal names and cite `path:line`. For free
-   text, write `proposal.md` inline as `## Inputs` requires. Write `design.md` with the
-   required sections and, as the first line under `## Context`, exactly
-   `Plan mode: fast (one critic pass, no architect).` Write `tasks.md` in the strict format.
-   No PLAN-DR header, no drafting delegation, no second reviewer.
-3. One review. Delegate once to the read-only `critic` role with the draft. Expected:
-   `OKAY | REJECT`, simulated tasks, at most five fixes. Wait for it to finish.
-4. On `REJECT`: apply the fixes yourself, once. There is no second review; list every finding
-   you did not fix under `Remaining findings:` in the handoff.
-5. Delta specs, `{{CALL:spec}} validate <name>` and `{{CALL:spec}} stage <name> mf-plan`
-   exactly as in steps 6-7 of the full mode.
+## Amend an existing contract
+
+Read the existing contract, constraints, findings and `{{CALL:spec}} amend status <name>`.
+Use the staged amendment schema documented by {{CALL:spec}}; never replace approved canonical
+text directly while execution is continuing.
+
+Prepare the old/candidate references, cause and affected task/acceptance/design IDs, then run
+`{{CALL:spec}} amend propose <name> --file <candidate.json>`. Locator-only corrections keep
+executor authority; equivalent-check corrections require independent equivalence review;
+scope/guarantee changes require the user's explicit decision unless already authorized.
+A changed trust boundary returns to full review.
+
+Record the review with `{{CALL:spec}} review record <name> --amend A-<id> --file <review.json>`.
+Only then use `{{CALL:spec}} amend apply <name> --id A-<id>`; cancellation uses the documented
+cancel command. While review is pending, the approved contract remains active for unaffected
+tasks, and affected tasks and descendants stay held. Preserve old versions and invalidated
+evidence. Repeated-cause findings trigger design review before a third patch, not a weaker check.
 
 ## Continue into execute (--go)
 
-Valid only with `--fast` and only after the handoff has been printed. Continue into
-`{{CALL:execute}} <name>` for the same change: it composes the goal, hands it off as it
-always does, arms the execute-guard before task 1, and ends with its Run report. `--team`
-and `--worktree` are unavailable here: if the user wants either, stop after the handoff and
-point at `{{CALL:execute}} <name>` instead.
+Continue only after the current plan is approved and the handoff is printed, and only when
+the user's explicit `--fast --go` was accepted. A high/deliberate refusal or automatic medium
+selection does not qualify. The final recorded lane must still be medium; escalation
+invalidates an earlier fast/go selection. `--team` and `--worktree` remain unavailable through go.
 
 <!-- MY-FLOW:CLAUDE -->
-Invoke `my-flow:execute <name>` with the Skill tool and follow the loaded text, including
-its section 2 goal stop (print the `/goal` block once and wait for the user's reply). Never
-paraphrase the execute skill from memory. Record the hand-over with one line:
-`Continuing into execute (--go): goal handoff applies.`
+Invoke `my-flow:execute <name>` with the Skill tool. Follow its loaded goal handoff:
+print the `/goal` statement once and wait for the user's response. Never impersonate that
+response. Record: `Continuing into execute (--go): goal handoff applies.`
 <!-- /MY-FLOW:CLAUDE -->
 <!-- MY-FLOW:CODEX -->
-Follow `{{CALL:execute}} <name>` by reference from its Load steps through the final gate,
-with `get_goal` / `create_goal` running normally.
+Follow {{CALL:execute}} from its Load steps through its final gate, with native
+`get_goal` / `create_goal` running normally. Planning itself creates no goal.
 <!-- /MY-FLOW:CODEX -->
 
 ## Required content
 
-`design.md` sections: `## Context`, `## Goals / Non-Goals`, `## Decisions`,
-`## Risks / Trade-offs`, `## Do-Not-Touch`, `## Rebuild / Re-run After Change`,
-`## File Ownership` (only when a team will execute; two or more disjoint groups).
-
-`tasks.md` format, strictly:
-
-```
-## 1. <Group>
-- [ ] 1.1 <task> and verify <observable check>
-- [ ] 1.2 ...
-```
+Design sections: `## Context`, `## Goals / Non-Goals`, `## Decisions`, `## Risks / Trade-offs`,
+`## Do-Not-Touch`, `## Rebuild / Re-run After Change`, and `## File Ownership` only for
+explicitly planned team execution. Linked plans also fill `acceptance.md` with stable criterion
+IDs, required flags, evidence modes and concrete checks.
+Tasks use `- [ ] N.M <action> and verify <observable result>`; linked tasks retain their
+stable IDs, prerequisites, acceptance and design references.
 
 ## Handoff (always the last thing you print)
 
 ```
 ## Handoff
-Change: changes/<name>   Review: architect CLEAR|WATCH, critic OKAY (iteration n)
-Remaining findings: <fast lane only, and only when a critic finding was left unfixed>
-Rebuild / Re-run: <echo the list from design.md>
-Next: {{CALL:execute}} <name>
+Change: changes/<name>   Review lane: low|medium|high   Approval: approved|unapproved
+Reviews: <actual roles, verdicts and round>
+Remaining findings: <none or concrete unresolved findings>
+Rebuild / Re-run: <the list from design.md>
+Next: {{CALL:execute}} <name> | resolve planning findings
 ```
 
-In the fast lane the `Review:` field reads `Review: fast (critic OKAY|REJECT-fixed, no architect)`.
+Use the execute next step only for an approved plan. Without valid explicit fast/go, stop
+after the handoff and wait for execution authorization.

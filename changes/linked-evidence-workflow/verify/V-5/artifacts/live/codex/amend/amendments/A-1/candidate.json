@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "id": "A-1",
+  "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+  "type": "equivalent-check",
+  "cause": "F-1 fixture-supplied verification-contract mismatch; architect CLEAR permits staged equivalent check",
+  "findingId": "F-1",
+  "oldDigest": "fe3655ea31b0e1be11e59754c7014f61bd70fe33f251421970b75f8abf70833b",
+  "candidateDigest": "7f92db9eb5934212539033fd58e4161aaa9d357c26420fc862c23ed2b21e409c",
+  "changed": {
+    "tasks": [
+      "T-01"
+    ],
+    "acceptance": [
+      "AC-01"
+    ],
+    "design": []
+  },
+  "affected": [
+    "T-01",
+    "T-02"
+  ],
+  "files": [
+    "changes/amend/acceptance.md"
+  ],
+  "proposedAt": "2026-09-15T06:55:51.450Z",
+  "authority": null
+}

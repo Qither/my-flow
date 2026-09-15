@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 2,
+  "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+  "sequence": 1,
+  "started": "2026-09-15T05:46:43.224Z",
+  "inputs": {
+    "supportingContractPaths": [],
+    "extraImplementationPaths": [],
+    "repositories": [],
+    "requiredEnvironment": [],
+    "declaredTools": [],
+    "allowNonGit": false
+  },
+  "implementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "acceptanceDigest": "6df15429080d19fc38cc8ae01d3850e427628ad21d7afac6f8efe343f0aa1d30",
+  "environment": {
+    "os": "win32 x64",
+    "node": "v24.1.0",
+    "git": "git version 2.45.1.windows.1",
+    "tools": {}
+  },
+  "requiredEnvironment": [],
+  "requiredCriteria": [
+    {
+      "id": "AC-01",
+      "modes": [
+        "automated"
+      ]
+    }
+  ],
+  "session": "44a33a7a-18f7-4832-9ac2-98141fe75329",
+  "actorId": null
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "eventId": "medium-mf-verify-2026-09-15",
+  "changeId": "325d0876-0fec-4a79-aaea-a0c19246dadc",
+  "attemptId": null,
+  "actorId": "my-flow:verifier",
+  "parentActorId": null,
+  "stage": "execute",
+  "outcome": "succeeded",
+  "started": null,
+  "finished": null,
+  "source": "claude-code-subagent-report",
+  "accountingScope": "self",
+  "inputTokens": null,
+  "outputTokens": null,
+  "cachedInputTokens": null,
+  "reasoningTokens": null,
+  "units": {
+    "totalTokens": 47980,
+    "toolUses": 10,
+    "durationMs": 109917
+  },
+  "provider": "anthropic",
+  "model": null,
+  "importedAt": "2026-09-15T06:03:43.663Z"
+}

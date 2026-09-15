@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "changeId": "ba122291-a8c7-408a-a6ad-e767fb2b3b17",
+  "sequence": 1,
+  "requestDigest": "805b279acd46c8649374f3b6a02dd0a1b20ca54ecf7dc28f9a12a88487319c38",
+  "verdict": "PASS",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/baseline-verifier.md"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/baseline-verifier.md"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/baseline-verifier.md"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "command": "node --test test/amend-a.test.mjs",
+      "exitCode": 0,
+      "summary": "Independent verifier: 1 test, 1 pass, zero fail/skipped/todo/cancelled"
+    },
+    {
+      "command": "node --test test/amend-b.test.mjs",
+      "exitCode": 0,
+      "summary": "Independent verifier: 1 test, 1 pass, zero fail/skipped/todo/cancelled"
+    },
+    {
+      "command": "node --test test/amend-c.test.mjs",
+      "exitCode": 0,
+      "summary": "Independent verifier: 1 test, 1 pass, zero fail/skipped/todo/cancelled"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/v3_live_observer",
+    "writerActorId": "fixture-history-baseline-writer",
+    "sourceRef": "collaboration:/root/v3_live_observer#amend-history-baselines"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "endAcceptanceDigest": "b5b17d4f5c1eb2b2ec1b57381b4b866e6532b8901191feba4dfd56640c2cdb57",
+  "artifacts": [
+    {
+      "relativePath": "baseline-verifier.md",
+      "hash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+      "bytes": 1541
+    }
+  ],
+  "reportHash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+  "finished": "2026-09-15T07:22:59.831Z"
+}

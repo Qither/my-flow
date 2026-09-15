@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "sequence": 4,
+  "requestDigest": "7a6ced3b9c441a8b9eb601bd3c6dd3fe15bf430ed5718be181ac80d80d376268",
+  "verdict": "FAIL",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "status": "CONTRADICTED",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "live"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "status": "PARTIAL",
+      "modes": [
+        "automated",
+        "static",
+        "live"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "status": "VERIFIED",
+      "modes": [
+        "automated",
+        "static",
+        "manual"
+      ],
+      "evidenceRefs": [
+        "artifacts/independent-report.md"
+      ]
+    }
+  ],
+  "commands": [],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "/root/v3_live_observer",
+    "writerActorId": "codex-executor-01a0a276",
+    "sourceRef": "collaboration:/root/v3_live_observer/V-4-pre-fix"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "1daa4d3d2ab26316d7beaf9fdad584fb4921424ad87c1ce43dd3b5b37a187506",
+  "endAcceptanceDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+  "artifacts": [
+    {
+      "relativePath": "independent-report.md",
+      "hash": "56e18ea4feee8faa27832fc4c5078d51454d87c5c79f84788c9213a143d97bb2",
+      "bytes": 3025
+    },
+    {
+      "relativePath": "live/codex/original-incomplete-report.md",
+      "hash": "8e16ddefe1d43842bbee6ea8fa423cea29b9d55c8d0cdf5345fa8e0fd1190bab",
+      "bytes": 2887
+    },
+    {
+      "relativePath": "live/codex/original-incomplete-result.json",
+      "hash": "a8fa71ca1dab96af8560c0947cd6abac4071a6247c808b0def5cea590c271225",
+      "bytes": 597
+    }
+  ],
+  "reportHash": "56e18ea4feee8faa27832fc4c5078d51454d87c5c79f84788c9213a143d97bb2",
+  "finished": "2026-09-15T06:36:14.451Z"
+}

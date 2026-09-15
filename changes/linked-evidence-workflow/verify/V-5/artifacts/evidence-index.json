@@ -1,0 +1,1041 @@
+{
+  "note": "Sanitized report/result/target/checkpoint artifacts only. Native event IDs and chronology are independently attested in the verifier report and per-phase observations; complete host transcripts and authentication homes are excluded.",
+  "candidateDigest": "edacd5fe23ae307e2599dc64a29c91840d42ae2a2b1016c4d0b79dfce7b0a040",
+  "artifacts": [
+    {
+      "relativePath": "independent-report.md",
+      "hash": "d16d1edea03a0ffc3d60a952845f0005f33c2888afc40aa4a9a012ff7fcb70b5",
+      "bytes": 6954
+    },
+    {
+      "relativePath": "verifier-original-result.json",
+      "hash": "f490118cbc604caa2cf670a93da979eca315a618bc1a52aa6374fd16ff9e2586",
+      "bytes": 3787
+    },
+    {
+      "relativePath": "live/native-event-excerpts.json",
+      "hash": "cc5f81a6f5f9786459a77aed1670504b9fca24372c59d82131b1f4081206c2a1",
+      "bytes": 261134
+    },
+    {
+      "relativePath": "context/correct-inputs-digest.stdout.txt",
+      "hash": "a9690076c0c9bc78923ef4933ea62489ef3d3e9788fe9b40399799db91b49d42",
+      "bytes": 38954
+    },
+    {
+      "relativePath": "helpers/hook-observer.mjs",
+      "hash": "77e9adc2073ff2117032b33f0e91a6e4d7a5fab8026f7211e3af39e1b4db2d82",
+      "bytes": 1226
+    },
+    {
+      "relativePath": "helpers/candidate-env.mjs",
+      "hash": "cbc72d9eb22a3b3e5789b40825f3395b95b03da06c1158693779665b97cf2186",
+      "bytes": 2035
+    },
+    {
+      "relativePath": "helpers/run-amend-history.mjs",
+      "hash": "edf54020a6c2112c8b14d4bc16e2b79041408bf07bfd4a89fb9d51ad54872a4a",
+      "bytes": 9814
+    },
+    {
+      "relativePath": "observations/linked-evidence-workflow-t29-pass.md",
+      "hash": "a8c70fde4736112b29024d924015f8c85df2c3a64d5456861c9a73b152282fb8",
+      "bytes": 2576
+    },
+    {
+      "relativePath": "observations/linked-evidence-workflow-t31-pass.md",
+      "hash": "32db025facc0009c29dbc6fe39c27a25bc06d1132466d573beba65ee4bbba704",
+      "bytes": 1822
+    },
+    {
+      "relativePath": "observations/refreshed-candidate-independent-pass.md",
+      "hash": "ee1db4c2e8a756c3089668f93009bb6ef2d7038aff84cb215eff6b2a2562785d",
+      "bytes": 1716
+    },
+    {
+      "relativePath": "observations/linked-evidence-workflow-policy-review.md",
+      "hash": "c460e209648514af7b021e411f043396fb7f5c661a783010c66978b40d48039a",
+      "bytes": 2600
+    },
+    {
+      "relativePath": "observations/context-since-observation.md",
+      "hash": "a314ca6c755653d5b5c9694d46997da599a894aa421d8d8fd5edc83e746b4b45",
+      "bytes": 1631
+    },
+    {
+      "relativePath": "observations/recorder-correction-review.md",
+      "hash": "ad55375df56564a20a8db528325a09ddb6ec0ddca610995b6685dbbad1ba18b3",
+      "bytes": 2181
+    },
+    {
+      "relativePath": "observations/v4-risk-selection-observer.md",
+      "hash": "73af84cf1a63630d66f2009d026c35c215746b872a9d14bc117fc532841c18bd",
+      "bytes": 2639
+    },
+    {
+      "relativePath": "observations/v4-claude-goal-observer.md",
+      "hash": "a5797ff705472b4240fa48d20012f2827dac92123d685b6b06126cfba10038ec",
+      "bytes": 1624
+    },
+    {
+      "relativePath": "observations/v4-codex-goal-observer.md",
+      "hash": "ecbccdda9a4985846bf461afd51bb19c38f2be4cdf731b1e7814aaf98109e0e2",
+      "bytes": 2461
+    },
+    {
+      "relativePath": "observations/v4-goal-conflict-observer.md",
+      "hash": "3cfba80b58a95cfe7402d6e088b60acd576b78eb28c2befe3524967cf375fd0b",
+      "bytes": 1492
+    },
+    {
+      "relativePath": "observations/v5-amendment-observations.md",
+      "hash": "d3c32923ac46040dc304bfdade61961b072736ddb9611efd136f5a603be369f8",
+      "bytes": 3080
+    },
+    {
+      "relativePath": "observations/v5-history-and-negative-verifier.md",
+      "hash": "1a77786072b233d24cb90c4ee0e417cdbd1b8b7248fe6548d3236ffff7d51a08",
+      "bytes": 2118
+    },
+    {
+      "relativePath": "automated/recorder-verdict-before.log",
+      "hash": "0fe33b0cb0a06f3fbc2392a86cd4f68c58890f962454f28367c0e7e4fe26c5ce",
+      "bytes": 4421
+    },
+    {
+      "relativePath": "automated/recorder-verdict-targeted.log",
+      "hash": "f5dbcbacfeb7cfe59b0433270fc48378ef6c3ceefaa2094c9e166f76384ab074",
+      "bytes": 8315
+    },
+    {
+      "relativePath": "automated/recorder-verdict-full.log",
+      "hash": "c8cfef9dc943d871423b8756708b448457ea949e2b243654d933591c43e51c9e",
+      "bytes": 55260
+    },
+    {
+      "relativePath": "automated/v5-entry-reverify.log",
+      "hash": "248a73008f39788fb82b2204be3d51424596e6b78d0245c619b74fd1114a010d",
+      "bytes": 55255
+    },
+    {
+      "relativePath": "ui/observation-history.md",
+      "hash": "eb7d66e4861ff316b698fddc3c4555cc52bd0231285280f8ee2a477ef12e1b6c",
+      "bytes": 3216
+    },
+    {
+      "relativePath": "ui/verified-v2/1280-dark-after.png",
+      "hash": "2706b2bb3e98f96c2ebf1788d697f5e415d28ab932529b565a33411c188baa43",
+      "bytes": 66443
+    },
+    {
+      "relativePath": "ui/verified-v2/390-before.png",
+      "hash": "60998cf5e999ac05669cc26c6c368133763d452956bb1221ad092256b207fe53",
+      "bytes": 30237
+    },
+    {
+      "relativePath": "ui/verified-v2/390-dark-after.png",
+      "hash": "7fe0459d54096ddef57380a39a870c66350b0701b67dbbddd81b8be3d20cd2d7",
+      "bytes": 35101
+    },
+    {
+      "relativePath": "ui/verified-v2/gate-1.log",
+      "hash": "dd2874ed8f7fc77d62ad041407d9f793b1e97b84052d0adca369b85b06728662",
+      "bytes": 53840
+    },
+    {
+      "relativePath": "ui/verified-v2/gate-2.log",
+      "hash": "68d5657f665f4892307f827c3834063d32cb8b51f97eb6fd3777ab42b3a91f45",
+      "bytes": 53854
+    },
+    {
+      "relativePath": "ui/verified-v2/observations.md",
+      "hash": "0fb8508f33cd57aab9c6a3e893a7913085d7e1045be6a29e51109e2c7e593611",
+      "bytes": 13314
+    },
+    {
+      "relativePath": "ui/verified-v2/sse-before.log",
+      "hash": "f3450cc981012c1031ad4336fc257998b7945da494443ef39393abf48f6f1a33",
+      "bytes": 2014
+    },
+    {
+      "relativePath": "ui/verified-v2/ui-sse-tests.log",
+      "hash": "6c1edf73e5e3a323cb36819bd038ff218a25013ad25634d6c88d97ca0b4ae186",
+      "bytes": 9225
+    },
+    {
+      "relativePath": "environment/candidate-inventory.json",
+      "hash": "14e980e6dff2a5d5d0f7c82c6ab189dfd3a8a32d5e16a266f39ad13774aadd4d",
+      "bytes": 20730
+    },
+    {
+      "relativePath": "environment/instrumentation.json",
+      "hash": "d547123594c7e3266358cd601c016bb056109bace2145f40b326b5849e28e8be",
+      "bytes": 737
+    },
+    {
+      "relativePath": "environment/recorder-refresh.json",
+      "hash": "438d4c0f79475610851c82f73942b5898ca2614ebd35028b2389ce68cb1fb66f",
+      "bytes": 494
+    },
+    {
+      "relativePath": "environment/recorder-refresh-before-checkpoint.json",
+      "hash": "06b203a980dba09c800656a372f66a8b26f8b4bb38cfcf98604921b831d58392",
+      "bytes": 221
+    },
+    {
+      "relativePath": "environment/recorder-refresh-after-checkpoint.json",
+      "hash": "1fc1e8771d386a2a5548987c6ac937c52d0b371d84ee5a5dd7148a87f1523330",
+      "bytes": 220
+    },
+    {
+      "relativePath": "environment/recorder-refresh-before-real-homes.json",
+      "hash": "8a666f4042cdbeffa2b4f7d9d03bf8452a98f125e88e1f8843360f96190f8ead",
+      "bytes": 982
+    },
+    {
+      "relativePath": "environment/recorder-refresh-after-real-homes.json",
+      "hash": "8a666f4042cdbeffa2b4f7d9d03bf8452a98f125e88e1f8843360f96190f8ead",
+      "bytes": 982
+    },
+    {
+      "relativePath": "environment/final-live-complete-checkpoint.json",
+      "hash": "eb994ecd6de87fd8a3d878923e3efed516924c33b5b8c343fe5f06c0e21f08d4",
+      "bytes": 217
+    },
+    {
+      "relativePath": "environment/final-live-complete-real-homes.json",
+      "hash": "8a666f4042cdbeffa2b4f7d9d03bf8452a98f125e88e1f8843360f96190f8ead",
+      "bytes": 982
+    },
+    {
+      "relativePath": "environment/verify-baselines.json",
+      "hash": "95994304e3fc97d29f71e023e365a17495fe178bf0a28ff30b6e200c7d451479",
+      "bytes": 1240
+    },
+    {
+      "relativePath": "environment/verify-live-preparation.json",
+      "hash": "71dd0be4ad82cd75925eb10f0e346325ab251a401d5d5d99aa9d17b44e2d0df4",
+      "bytes": 1369
+    },
+    {
+      "relativePath": "environment/amend-history-baselines.json",
+      "hash": "3cd0ea7ec951e668140a742a085faf86de8748587f8ab5c593c132db3d968c00",
+      "bytes": 2518
+    },
+    {
+      "relativePath": "environment/fixture-paths-and-sessions.json",
+      "hash": "127095e8a2b7ba38f13b261fa76d418a2be2236872b36d19c349aadb0a4d4429",
+      "bytes": 805
+    },
+    {
+      "relativePath": "live/claude/goal-replay/setup.json",
+      "hash": "34fb6e5ad1d663dea5679ec402ac7dc152265f5b4deb273db4536d5b18348fff",
+      "bytes": 1777
+    },
+    {
+      "relativePath": "live/codex/goal-conflict/setup.json",
+      "hash": "a16df26ee046bb6ead8005c33e66bc9b5bb004deaa41b7bbfcd00987ea2bc2db",
+      "bytes": 1672
+    },
+    {
+      "relativePath": "live/claude/goal-replay/independent-report.md",
+      "hash": "d2c7e0f389c0dbc72dbaea8d8e023ff68e53cf2b0a5781d0fd32dc0212abb524",
+      "bytes": 2384
+    },
+    {
+      "relativePath": "usage/host-reported-claude/medium-mf-verify-2026-09-15.json",
+      "hash": "fcc97fcd6e82dd7c2125cb72cbf3609d133e0dc33a4393cbc455b84f64e653b8",
+      "bytes": 641
+    },
+    {
+      "relativePath": "live/claude/risk/medium/reviews/R-1/review.json",
+      "hash": "cc258b3ae603b6f3ac10a7f73f7e15a6469d2e2f69c2943034c8bd675641d044",
+      "bytes": 691
+    },
+    {
+      "relativePath": "live/claude/risk/medium/lanes/L-01.json",
+      "hash": "aae20f4bab0aaf2f0ab8bcdedef199a86a4e8ed28b7038c16929b7178153cc2b",
+      "bytes": 572
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-1/review.json",
+      "hash": "73365020dfd3e025a30184e0547a126bf194b2637878c30e9f786301b0170f97",
+      "bytes": 681
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-2/review.json",
+      "hash": "517b4a1c8509a47818b8222f66ec780a990fee01310b8f843e50d90d0de67968",
+      "bytes": 3012
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-3/review.json",
+      "hash": "2ea8708a3862ff3683da8fcd7c347c6a0ba920a88ab9e53d86ee1bdec365afc8",
+      "bytes": 4141
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-4/review.json",
+      "hash": "753fa1d88a96c916de48f10cf2673994a2b681f90856d2b77563f4599801a33f",
+      "bytes": 1720
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-5/review.json",
+      "hash": "9a629dc7d4bc37a6b8b2b257a9384aa6b048dddcd9715c8d18b6cbda7ba353a1",
+      "bytes": 3997
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-6/review.json",
+      "hash": "acf78959c81251637958a78a9b56c818b35ecf1d27f6de3d46aa3a044d1bd1da",
+      "bytes": 5647
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-7/review.json",
+      "hash": "0fb3617e09aabf51e56e88c084b16abe512df9bf4bccb32fdbb0b1b1740bd717",
+      "bytes": 2927
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-8/review.json",
+      "hash": "c34aca5f1ea5a163f4f8473372bbbc5d25e4f413d6e1dd657ba386c31a01b583",
+      "bytes": 4139
+    },
+    {
+      "relativePath": "live/claude/risk/high/reviews/R-9/review.json",
+      "hash": "416c5a4ab09814043dc30593ccff9e6bf493a3857f9fb418d8a9022e2c98cb57",
+      "bytes": 4519
+    },
+    {
+      "relativePath": "live/claude/risk/high/lanes/L-01.json",
+      "hash": "af8971da337f94007e3160763068b6e167e9777a2fddb2622eadfbe4c4d47b8c",
+      "bytes": 539
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/contract/changes__medium__acceptance.md",
+      "hash": "0aad3975ca026f1d3addadcf499de1e70eb030330259b9ce0e740b125c80091f",
+      "bytes": 387
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/contract/changes__medium__change.json",
+      "hash": "7e6f3f867fc0105add84de512a7d469b859d007aa9179432b8792ca638810954",
+      "bytes": 444
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/contract/changes__medium__design.md",
+      "hash": "06f495fdccef433250f94efdae7e00487fa8d27cb42870499942b5474373aea8",
+      "bytes": 2863
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/contract/changes__medium__proposal.md",
+      "hash": "43a24874da4c3668341866c232203ef0089d1e9e1d858a233335a9546fff0ecb",
+      "bytes": 930
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/report.md",
+      "hash": "d125cb12007931a17554c057e83c68f8dbc508a63faa859f525b8aafca8e73f7",
+      "bytes": 8900
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/request.json",
+      "hash": "f6398e8b116daca7b2272b0884103a7066de5f96a23ed94d521b86c65883377b",
+      "bytes": 853
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/result.json",
+      "hash": "99c594dcbdff2ab78ff473ad43b31f1c98a23135b4758fd197cccff0a2700988",
+      "bytes": 7313
+    },
+    {
+      "relativePath": "live/claude/goal/medium-V-1/target.json",
+      "hash": "a7f228280c317abbac676fd81f8e3892f411b3daf12559940f516a8c35db4c77",
+      "bytes": 5216
+    },
+    {
+      "relativePath": "live/claude/amend/findings/F-1.json",
+      "hash": "268d8af855f3ef03612becdb6f4dd07ce09e4cecde42e199d70d74f1d0133818",
+      "bytes": 1598
+    },
+    {
+      "relativePath": "live/claude/amend/reviews/R-1/review.json",
+      "hash": "36565b4c55f8353ae7cc8af3f90475afea65a34599794c57f9dc5168c0dbeb0e",
+      "bytes": 5012
+    },
+    {
+      "relativePath": "live/claude/amend/reviews/R-2/review.json",
+      "hash": "f3a4a59bcc8dc3fb7cac03d729d464f6799258bc62256225e996f618885a5ec1",
+      "bytes": 5802
+    },
+    {
+      "relativePath": "live/claude/amend/amendments/A-1/candidate/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "relativePath": "live/claude/amend/amendments/A-1/candidate.json",
+      "hash": "ed602decac89de223fc6157e81ca10a1091bb451ff4725e2b2806fb03b28883c",
+      "bytes": 1085
+    },
+    {
+      "relativePath": "live/claude/amend/amendments/A-1/old/acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "relativePath": "live/claude/amend/amendments/A-1/state.json",
+      "hash": "ce6875b7be480a4713452c3b71bba1f2a5939ef459dc97eb795f9ad4954f25ab",
+      "bytes": 278
+    },
+    {
+      "relativePath": "live/claude/amend/current/tasks.md",
+      "hash": "391330e58e8db459c218afed354359b66e247eded01a42e66a9d4ba1936e22ef",
+      "bytes": 808
+    },
+    {
+      "relativePath": "live/claude/amend/current/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "relativePath": "live/claude/amend/current/change.json",
+      "hash": "b85434c32edc1f5774e465ac72c921b0bef8791c8bd6d1ab01a10be3daf1e461",
+      "bytes": 290
+    },
+    {
+      "relativePath": "live/claude/amend-history/result.json",
+      "hash": "89f26f9bc457c44cb8f77714237076b2ee680fe367fbf7190a426b3c2f337845",
+      "bytes": 749
+    },
+    {
+      "relativePath": "live/claude/amend-history/archive-preflight.json",
+      "hash": "5bc9082d96e3bf97f64b4e41419f0a0d1eaf1e381aaad821cf929012f2f53199",
+      "bytes": 4117
+    },
+    {
+      "relativePath": "live/claude/amend-history/before.json",
+      "hash": "3db14b3b38b4ba2470c9f3cfed82aa5608b148ef1ed010049a20eb083cc8b048",
+      "bytes": 1080
+    },
+    {
+      "relativePath": "live/claude/amend-history/pending.json",
+      "hash": "f27c8a0a1d79bb7d54b09ca00aaef6035ce57e41bfa953a3f039dbf22404a45b",
+      "bytes": 1222
+    },
+    {
+      "relativePath": "live/claude/amend-history/after.json",
+      "hash": "fb5eec99d1ad2ea2aa865b8ce710273569c75c8894911c1aac751915c9d7c8e1",
+      "bytes": 1337
+    },
+    {
+      "relativePath": "live/claude/amend-history/reused-review-provenance.json",
+      "hash": "a18e8e1a4f22db2ba199b1abcf5f452ff033b60b770a51ae8ee6b11a33d3bd34",
+      "bytes": 11193
+    },
+    {
+      "relativePath": "live/claude/amend-history/commands.jsonl",
+      "hash": "90ea706ae06cff63610c3c3e2c0630cec320355fd667e7f0dd4dca62c64b639c",
+      "bytes": 4364
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/artifacts/baseline-verifier.md",
+      "hash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+      "bytes": 1541
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/contract/changes__amend__acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/contract/changes__amend__change.json",
+      "hash": "93c33e99cee1496fbc2335a64925e8b08d0b1a8f56fd38bef50f610e6a278e9e",
+      "bytes": 104
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/contract/changes__amend__design.md",
+      "hash": "cfeb235b01eb2a130f56bb2fa07dfcddab8a1774b45d35814481902e4e6fe36e",
+      "bytes": 633
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/contract/changes__amend__proposal.md",
+      "hash": "63760b1c3380b42ab0b422b718611b1ced15a127a5876a1ae49ca1e2d91430ef",
+      "bytes": 714
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/report.md",
+      "hash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+      "bytes": 1541
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/request.json",
+      "hash": "d2dd7043047be0aef0873cb6ba45175bf2ca062d0780803a1d1b84ba9022ad5f",
+      "bytes": 1040
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/result.json",
+      "hash": "0d7b81455bee0f049080f370f9a7c2c7a73b5440b9e4a409c7adc6bd98cde4bb",
+      "bytes": 2088
+    },
+    {
+      "relativePath": "live/claude/amend-history/old-V-1/target.json",
+      "hash": "929d23f893c2508a4ca3650250defbd496acbaa48149e40a713ad38a2e440b02",
+      "bytes": 5128
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/artifacts/baseline-verifier.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/contract/changes__verify__acceptance.md",
+      "hash": "7f38c43af8140a58b743487fa5cd5be0ef93843450c2b17b73e74bf71c3a4fa4",
+      "bytes": 152
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/contract/changes__verify__change.json",
+      "hash": "bf09168d0e14d96cc090856d08546be1ad4e26a272a67cb26e940e8690ee8d30",
+      "bytes": 105
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/report.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/request.json",
+      "hash": "ccfa25a0dcfe5ede06e735fc0fbcdc9a828ecc863a449e42716670932634ba1c",
+      "bytes": 874
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/result.json",
+      "hash": "03650977a2fa773334d42d74193523a43668d007f7518f17721a79978c0204a2",
+      "bytes": 1390
+    },
+    {
+      "relativePath": "live/claude/verify/V-1/target.json",
+      "hash": "03b49d751406840f7d72663160f9b7da025ffbf0fbb703c4434a603b01177418",
+      "bytes": 4596
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/contract/changes__verify__acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/contract/changes__verify__change.json",
+      "hash": "bf09168d0e14d96cc090856d08546be1ad4e26a272a67cb26e940e8690ee8d30",
+      "bytes": 105
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/report.md",
+      "hash": "e6f4dee41f85942248904bf151bc5c115173d2bea6f80632573c331c53bcbb03",
+      "bytes": 8503
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/request.json",
+      "hash": "4fb5a5b2a8692782edb0e5f7bd0e0b2f9c0c3fd5356f22c5fdbd42d75e26b1c6",
+      "bytes": 927
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/result.json",
+      "hash": "e8e4ec0a4a99d216ca073514ab086e3ab3262e11d5d7bf4497ad17c11e2ed1ca",
+      "bytes": 6891
+    },
+    {
+      "relativePath": "live/claude/verify/V-2/target.json",
+      "hash": "8aa886f3482904aee84ff512bcb2a300be7373702c34527ae57bec3613ce4dcf",
+      "bytes": 4945
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/contract/changes__verify__acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/contract/changes__verify__change.json",
+      "hash": "bf09168d0e14d96cc090856d08546be1ad4e26a272a67cb26e940e8690ee8d30",
+      "bytes": 105
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/report.md",
+      "hash": "84ab185dd6629ced288f85f568b9e22becc8ea2266c8d3553b2c626d80cfacc2",
+      "bytes": 8278
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/request.json",
+      "hash": "93e475bbc2ff4a61ab4d5dc1fd0df7fb7dbf6df8b3b1b3f7830ab025c7e47566",
+      "bytes": 927
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/result.json",
+      "hash": "1c656707fd4dbc02cfdcf7be20726933cf01047df519956d48bc555168774015",
+      "bytes": 8616
+    },
+    {
+      "relativePath": "live/claude/verify/V-3/target.json",
+      "hash": "8aa886f3482904aee84ff512bcb2a300be7373702c34527ae57bec3613ce4dcf",
+      "bytes": 4945
+    },
+    {
+      "relativePath": "live/claude/verify/current/tasks.md",
+      "hash": "fcadb7b2036e9c0118ebca26d111ce39fd75d67e38e8ecc8c4eecf23232e6272",
+      "bytes": 360
+    },
+    {
+      "relativePath": "live/claude/verify/current/acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "relativePath": "live/claude/verify/current/change.json",
+      "hash": "07c971863fac847ebbdd290915b5939de0562c72f3d74c650291c71a8c61146c",
+      "bytes": 632
+    },
+    {
+      "relativePath": "live/claude/snapshots/risk-v4-before.json",
+      "hash": "2c44e4da0cd836add39ac2885d8ece40035d2130f83f3536187e7c10fd7ddcbf",
+      "bytes": 6682
+    },
+    {
+      "relativePath": "live/claude/snapshots/risk-v4-after.json",
+      "hash": "e7ab889ebc93338686ebc5d46de7253ee6d7adb22fd3ae7da063b2c72c4562e9",
+      "bytes": 7106
+    },
+    {
+      "relativePath": "live/claude/snapshots/goal-v4-before.json",
+      "hash": "d638d803e91730e8edb8b6cd494de00ca0e9b0dbc1ee3835f965dab2d554e3fc",
+      "bytes": 7107
+    },
+    {
+      "relativePath": "live/claude/snapshots/amend-v5-before.json",
+      "hash": "1ae9f6fce877eff194abe6de56be4b3c9b0789bada30f8865b837d2fc97eec09",
+      "bytes": 13019
+    },
+    {
+      "relativePath": "live/claude/snapshots/verify-static-v5-before.json",
+      "hash": "546a696e7b2e64ce2e65710b63d924758e1839d3db679245f43e32d32163b60f",
+      "bytes": 15191
+    },
+    {
+      "relativePath": "live/claude/snapshots/verify-live-v5-before.json",
+      "hash": "1c44895c90a830db7bdb29ff555d4d88e69739f107a3eae0aeb32cd0985df926",
+      "bytes": 16647
+    },
+    {
+      "relativePath": "live/claude/snapshots/verify-live-v5-after.json",
+      "hash": "04c89c7ef431d4f8605a36af7833ca50f96b4b47aa9ba3de5cb78bc25ba11068",
+      "bytes": 18104
+    },
+    {
+      "relativePath": "live/codex/risk/medium/reviews/R-medium-critic-1/review.json",
+      "hash": "b2353a45ccfcfcdbca0d084416efb925db5e1d483a1ed2437f9137b3a4361c00",
+      "bytes": 464
+    },
+    {
+      "relativePath": "live/codex/risk/medium/lanes/L-01.json",
+      "hash": "65109dd0e7d99ee798de9b153a3205fe2dfef45e96a198d48e2ffd1073179e0c",
+      "bytes": 376
+    },
+    {
+      "relativePath": "live/codex/risk/high/reviews/R-high-architect-1/review.json",
+      "hash": "0147bcfe05024fb9986406581d00ae82b45c600e4909f62d71773a5117cf094e",
+      "bytes": 484
+    },
+    {
+      "relativePath": "live/codex/risk/high/reviews/R-high-critic-1/review.json",
+      "hash": "7517027c26164c24c35183c317fd47683c7f15918882918359c0c675ba17a2fd",
+      "bytes": 471
+    },
+    {
+      "relativePath": "live/codex/risk/high/reviews/R-high-planner-1/review.json",
+      "hash": "1e17f2ceb5c5751898992ea1e876443beda077413cd3084e76eb66ffff5ef7cc",
+      "bytes": 477
+    },
+    {
+      "relativePath": "live/codex/risk/high/lanes/L-01.json",
+      "hash": "3697e6a8b82a5a85a7c9efbbcb81630226c5b0ba6f0e574dd78d8907a311edf0",
+      "bytes": 334
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/contract/changes__medium__acceptance.md",
+      "hash": "6ee4b005f95b2c92676e2e17891947114163475f278ad1dd7e6f9a4117dacec2",
+      "bytes": 184
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/contract/changes__medium__change.json",
+      "hash": "745a79e0c69faf76019a7ae5f8cf3f9a602b4c50473785c9710ebc950c3cd3a2",
+      "bytes": 248
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/contract/changes__medium__design.md",
+      "hash": "b7f6ff9a26dbae71908b28e9bda8fac36a3002eb325c4f3df26a15555ce3cd0a",
+      "bytes": 1276
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/contract/changes__medium__proposal.md",
+      "hash": "31d3fc245cb217e81794d09bfff726203427fc22de38086bc2e872959542cf7f",
+      "bytes": 601
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/contract/changes__medium__spec-base.json",
+      "hash": "bc44ac68157a13808e3639de8bf134fb1e58d284508f7ca83e47992c9446d8b1",
+      "bytes": 277
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/contract/changes__medium__specs__labels__spec.md",
+      "hash": "6d1cf8088e44f0d33b9d06f08e081b61706a6e91d2ebb726aa1141a4a967aeea",
+      "bytes": 235
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/report.md",
+      "hash": "8b56964ed45e7936ddc40cf0cc30bb05deca86cf76ecff02d9c714ecd80c9e69",
+      "bytes": 2933
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/request.json",
+      "hash": "6c0e654f534e3475ccab274fe2f948a7cd7094f395b6d3468e8d17868c1a07bc",
+      "bytes": 853
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/result.json",
+      "hash": "b12db201d2eeed1dc86f83eca8859e52fe6762db13c9900932d749c7e9a7e716",
+      "bytes": 1390
+    },
+    {
+      "relativePath": "live/codex/goal/medium-V-1/target.json",
+      "hash": "1a7792df6771d84729e0cac2aba1908024a8d9b06ef7cb5305ae79297abc4c6c",
+      "bytes": 4964
+    },
+    {
+      "relativePath": "live/codex/amend/findings/F-1.json",
+      "hash": "437fa5c16963d4fa95556bd0c65f86cb5cd2789a8a03aceddcdf8c500a48c149",
+      "bytes": 1022
+    },
+    {
+      "relativePath": "live/codex/amend/reviews/R-amend-design-1/review.json",
+      "hash": "734bd5686ff3e1b4d9d64b975f81a63b2e185bd9f862e7c4e4b0f5927c63557b",
+      "bytes": 465
+    },
+    {
+      "relativePath": "live/codex/amend/reviews/R-amend-equivalence-1/review.json",
+      "hash": "b3c6369563e11f809db0418747b300dd5c9cfb913fba27fea1d5dabeaff1b35d",
+      "bytes": 477
+    },
+    {
+      "relativePath": "live/codex/amend/amendments/A-1/candidate/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "relativePath": "live/codex/amend/amendments/A-1/candidate.json",
+      "hash": "83b7386a7bc82831b9a65c0c5023ca94b1c0f46cd50903a7e6d314a0dad6fdbf",
+      "bytes": 707
+    },
+    {
+      "relativePath": "live/codex/amend/amendments/A-1/old/acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "relativePath": "live/codex/amend/amendments/A-1/state.json",
+      "hash": "d7ce3aed4b751087476d0579058a6f4759ca604e27d4e8317320d2f527c5b76d",
+      "bytes": 278
+    },
+    {
+      "relativePath": "live/codex/amend/current/tasks.md",
+      "hash": "dc7b5af15bfc5e0af2b70225e4b18c0056ecffc52bf5d3663ae6d1b211ad27c3",
+      "bytes": 362
+    },
+    {
+      "relativePath": "live/codex/amend/current/acceptance.md",
+      "hash": "c7936e4622e39dc5ad5a751f3283100810980dcba549cc57018891dc284fe826",
+      "bytes": 452
+    },
+    {
+      "relativePath": "live/codex/amend/current/change.json",
+      "hash": "9db747e8b4721910dd1b4a27391ee35ddbefd9fe83fe8f99664c1c3376c64c93",
+      "bytes": 290
+    },
+    {
+      "relativePath": "live/codex/amend-history/result.json",
+      "hash": "10b1b0881f05013ed7b706c01a146adfa3c81a1934c4e81c78fef03b46d16925",
+      "bytes": 747
+    },
+    {
+      "relativePath": "live/codex/amend-history/archive-preflight.json",
+      "hash": "a8d5886f706a3d873e07cfaefe39aa78ccb7062c275de4ec718ed1634dfc384a",
+      "bytes": 4116
+    },
+    {
+      "relativePath": "live/codex/amend-history/before.json",
+      "hash": "1359cbfd544385c94aa1a44d5b5e1db4f02c29edec3a373ec757a60ca144ec3a",
+      "bytes": 1080
+    },
+    {
+      "relativePath": "live/codex/amend-history/pending.json",
+      "hash": "299a610848f95f02c9dbd9fae38e2e8030bafdb88dc2354f70233ca0acd7e8ec",
+      "bytes": 1222
+    },
+    {
+      "relativePath": "live/codex/amend-history/after.json",
+      "hash": "6e9f967f5e003f20b798cd345b8e2a547d1d0c4cfd5b17dab02f99eda3800b21",
+      "bytes": 1337
+    },
+    {
+      "relativePath": "live/codex/amend-history/reused-review-provenance.json",
+      "hash": "5580897aba27325a4bbe55889a7f55eb7002b23b35dc13f95ee6b9c55074f474",
+      "bytes": 1137
+    },
+    {
+      "relativePath": "live/codex/amend-history/commands.jsonl",
+      "hash": "edf294f366630705656e38e94cb58ba5ff2c391fcfa4a7b623572b082475d0c7",
+      "bytes": 4472
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/artifacts/baseline-verifier.md",
+      "hash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+      "bytes": 1541
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/contract/changes__amend__acceptance.md",
+      "hash": "8b79cf81d7ca77db356dc65a2ec55fd3d4b8fd1e0bdb8d3f4f82b03f4166e8d7",
+      "bytes": 461
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/contract/changes__amend__change.json",
+      "hash": "5b24ca460512d90d475e0b7358d62eaada0966226d623627f8bbe864d57e12be",
+      "bytes": 104
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/contract/changes__amend__design.md",
+      "hash": "cfeb235b01eb2a130f56bb2fa07dfcddab8a1774b45d35814481902e4e6fe36e",
+      "bytes": 633
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/contract/changes__amend__proposal.md",
+      "hash": "63760b1c3380b42ab0b422b718611b1ced15a127a5876a1ae49ca1e2d91430ef",
+      "bytes": 714
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/report.md",
+      "hash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+      "bytes": 1541
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/request.json",
+      "hash": "b23309396243cb074715f105c0d650c1b837a137cff3c0a9356a74ef45bf77a6",
+      "bytes": 1040
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/result.json",
+      "hash": "b8a8989b55870f42909f8497b6ca4c0170c180a4c1adb5852345376a21473722",
+      "bytes": 2088
+    },
+    {
+      "relativePath": "live/codex/amend-history/old-V-1/target.json",
+      "hash": "246f51418beecc091ae4dcba9171af9c16fc2e435267f66d21e8867868b6d9d1",
+      "bytes": 5128
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/artifacts/baseline-verifier.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/contract/changes__verify__acceptance.md",
+      "hash": "7f38c43af8140a58b743487fa5cd5be0ef93843450c2b17b73e74bf71c3a4fa4",
+      "bytes": 152
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/contract/changes__verify__change.json",
+      "hash": "14d6b47bb4994399ebd95d0143b1c20cc72a3f46bf92b9ccbe62b00758b0090f",
+      "bytes": 105
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/report.md",
+      "hash": "f38181535cdaea10d47b40d371ce7ca2343b7dc4b476eaa3bf5ab3a4a8869be0",
+      "bytes": 2000
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/request.json",
+      "hash": "9bb673a65448e7539c8acb190d5119aeb75bf66602242417e47c09b7ed8b689d",
+      "bytes": 874
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/result.json",
+      "hash": "ef3b4cedbdc9d9677d760c5256c18c7e7cd7e1b56cf3d691a8813f1dfb17dcd7",
+      "bytes": 1390
+    },
+    {
+      "relativePath": "live/codex/verify/V-1/target.json",
+      "hash": "68f4f3bd69249759f25173cebc7d965b4af4fdd9fc495255753a66b5184c802d",
+      "bytes": 4596
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/contract/changes__verify__acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/contract/changes__verify__change.json",
+      "hash": "14d6b47bb4994399ebd95d0143b1c20cc72a3f46bf92b9ccbe62b00758b0090f",
+      "bytes": 105
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/report.md",
+      "hash": "291c4f2d5b39d0258bd075260a5c61a784bf31944c98b8741b5011524660d0fc",
+      "bytes": 3302
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/request.json",
+      "hash": "53af2f1459f43e2869dac1a1d2ea2efbd61531888cef4f5139ffae726c530a96",
+      "bytes": 927
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/result.json",
+      "hash": "11686c00f814f2170b70fb73f51c2344cccf9b416a69963063b9c904435874b9",
+      "bytes": 1245
+    },
+    {
+      "relativePath": "live/codex/verify/V-2/target.json",
+      "hash": "8b7833145b95a7586bb09812eaf5898ad45a3ef538bae458769dfa70873a55bb",
+      "bytes": 4945
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/contract/changes__verify__acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/contract/changes__verify__change.json",
+      "hash": "14d6b47bb4994399ebd95d0143b1c20cc72a3f46bf92b9ccbe62b00758b0090f",
+      "bytes": 105
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/contract/changes__verify__design.md",
+      "hash": "0d90c64f857d6b4e0315ee022859ef006fb6f4e74272c7b40eae3bd74360021e",
+      "bytes": 723
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/contract/changes__verify__proposal.md",
+      "hash": "48899020998003403a878809c2749e36152ccf425ff32cac9d9d9aa66900432e",
+      "bytes": 834
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/report.md",
+      "hash": "c72c1b1d9ddd6d1b814fb899e3ce4e26da0ca6b70d153c4d3d4e002792b6dedb",
+      "bytes": 3441
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/request.json",
+      "hash": "2b660c59823dd523a094e4f3bb888a0d00f0d7c5826456b51081aaec16f608d4",
+      "bytes": 927
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/result.json",
+      "hash": "d63eb47d8b6783f435d2c0f65403d1a001251345ddff86f9425f3f882dc6a908",
+      "bytes": 1553
+    },
+    {
+      "relativePath": "live/codex/verify/V-3/target.json",
+      "hash": "8b7833145b95a7586bb09812eaf5898ad45a3ef538bae458769dfa70873a55bb",
+      "bytes": 4945
+    },
+    {
+      "relativePath": "live/codex/verify/current/tasks.md",
+      "hash": "fcadb7b2036e9c0118ebca26d111ce39fd75d67e38e8ecc8c4eecf23232e6272",
+      "bytes": 360
+    },
+    {
+      "relativePath": "live/codex/verify/current/acceptance.md",
+      "hash": "76a312d1df87890a001d8518591bc9cd04375a49cff53e5153730f3e8834f815",
+      "bytes": 529
+    },
+    {
+      "relativePath": "live/codex/verify/current/change.json",
+      "hash": "0aae600b9c80dd5243cc67e62cd73727698348b3c668e3b9f6e62d06289ae4c5",
+      "bytes": 632
+    },
+    {
+      "relativePath": "live/codex/snapshots/risk-v4-before.json",
+      "hash": "eb5a4200d3f282b704842b2e731f61f1e1d45cb1fa8c1e5a07ae4936f2df23bd",
+      "bytes": 6680
+    },
+    {
+      "relativePath": "live/codex/snapshots/risk-v4-after.json",
+      "hash": "a9674d324ceec9ce71be798e14cecd621dcc8305a603f1c715832a219d9732ce",
+      "bytes": 7100
+    },
+    {
+      "relativePath": "live/codex/snapshots/goal-v4-before.json",
+      "hash": "507620d327a17b16a5f289d45d8f67f718c3c6a5a8679ac90546a1ad378ed36e",
+      "bytes": 7101
+    },
+    {
+      "relativePath": "live/codex/snapshots/amend-v5-before.json",
+      "hash": "1f2347f41ea2e9f5143abcdd34524b139eca475d4653b9000153c28268c80cd0",
+      "bytes": 12967
+    },
+    {
+      "relativePath": "live/codex/snapshots/verify-static-v5-before.json",
+      "hash": "691e9e3512cd09f919ca1fb3093f74a52f9c129fac2c1e55c5c04bf310d03266",
+      "bytes": 15167
+    },
+    {
+      "relativePath": "live/codex/snapshots/verify-live-v5-before.json",
+      "hash": "72731b42dd07e8a8f7fa2a6c2486d64546e0197c06bf2d62e08b74d7244ba931",
+      "bytes": 16623
+    },
+    {
+      "relativePath": "live/codex/snapshots/verify-live-v5-after.json",
+      "hash": "5e86369a1e6dc7b8ff4f018423b9df2b795d3591741207f941ddb89e548357e9",
+      "bytes": 18080
+    }
+  ]
+}

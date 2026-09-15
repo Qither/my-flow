@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "id": "F-1",
+  "changeId": "ba122291-a8c7-408a-a6ad-e767fb2b3b17",
+  "cause": "A's recorded verification command does not match the contract it is supposed to evidence (verification-contract mismatch on AC-01). Supplied as a fixture input in scenario-inputs.json; no execution failure was observed in this session.",
+  "tasks": [
+    "T-01"
+  ],
+  "trustBoundaryChanged": false,
+  "attempts": [
+    {
+      "approach": "Change consumer wording",
+      "outcome": "failed",
+      "evidenceRef": "scenario-inputs.json failedApproaches[0] (id F-1-a) - preset fixture input, not an execution observed in this session; result: 'The A verification-contract mismatch remains'",
+      "at": "2026-09-15T06:55:50.768Z"
+    },
+    {
+      "approach": "Rerun the unchanged original check",
+      "outcome": "failed",
+      "evidenceRef": "scenario-inputs.json failedApproaches[1] (id F-1-b) - preset fixture input, not an execution observed in this session; result: 'The same verification-contract mismatch remains'",
+      "at": "2026-09-15T06:56:01.754Z"
+    }
+  ],
+  "resolvedBy": "R-1",
+  "opened": "2026-09-15T06:55:50.768Z",
+  "remedy": "Replace AC-01's checks command node --test test/amend-a.test.mjs with node scripts/check-a.mjs via a staged equivalent-check amendment holding T-01 and its descendant T-02 while T-03 continues, conditional on an independent critic OKAY that demonstrates scripts/check-a.mjs exits nonzero when source/a.mjs does not export 'A ready' and records that file as a tracked contract-bearing locator",
+  "resolvedAt": "2026-09-15T07:00:52.343Z"
+}

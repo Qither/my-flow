@@ -1,0 +1,133 @@
+{
+  "ok": false,
+  "blockers": [
+    {
+      "code": "unfinished-tasks",
+      "message": "2 task(s) still unticked: T-01, T-02"
+    },
+    {
+      "code": "contract-drift",
+      "message": "the contract changed after the verified attempt; run a new attempt"
+    }
+  ],
+  "warnings": [],
+  "outputs": [],
+  "log": [],
+  "classification": "verified-v2",
+  "destName": "2026-09-15-amend",
+  "dest": "C:\\Users\\qiujm\\AppData\\Local\\Temp\\my-flow-candidate-mUUp25\\workspaces\\codex\\.my-flow\\amend-history\\changes\\archive\\2026-09-15-amend",
+  "receipt": {
+    "schemaVersion": 2,
+    "change": "amend",
+    "archivedAs": "changes/archive/2026-09-15-amend",
+    "at": "2026-09-15T07:35:22.435Z",
+    "verification": "verified-v2",
+    "attempt": "V-1",
+    "resultDigest": "4915381b473ed910ae89ad01db656f2fba30b42b7fc8ce2b1b5d949b999e4ea9",
+    "baseline": null,
+    "outputs": []
+  },
+  "evidence": {
+    "schemaVersion": 2,
+    "highWater": 1,
+    "head": {
+      "sequence": 1,
+      "state": "closed",
+      "requestDigest": "237962e8abc5447eadb6af5e4fa59be0a13d55d3bcbee595db675028c9b04a7b",
+      "resultDigest": "4915381b473ed910ae89ad01db656f2fba30b42b7fc8ce2b1b5d949b999e4ea9",
+      "verdict": "PASS",
+      "started": "2026-09-15T07:19:14.690Z",
+      "finished": "2026-09-15T07:22:59.933Z"
+    },
+    "result": {
+      "schemaVersion": 2,
+      "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+      "sequence": 1,
+      "requestDigest": "237962e8abc5447eadb6af5e4fa59be0a13d55d3bcbee595db675028c9b04a7b",
+      "verdict": "PASS",
+      "criteria": [
+        {
+          "id": "AC-01",
+          "status": "VERIFIED",
+          "modes": [
+            "automated"
+          ],
+          "evidenceRefs": [
+            "artifacts/baseline-verifier.md"
+          ]
+        },
+        {
+          "id": "AC-02",
+          "status": "VERIFIED",
+          "modes": [
+            "automated"
+          ],
+          "evidenceRefs": [
+            "artifacts/baseline-verifier.md"
+          ]
+        },
+        {
+          "id": "AC-03",
+          "status": "VERIFIED",
+          "modes": [
+            "automated"
+          ],
+          "evidenceRefs": [
+            "artifacts/baseline-verifier.md"
+          ]
+        }
+      ],
+      "commands": [
+        {
+          "command": "node --test test/amend-a.test.mjs",
+          "exitCode": 0,
+          "summary": "Independent verifier: 1 test, 1 pass, zero fail/skipped/todo/cancelled"
+        },
+        {
+          "command": "node --test test/amend-b.test.mjs",
+          "exitCode": 0,
+          "summary": "Independent verifier: 1 test, 1 pass, zero fail/skipped/todo/cancelled"
+        },
+        {
+          "command": "node --test test/amend-c.test.mjs",
+          "exitCode": 0,
+          "summary": "Independent verifier: 1 test, 1 pass, zero fail/skipped/todo/cancelled"
+        }
+      ],
+      "origin": {
+        "kind": "native-agent",
+        "actorId": "/root/v3_live_observer",
+        "writerActorId": "fixture-history-baseline-writer",
+        "sourceRef": "collaboration:/root/v3_live_observer#amend-history-baselines"
+      },
+      "qualified": true,
+      "originProblems": [],
+      "endImplementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+      "endAcceptanceDigest": "fe3655ea31b0e1be11e59754c7014f61bd70fe33f251421970b75f8abf70833b",
+      "artifacts": [
+        {
+          "relativePath": "baseline-verifier.md",
+          "hash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+          "bytes": 1541
+        }
+      ],
+      "reportHash": "616d23ca9125856cf18b0df4e90060ab18957a429ef4115cffffad3aaea6b1aa",
+      "finished": "2026-09-15T07:22:59.933Z"
+    },
+    "eligible": true,
+    "corrupt": false,
+    "reasons": [],
+    "missingOlder": []
+  },
+  "bases": {
+    "baseline": null,
+    "conflicts": [],
+    "diagnostics": [
+      {
+        "code": "no-baseline",
+        "message": "changes/amend/spec-base.json does not exist; capture the base with \"spec baseline amend\" before archiving",
+        "path": "changes/amend/spec-base.json"
+      }
+    ]
+  }
+}

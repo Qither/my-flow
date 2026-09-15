@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 2,
+  "changeId": "2c49bbe1-6b95-4bef-9781-681d0e43eebc",
+  "sequence": 2,
+  "requestDigest": "441cf7a9e5504370ca8c0a462849ea31611136fe0b266c6cba5ca6922c356f29",
+  "verdict": "INCOMPLETE",
+  "criteria": [
+    {
+      "id": "AC-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E10"
+      ],
+      "note": "Re-verified in this attempt by the independent verifier: 1 test, 1 pass, 0 fail, 0 skipped, 0 todo, exit 0, against implementation and test files whose hashes match the V-2 target snapshot, with no fake-completion pattern anywhere in source/, test/, cli.mjs or scripts/."
+    },
+    {
+      "id": "AC-02",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": [
+        "E9"
+      ],
+      "note": "Live criterion deliberately NOT authorised this round and therefore not exercised. No fresh native verifier read native-probe.txt within attempt V-2 or returned LIVE_FIXTURE_READY with its actual role and tool events. Every candidate substitute is excluded by acceptance.md itself - historical static reports, preflight observations and writer assertions do not satisfy this required current-attempt live observation - which rules out V-1's report, preflight records, writer assertions and the opaque input hash. V-1 additionally cannot cover it: its recorded criteria list is AC-01 only and its acceptance digest 286e887b8647 predates AC-02's existence (85f4ab1b1966). Recorded as MISSING rather than a softened VERIFIED."
+    },
+    {
+      "id": "T-01",
+      "status": "VERIFIED",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "The ticked box is independently backed by the verifier's own fresh run of AC-01's check in this attempt, not by its evidence: V-1 pointer, which is a closed prior attempt against an older contract."
+    },
+    {
+      "id": "T-02",
+      "status": "MISSING",
+      "modes": [],
+      "evidenceRefs": [
+        "E9"
+      ],
+      "note": "Correctly unticked and must stay unticked while AC-02 is unobserved."
+    },
+    {
+      "id": "DNT",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E5"
+      ],
+      "note": "Zero diff under test/, scripts/, the candidate plugin or outside the workspace. The 'other changes' category does intersect a naive git diff (changes/amend, changes/high, changes/medium all appear), but none of that is attributable to change verify, whose own diff is confined to changes/verify/{acceptance.md,tasks.md,change.json}. The source/left.mjs and source/right.mjs edits were verified against changes/medium/design.md D-02 and match its prescription byte for byte. Noted finding, not a blocker."
+    },
+    {
+      "id": "RERUN",
+      "status": "PARTIAL",
+      "modes": [
+        "automated"
+      ],
+      "evidenceRefs": [
+        "E1"
+      ],
+      "note": "The step is 'Run this change's fixed acceptance checks' (plural). AC-01's check ran after the last relevant edit; AC-02's check was not authorised this round and was not run."
+    },
+    {
+      "id": "NG-DB",
+      "status": "VERIFIED",
+      "modes": [
+        "static"
+      ],
+      "evidenceRefs": [
+        "E5",
+        "E8"
+      ],
+      "note": "Non-Goals and Decision Boundaries respected: no candidate-plugin, host-config, other-fixture or external-file change attributable to verify, and the boundary's required sequence - observe INCOMPLETE on old static evidence before any live PASS - is exactly this stage. No old PASS was fabricated or reused."
+    }
+  ],
+  "commands": [
+    {
+      "id": "E1",
+      "command": "node --test test/verify.test.mjs",
+      "result": "exit 0; tests 1 / pass 1 / fail 0 / cancelled 0 / skipped 0 / todo 0"
+    },
+    {
+      "id": "E2",
+      "command": "cat source/answer.mjs",
+      "result": "export const answer = 42;"
+    },
+    {
+      "id": "E3",
+      "command": "sha256sum source/answer.mjs test/verify.test.mjs",
+      "result": "a2098bd92b10bf8b... / bbe222c12a2f1941...; both match changes/verify/verify/V-2/target.json"
+    },
+    {
+      "id": "E4",
+      "command": "grep -rnEi over source test cli.mjs scripts for TODO|FIXME|XXX|HACK|test.skip|test.only|it.skip|it.only|describe.skip|describe.only|not implemented|unimplemented|placeholder|stub",
+      "result": "exit 1, zero matches"
+    },
+    {
+      "id": "E5",
+      "command": "git diff --name-only",
+      "result": "18 paths under changes/amend, changes/high, changes/medium, changes/verify plus source/left.mjs and source/right.mjs; no path under test/, scripts/ or the candidate plugin"
+    },
+    {
+      "id": "E6",
+      "command": "ls -d specs; ls -d changes/verify/specs",
+      "result": "both 'No such file or directory'; no base spec dir and no delta specs"
+    },
+    {
+      "id": "E7",
+      "command": "diff changes/verify/verify/V-2/contract/changes__verify__acceptance.md changes/verify/acceptance.md",
+      "result": "identical; the V-2 contract copy is the live acceptance text"
+    },
+    {
+      "id": "E8",
+      "command": "cat changes/verify/verify/V-1/result.json",
+      "result": "verdict PASS with a criteria list containing only AC-01 and endAcceptanceDigest 286e887b8647..., which differs from V-2's acceptance digest 85f4ab1b1966; V-1's contract copy contains AC-01 only"
+    },
+    {
+      "id": "E9",
+      "command": "ls native-probe.txt (existence only) and the attempt snapshot hash in changes/verify/verify/V-2/target.json",
+      "result": "file exists, 19 bytes, hashed as an opaque input 9168b830ad0e...; its contents were NOT read, opened, grepped or returned. Existence plus a hash carries no role, no tool events and no LIVE_FIXTURE_READY return, so it does not satisfy AC-02"
+    },
+    {
+      "id": "E10",
+      "command": "node .../spec.mjs validate verify; node .../spec.mjs context verify",
+      "result": "validate: ok verify, 1 passed 0 failed. context: acceptance criteria complete = AC-01 [automated], AC-02 [live]; tasks [x] T-01, [ ] T-02; source locator test/verify.test.mjs (bbe222c12a2f, 176 bytes); open findings none"
+    }
+  ],
+  "origin": {
+    "kind": "native-agent",
+    "actorId": "subagent:my-flow:verifier",
+    "writerActorId": "main:claude-session-44a33a7a-18f7-4832-9ac2-98141fe75329",
+    "sourceRef": "foreground Agent dispatch, subagent_type my-flow:verifier, attempt V-2; report at .my-flow/verify/verify-20260915T0730Z-V-2.md; transcript at tasks/a54cae57cb0bc0832.output"
+  },
+  "qualified": true,
+  "originProblems": [],
+  "endImplementationDigest": "b57e7fca0a842090249e387f3f9900d4c45c7145dacd0989b75c94bb73907b18",
+  "endAcceptanceDigest": null,
+  "artifacts": [],
+  "reportHash": "e6f4dee41f85942248904bf151bc5c115173d2bea6f80632573c331c53bcbb03",
+  "finished": "2026-09-15T07:38:44.327Z"
+}

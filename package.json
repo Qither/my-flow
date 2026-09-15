@@ -10,7 +10,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node scripts/build.mjs --check",
-    "test": "node --test test/spec.test.mjs test/completion-guard.test.mjs test/dashboard.test.mjs test/markdown.test.mjs test/diff.test.mjs test/models.test.mjs test/styles.test.mjs test/ui.test.mjs test/plugin.test.mjs"
+    "test": "node --test test/intent-io.test.mjs test/intent-graph.test.mjs test/intent-state.test.mjs test/evidence.test.mjs test/archive.test.mjs test/spec.test.mjs test/completion-guard.test.mjs test/dashboard.test.mjs test/markdown.test.mjs test/diff.test.mjs test/models.test.mjs test/styles.test.mjs test/ui.test.mjs test/plugin.test.mjs test/workflow.test.mjs test/context.test.mjs test/usage.test.mjs"
   },
   "engines": {
     "node": ">=20"

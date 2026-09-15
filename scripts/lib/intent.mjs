@@ -15,6 +15,8 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeFileAtomic } from './intent-io.mjs';
+import { changeIndex } from './intent-state.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES = join(HERE, '..', '..', 'templates', 'change');
@@ -153,7 +155,7 @@ export function setState(root, change, stage) {
   const STATE = statePath(root);
   const state = { change, stage, updated: new Date().toISOString() };
   mkdirSync(dirname(STATE), { recursive: true });
-  writeFileSync(STATE, JSON.stringify(state, null, 2) + '\n');
+  writeFileAtomic(STATE, JSON.stringify(state, null, 2) + '\n'); // C-09: single-file write under the caller's lock
   return state;
 }
 
@@ -183,10 +185,15 @@ export function sectionBody(text, header) {
 
 // ---------------------------------------------------------------- validate
 export function validateSpecFile(root, absPath, isDelta) {
-  const errors = [];
   const t = read(absPath);
-  if (t === null) return errors;
+  if (t === null) return [];
   const path = absPath.startsWith(root) ? absPath.slice(root.length + 1).replace(/\\/g, '/') : absPath;
+  return validateSpecText(t, path, isDelta);
+}
+/** The same structural checks over text that is not on disk yet, so archive can validate its output. */
+export function validateSpecText(text, path, isDelta) {
+  const errors = [];
+  const t = norm(text) + '\n';
   const lines = t.split('\n');
   if (isDelta && !/^## (ADDED|MODIFIED|REMOVED|RENAMED) Requirements/m.test(t)) {
     errors.push(`${path}: delta spec needs at least one "## ADDED|MODIFIED|REMOVED Requirements" section`);
@@ -310,15 +317,19 @@ export function statusReport(root, { name, staleDays, auditEvery } = {}) {
   const STALE_DAYS = numOpt('--stale-days', 'MY_FLOW_STALE_DAYS', 14, { '--stale-days': staleDays });
   const now = Date.now();
   const names = name ? [name] : listChanges(root);
+  const index = changeIndex(root); // additive identity fields (C-02); the existing keys are untouched
   const rowFor = (n) => {
     const dir = join(CHANGES, n);
     if (!existsSync(dir)) return { name: n, missing: true };
     const t = tasks(dir);
+    const entry = index.entries.find((e) => e.location === 'active' && e.dirName === n);
     const finished = !!t && t.total > 0 && t.done === t.total; // waiting for archive is not rot
     const mtime = newestMtime(dir);
     const ageDays = Math.max(0, Math.floor((now - mtime) / 86_400_000));
     return {
       name: n,
+      id: entry?.id ?? null,
+      schemaVersion: entry?.schemaVersion ?? 1,
       current: current?.change === n,
       stage: current?.change === n ? current.stage : undefined,
       tasks: t,
@@ -352,7 +363,7 @@ export function statusReport(root, { name, staleDays, auditEvery } = {}) {
         )
         .join('\n')
     : 'no active changes (changes/ is empty or missing)';
-  return { json: { root, current, changes: rows, warnings }, text: [text, ...warnings].join('\n') };
+  return { json: { root, current, changes: rows, warnings, diagnostics: index.diagnostics }, text: [text, ...warnings].join('\n') };
 }
 /**
  * `spec validate [name]`: `{ json, text, failed }`, where `failed` is the number of results

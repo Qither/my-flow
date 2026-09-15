@@ -1,0 +1,220 @@
+{
+  "packet": {
+    "schemaVersion": 2,
+    "changeId": "6be7e698-6376-48b3-b4c9-3873b5f1595b",
+    "slug": "high",
+    "rel": "changes/high",
+    "mode": "final",
+    "taskId": null,
+    "constraints": {
+      "doNotTouch": "Four categories, chosen so that every path in this workspace lands in exactly one, rather than to\nenumerate today's dirty entries. The distinction between \"never modified\" and \"never reverted\" is\nload-bearing (D-07): the second group is dirty on arrival, and making it clean is the violation.\n\n**Never modified, by anyone, for any reason:**\n\n- `test/` — every file, and `test/high.test.mjs` above all: its assertions are the fixed\n  acceptance, and the implementation moves to meet them, never the reverse.\n- The candidate plugin and everything under the runtime plugin directory.\n- `changes/verify/` and `changes/amend/` — other fixture changes, clean on arrival and clean at the\n  end. AC-02 checks exactly this with `git status --porcelain -- changes/verify changes/amend`.\n- `scripts/` and `source/` (`source/a.mjs`, `source/b.mjs`, `source/c.mjs`, `source/answer.mjs`,\n  `source/left.mjs`, `source/right.mjs`) — this change has no consumer or producer there.\n- `fixture-settings.json`, `scenario-inputs.json`, `native-probe.txt`, `.gitignore`.\n- Host homes and all files outside this workspace.\n\n**Dirty on arrival — never modified *and* never reverted, cleaned or checked out:**\n\n- `changes/medium/**` — dirty on arrival from earlier fixture work (5 modified files, 83\n  insertions). It belongs here rather than in the group above, because leaving it alone means\n  leaving it *dirty*: `git checkout -- changes/medium` is as much a violation as an edit, and the\n  more likely one. AC-02's non-empty-diffstat scenario is the guard.\n- `changes/.transactions/` — the my-flow journal\n  (`runtime-plugin/scripts/lib/intent-io.mjs:35,52`). It is *not* git-ignored (`.gitignore:1` holds\n  only `.my-flow/`), so it appears in `git status`; that is expected, not a violation. No AC-02\n  check reads it, so its churn can never make a gate red and no one is ever tempted to clean it.\n\n**Tool-written under this change — never hand-edited except the one file named in the next group,\nand never reverted:**\n\n- `changes/high/**` as a whole is written by the my-flow tooling and by the review process, not by\n  the executor. Concretely, and covering every file in it: `changes/high/lanes/` and\n  `changes/high/reviews/` (lane and review records, written by the review tooling during this very\n  change); `changes/high/change.json` (the manifest, rewritten on every stage transition and again\n  at every verification-attempt start — `evidence.mjs:471,512` via `writeManifestHead`,\n  `MANIFEST_FILE` at `lib/intent-state.mjs:21`); `changes/high/verify/` (attempt directories,\n  published at attempt *start* — `evidence.mjs:349,477,507-508,622`; absent today, so it appears\n  for the first time when `mf-verify` runs, and nothing in AC-02 looks at it); and\n  `changes/high/proposal.md`, `changes/high/design.md`, `changes/high/acceptance.md` and\n  `changes/high/specs/cli-output/spec.md` — this contract, authored during plan and frozen at\n  execute. The delta spec is additionally pinned by sha256 in AC-02 and T-01/T-02, because\n  `git status` cannot see a content change inside an untracked collapsed directory and therefore\n  cannot police it at all; no status category would have helped.\n- `.my-flow/**` — disposable scratch, git-ignored (`.gitignore:1`), so it never appears in\n  `git status`. This change writes nothing there at all.\n\nThe executor neither edits nor tidies anything in the two groups above. Deleting, reverting or\n`git checkout`-ing any of them to make a scope gate green fails AC-02 (D-07, pre-mortem scenario 3).\n\n**Writable during execution — the complete list, and it is two entries:**\n\n- `cli.mjs` — the only source file this change edits, and the only file whose content it changes.\n- `changes/high/tasks.md` — checkbox ticks only; it is the progress ledger the working agreement\n  requires the executor to write. It is the single hand-edited exception to the `changes/high/**`\n  rule above. No AC-02 check reads anything under `changes/high/`, so ticking a box can never fail\n  the scope gate, whether or not this contract is committed before execute.\n\n**No new file** is created anywhere by this change: not at the workspace root, not under `source/`,\n`scripts/` or `test/`, and not under `.my-flow/`. In particular no `package.json`, no\n`node_modules/`, no new module, and no scope-baseline or scratch file — an earlier revision of this\nplan created `.my-flow/scope/high-baseline.txt` and that file, and the machinery that needed it, are\ngone (D-07). Files that appear under `changes/` while this change runs are written by the tooling,\nnot by the executor, and fall under the two tool-written groups above.",
+      "rebuild": "- `node --test test/high.test.mjs` — this change's fixed acceptance check. Must report 2 pass /\n  0 fail / 0 skipped / 0 todo.\n- The AC-03 `spawnSync` probe (the `node -e` one-liner in the Test Plan) — the manual contract\n  observation across all three argument vectors, with stdout and stderr kept separate.\n- The five AC-02 scope checks (D-07), none of which needs a baseline file:\n  `git status --porcelain -- . \":(exclude)changes\"`, `git diff --stat -- . \":(exclude)changes\"`,\n  `git status --porcelain -- changes/verify changes/amend`, `git diff --stat -- changes/medium`,\n  and the `node -e` sha256 re-check of `changes/high/specs/cli-output/spec.md` against the digest\n  T-01 recorded.\n- Nothing else: there is no build, bundle, cook, codegen, cache or install step in this workspace\n  (no `package.json`, no `node_modules`, no build script for this path under `scripts/`), and\n  `cli.mjs` is executed directly from source by `test/high.test.mjs:6`.",
+      "nonGoals": "- No changes to the candidate plugin, host configuration, other fixture changes\n  (`changes/medium/`, `changes/verify/`, `changes/amend/`), or any file outside this workspace.\n- No change to `test/high.test.mjs` — the acceptance assertions are fixed and the implementation\n  moves to meet them, never the reverse.\n- No `--help`, `--version`, `--format=<x>`, colour, pretty-printing or stderr diagnostics. Only\n  `--json` becomes part of the public surface.\n- No new files, no `package.json`, no dependency, no build step, no extraction of `cli.mjs` into a\n  library module.\n- No new exit codes and no rejection of unrecognized arguments (see D-04).",
+      "decisionBoundaries": "This changes a public CLI interface and requires the full review lane, even when `--fast` is\nrequested. Plan only during the risk-selection scenario. Preserve the fixed tests.\n\nOnly `cli.mjs` may be edited. The two stdout contracts asserted at `test/high.test.mjs:10` and\n`test/high.test.mjs:15` are immovable; any change to them is out of bounds."
+    },
+    "acceptance": [
+      {
+        "id": "AC-01",
+        "title": "CLI output contracts",
+        "required": true,
+        "evidenceModes": [
+          "automated"
+        ],
+        "checks": "`node --test test/high.test.mjs`"
+      },
+      {
+        "id": "AC-02",
+        "title": "The change stays inside its boundary",
+        "required": true,
+        "evidenceModes": [
+          "automated"
+        ],
+        "checks": "`git status --porcelain -- . \":(exclude)changes\"`; `git diff --stat -- . \":(exclude)changes\"`; `git status --porcelain -- changes/verify changes/amend`; `git diff --stat -- changes/medium`; the `node -e` sha256 pin named in the last scenario below"
+      },
+      {
+        "id": "AC-03",
+        "title": "Observable process behavior",
+        "required": true,
+        "evidenceModes": [
+          "manual"
+        ],
+        "checks": "the single `node -e` spawnSync probe named below, run from the workspace root"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "T-01",
+        "number": "1.1",
+        "title": "Before touching any file, run `node -e \"const{createHash}=require('node:crypto');console.log(createHash('sha256').update(require('node:fs').readFileSync('changes/high/specs/cli-output/spec.md')).digest('hex'))\"` from the workspace root and record the 64-hex-character digest it prints in this task's pasted evidence — do not write it to a file — as the content pin the delta spec needs because `git status` collapses untracked directories and cannot see a rewrite inside `changes/high/specs/` (AC-02, D-07); then in `cli.mjs` only, declare a single `const greeting = 'Hello, fixture'`, derive `const asJson = process.argv.slice(2).includes('--json')`, and branch to exactly one `console.log` per invocation — `console.log(JSON.stringify({ greeting }))` when `asJson`, otherwise `console.log(greeting)` — adding no import, no new file and no `process.exit` call, and verify that the digest line was captured and pasted before the edit (it should read `9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc` unless the contract was amended after planning) and that `node --test test/high.test.mjs` reports `tests 2 / pass 2 / fail 0 / skipped 0 / todo 0`",
+        "checked": false,
+        "dependsOn": [],
+        "accepts": [
+          "AC-01"
+        ],
+        "design": [
+          "D-01",
+          "D-02",
+          "D-03",
+          "D-04",
+          "D-05",
+          "D-06"
+        ],
+        "blocked": null,
+        "selected": true
+      },
+      {
+        "id": "T-02",
+        "number": "2.1",
+        "title": "From the workspace root run these five commands and verify each against the expected result stated here — there is no baseline file, no allow-list of tool-written paths and no line-by-line comparison anywhere in this task, because every command names the paths it judges: (a) `git status --porcelain -- . \":(exclude)changes\"` must print exactly one line, ` M cli.mjs` (it printed nothing during planning, so any entry under `test/`, `source/` or `scripts/`, a new `package.json`, or any new file at the workspace root is a scope violation); (b) `git diff --stat -- . \":(exclude)changes\"` must name `cli.mjs` and no other file (it printed nothing during planning); (c) `git status --porcelain -- changes/verify changes/amend` must print nothing at all (it printed nothing during planning); (d) `git diff --stat -- changes/medium` must print a **non-empty** diffstat — during planning `5 files changed, 83 insertions(+), 15 deletions(-)`, and its five `warning: ... LF will be replaced by CRLF` lines on stderr are git-autocrlf noise, not a failure — since an empty diffstat here means `changes/medium/` was reverted or checked out to quiet the gate, which is itself the Do-Not-Touch violation AC-02 exists to catch; and (e) re-run T-01's `node -e \"const{createHash}=require('node:crypto');console.log(createHash('sha256').update(require('node:fs').readFileSync('changes/high/specs/cli-output/spec.md')).digest('hex'))\"` and verify the digest is character-identical to the one T-01 pasted, proving the delta spec was not rewritten mid-execute; under no circumstances revert, `git checkout`, stash, clean or hand-edit anything under `changes/.transactions/`, `changes/high/` or `changes/medium/` to make any of these five green, because doing so fails AC-02 outright",
+        "checked": false,
+        "dependsOn": [
+          "T-01"
+        ],
+        "accepts": [
+          "AC-02"
+        ],
+        "design": [
+          "D-01",
+          "D-07"
+        ],
+        "blocked": null,
+        "selected": true
+      },
+      {
+        "id": "T-03",
+        "number": "2.2",
+        "title": "From the workspace root run the single AC-03 probe `node -e \"const{spawnSync}=require('node:child_process');for(const a of [[],['--json'],['--jsno']]){const r=spawnSync(process.execPath,['cli.mjs',...a],{encoding:'utf8'});console.log(JSON.stringify({args:a,status:r.status,stdout:r.stdout,stderr:r.stderr,stdoutLines:r.stdout.split('\\n').filter(Boolean).length}));}\"` — not three bare shell invocations, and never with `2>&1` or a redirect to a file, since the criterion separates stderr from stdout and the boundary forbids new files — and verify that it prints exactly three JSON lines in the order `[]`, `['--json']`, `['--jsno']`, that every line has `\"status\":0`, `\"stderr\":\"\"` and `\"stdoutLines\":1`, and that `stdout` is `\"Hello, fixture\\n\"` on the first and third lines and `\"{\\\"greeting\\\":\\\"Hello, fixture\\\"}\\n\"` on the second",
+        "checked": false,
+        "dependsOn": [
+          "T-01"
+        ],
+        "accepts": [
+          "AC-03"
+        ],
+        "design": [
+          "D-04",
+          "D-05",
+          "D-06"
+        ],
+        "blocked": null,
+        "selected": true
+      }
+    ],
+    "blocks": {
+      "design": {
+        "D-01": "### D-01 — Fixture boundary\n\nThis changes a public CLI interface and requires the full review lane, even when `--fast` is\nrequested. Plan only during the risk-selection scenario. Preserve the fixed tests.",
+        "D-02": "### D-02 — Detect the flag from `process.argv.slice(2)`, not the whole `argv`\n\nThe flag test is `process.argv.slice(2).includes('--json')`. `test/high.test.mjs:6` spawns\n`[cli, ...args]`, so `argv[0]` is the node binary and `argv[1]` is the absolute script path\nresolved at `test/high.test.mjs:5`; only `argv[2]` onward are user arguments.\n\nRejected: a bare `process.argv.includes('--json')`. `slice(2)` is preferred simply because\n`argv[0]` and `argv[1]` are process metadata rather than user input, and reading user intent from\nthe interpreter path or the script path is wrong on its face. No stronger claim is made: an\nearlier draft of this decision argued that `process.argv.includes('--json')` would match a\ndirectory path *containing* the substring `--json`; that was false and has been removed.\n`Array.prototype.includes` compares elements with SameValueZero, so it matches only an argument\nthat *equals* the string `--json`, never one that contains it. The two forms are therefore\nindistinguishable at the process level in this workspace, and `slice(2)` is chosen on clarity of\nintent, not on a defect it prevents. Because nothing observable turns on it, this is an\nimplementation decision and is deliberately **not** recorded in the delta spec.\n\nKnowingly accepted (architect N2): `includes` scans every user argument, so `--json` selects JSON\nwherever it appears — `node cli.mjs somefile --json` emits JSON — and the POSIX `--`\nend-of-options separator is not honoured, so `node cli.mjs -- --json` also emits JSON. That is\nexactly what the delta spec states (\"when `--json` appears among its user arguments\",\n`changes/high/specs/cli-output/spec.md`), and for a CLI whose only two argument vectors are `[]`\nand `['--json']` (`test/high.test.mjs:8`, `test/high.test.mjs:13`) positional discipline is\nunrequested surface. Accepted as-is; no behavior change.\n\nRejected: `parseArgs` — see Option B above.",
+        "D-03": "### D-03 — One greeting constant feeds both branches\n\n`test/high.test.mjs:10` and `test/high.test.mjs:15` assert the *same* string, `Hello, fixture`,\nthrough two different shapes. The implementation declares it once\n(`const greeting = 'Hello, fixture';`) and both the text branch and the object literal read that\nbinding. Rejected: repeating the literal in two places — it passes today and silently\ndesynchronises on the next wording edit, which is precisely the drift principle 4 exists to\nprevent.",
+        "D-04": "### D-04 — Unrecognized arguments fall through to the text path\n\nAnything that is not `--json` produces the default text output and exit 0. No usage message, no\nnon-zero exit, nothing on stderr.\n\n`test/high.test.mjs` contains exactly two cases (`:7` and `:12`) and asserts nothing about other\ninputs, and the proposal's *What Changes* names only `--json`. Rejected: erroring on unknown\nflags. It would be defensible in a real CLI, but here it creates a second externally observable\ncontract — which arguments are rejected, with which exit code and which stderr text — that no\nrequirement asks for and no check pins. That is new public surface introduced under a lane whose\npurpose is to restrain public surface (DD-1, DD-2).\n\n**Fall-through is a design decision, not a durable requirement.** An earlier draft also recorded\nit as a SHALL in the delta spec, which `spec archive high` would have merged into\n`specs/cli-output/` — turning \"unknown arguments are accepted\" into a published promise that only\na breaking MODIFIED requirement could withdraw. That contradicted `proposal.md:28-29` (\"Only\n`--json` becomes part of the public surface\") and inverted D-04's own argument: the whole reason\nto fall through is that adding strictness later should stay cheap. The requirement and its\nscenario have been removed from `changes/high/specs/cli-output/spec.md`, which now says so\nexplicitly. Coverage is not lost — the behavior is still pinned for *this* change by AC-03's third\nvector (`--jsno`) and by T-03 — it simply does not outlive the change as public contract, so a\nfuture strict parser is a new proposal rather than a breaking change.",
+        "D-05": "### D-05 — Emit with `console.log`, leave the exit code implicit\n\nJSON mode writes `console.log(JSON.stringify({ greeting }))`; text mode keeps\n`console.log(greeting)`. Using `JSON.stringify` rather than a hand-built string guarantees correct\nescaping, and a single-key object makes `assert.deepEqual` at `test/high.test.mjs:15` insensitive\nto key order.\n\nThe trailing newline `console.log` adds is tolerated by both assertions: `.trim()` at\n`test/high.test.mjs:10`, and `JSON.parse` ignores surrounding whitespace at\n`test/high.test.mjs:15`. No `process.exit()` call is added — a script that runs to completion\nexits 0, satisfying `test/high.test.mjs:9` and `test/high.test.mjs:14`, and an explicit\n`process.exit(0)` would risk truncating buffered stdout on a piped Windows handle.\n\nRejected: `process.stdout.write` without a newline. It also passes, but `console.log` is the form\nalready at `cli.mjs:1` and keeps the diff to the smallest possible shape.",
+        "D-06": "### D-06 — Exactly one write to stdout per invocation\n\nEach branch performs one and only one stdout write, and no code outside the branches writes to\nstdout. This is the invariant that makes `JSON.parse(result.stdout)` at `test/high.test.mjs:15`\nsafe; see pre-mortem scenario 1 for how it is most likely to be violated.",
+        "D-07": "### D-07 — Scope is judged by path-scoped absolute commands, never by a whole-tree baseline diff\n\nThe working tree is **already dirty before T-01 runs**, and not by accident. Observed at planning\ntime, `git status --porcelain` reports modified `changes/high/*` and `changes/medium/*` plus\nuntracked `changes/.transactions/`, `changes/high/lanes/`, `changes/high/reviews/`,\n`changes/high/specs/`, `changes/medium/lanes/` and `changes/medium/reviews/`. These are written by\nthe my-flow tooling itself — `changes/.transactions/` is its journal\n(`runtime-plugin/scripts/lib/intent-io.mjs:35,52`, currently holding two `tx-*` directories), and\n`changes/high/reviews/` holds the very reviews that produced this revision. `.gitignore` contains\nonly `.my-flow/` (`.gitignore:1`), so none of these are ignored; they all show up in `git status`.\n\nThe churn is also not finished when execute starts. `mf-verify` publishes its attempt directory\n`changes/high/verify/V-<n>/` at attempt **start**, not at the end\n(`runtime-plugin/scripts/lib/evidence.mjs:349` `attemptDir`, `:477` the staging `mkdirSync`,\n`:507-508` the `mkdirSync` + `renameSync` that publishes it, `:622` on the cancel path), and the\nsame step rewrites `changes/high/change.json` through `writeManifestHead` (`evidence.mjs:471`\nreserving the head, `:512` opening it; `MANIFEST_FILE` is `change.json`, `lib/intent-state.mjs:21`).\n`changes/high/verify/` does not exist today and is not git-ignored.\n\nSo a whole-tree \"clean apart from `cli.mjs`\" gate is falsified by this change's own artifacts before\na line is implemented, and an executor facing a red gate has an obvious and catastrophic way to make\nit green: `git checkout -- changes/medium/` or `rm -rf changes/.transactions/`. **Reverting,\ncleaning or hand-editing any tool-written path to satisfy the scope gate is itself a Do-Not-Touch\nviolation** and fails AC-02.\n\n**The remedy is not a baseline.** Two earlier revisions of this design answered that diagnosis with\na pre-edit `git status --porcelain` baseline plus an allow-list of tool-written categories, and\nevery defect found across three review rounds lived in that machinery — never in the path-scoped\nhalf, which has never broken. It failed four independent ways. It named no portable comparison\ncommand: in PowerShell `diff` is an alias for `Compare-Object`, so the obvious\n`git status --porcelain | diff - <baseline>` errors, while the same line works in Git Bash. It\nsilently assumed git's default `-unormal` untracked-directory collapse. It could not detect a\ncontent change inside an already-untracked collapsed directory such as `changes/high/specs/`, nor a\nfurther edit to an already-modified file under `changes/medium/`. And because `changes/high/verify/`\nis created at attempt start, `mf-verify` re-evaluating this required criterion from inside its own\nopen attempt would have turned the gate red **because the verifier ran**, on a byte-identical\nimplementation — the exact catastrophic-remedy hazard this decision exists to prevent, reproduced\nby the fix for it. An open enumeration of what the tooling writes cannot be closed by adding one\nmore entry to it; it is replaced here by a closed rule.\n\nThe gate is therefore five path-scoped absolute checks, each naming the paths it judges, with no\nbaseline, no allow-list, no `-u` assumption and no ordering relative to the verifier (AC-02):\n\n- `git status --porcelain -- . \":(exclude)changes\"` — exactly ` M cli.mjs`; empty during planning.\n- `git diff --stat -- . \":(exclude)changes\"` — names `cli.mjs` only; empty during planning.\n- `git status --porcelain -- changes/verify changes/amend` — empty; empty during planning.\n- `git diff --stat -- changes/medium` — **non-empty**; 5 files / 83 insertions / 15 deletions during\n  planning. This is the anti-revert direction, and it is strictly stronger than the allow-list it\n  replaces, which could not detect a `changes/medium/` edit at all.\n- the sha256 of `changes/high/specs/cli-output/spec.md`, recorded by T-01 and re-checked by T-02.\n  `git status` structurally cannot cover that file — it collapses untracked directories, so the\n  default listing shows only `?? changes/high/specs/` and a rewrite changes nothing — so a content\n  hash is the only mechanism that works; no status category or allow-list entry can substitute.\n  One `node -e` spelling runs unchanged in both PowerShell and Git Bash (no `$`, no backtick, raw\n  bytes) and was exercised in both during planning.\n\nNothing the tooling writes under `changes/high/` or `changes/.transactions/` can move any of these\nfive, so the gate never asks the executor to tidy anything, and this change writes no scope file of\nits own anywhere — including under `.my-flow/`."
+      },
+      "acceptance": {
+        "AC-01": "### AC-01 — CLI output contracts\n\n- evidence-mode: automated\n- required: true\n- checks: `node --test test/high.test.mjs`\n\nDefault text remains unchanged; `--json` emits the specified object. The assertions are fixed by\n`test/high.test.mjs:7-16` and are not negotiable: the implementation moves to meet them, never the\nreverse. A run that passes only the `--json` case does not satisfy this criterion.\n\n#### Scenario: default invocation keeps the existing text contract\n\n- **WHEN** `node --test test/high.test.mjs` runs from the workspace root and the harness spawns\n  `cli.mjs` with no arguments (`test/high.test.mjs:8`)\n- **THEN** the process exits with status 0 and `stdout.trim()` equals `Hello, fixture`, so the\n  case at `test/high.test.mjs:7-11` passes exactly as it did before the change.\n\n#### Scenario: the --json flag emits the structured object\n\n- **WHEN** the same run spawns `cli.mjs` with the single argument `--json`\n  (`test/high.test.mjs:13`)\n- **THEN** the process exits with status 0 and `JSON.parse(result.stdout)` deep-equals\n  `{ greeting: 'Hello, fixture' }`, so the case at `test/high.test.mjs:12-16` passes.\n\n#### Scenario: the whole suite is green\n\n- **WHEN** `node --test test/high.test.mjs` completes\n- **THEN** its summary reports `tests 2`, `pass 2`, `fail 0`, `skipped 0`, `todo 0`, with no\n  `test.skip`, `test.only`, or filter applied — replacing the pre-change baseline of\n  `pass 1 / fail 1`.",
+        "AC-02": "### AC-02 — The change stays inside its boundary\n\n- evidence-mode: automated\n- required: true\n- checks: `git status --porcelain -- . \":(exclude)changes\"`; `git diff --stat -- . \":(exclude)changes\"`; `git status --porcelain -- changes/verify changes/amend`; `git diff --stat -- changes/medium`; the `node -e` sha256 pin named in the last scenario below\n\nThe design's Do-Not-Touch list is enforced by inspection of the working tree, not by trust. A green\ntest suite alone never closes this change: pre-mortem scenario 3 is an executor relaxing\n`test/high.test.mjs:15` to go green, and AC-01 passes happily in that world.\n\n**This criterion is absolute and path-scoped — deliberately not differential.** The working tree is\nalready dirty before T-01 runs, for reasons that have nothing to do with the implementation: this\nchange's delta spec, its lane record, its review records, its `change.json` and the my-flow\ntransaction journal are all written by the tooling under `changes/` before any implementation work\nstarts, and more appear every time the tooling records a review, opens a verification attempt or\nrecords a stage transition. A whole-tree \"clean apart from `cli.mjs`\" gate would be red on arrival,\nand the obvious way to make it green — reverting `changes/medium/`, deleting\n`changes/.transactions/`, cleaning `changes/high/reviews/` — **is itself a Do-Not-Touch violation**\nand fails this criterion outright (D-07).\n\nAn earlier revision of this contract answered that with a baseline file plus an allow-list of\ntool-written categories. That machinery is gone, and its absence is the point: it required the\nexecutor to capture and diff a baseline (with no portable spelling — `diff` is an alias for\n`Compare-Object` in PowerShell), it silently depended on git's default untracked-directory\ncollapse, it could not see a content change inside an already-untracked directory, and it went red\nwhenever the tooling wrote a path nobody had enumerated. `changes/high/verify/` is exactly such a\npath: `mf-verify` publishes the attempt directory at attempt *start*\n(`runtime-plugin/scripts/lib/evidence.mjs:349` `attemptDir`, `:477` staging `mkdirSync`,\n`:507-508` `mkdirSync` + `renameSync`, `:622` on the cancel path) and rewrites\n`changes/high/change.json` in the same step (`:471`, `:512`, via `writeManifestHead`;\n`MANIFEST_FILE` is `change.json` at `lib/intent-state.mjs:21`). A differential gate would therefore\nhave gone red *because the verifier ran* — on a byte-identical implementation.\n\nThe five checks below name the paths they judge, so no enumeration of tool-written paths is needed\nat all, and nothing the tooling writes under `changes/high/` or `changes/.transactions/` can move\nany of them. Each is run from the workspace root after T-01, and every \"value during planning\"\nbelow was reproduced on the real tree while writing this contract.\n\n#### Scenario: outside changes/, cli.mjs is the only entry at all\n\n- **WHEN** `git status --porcelain -- . \":(exclude)changes\"` is run\n- **THEN** its output is exactly the one line ` M cli.mjs`, and nothing else. During planning this\n  command printed **nothing at all** (empty output, exit 0), so every entry other than `cli.mjs`\n  was introduced by the executor: an entry under `test/`, `source/` or `scripts/`, a new\n  `package.json`, `node_modules/`, or any new file at the workspace root all fail this scenario.\n\n#### Scenario: outside changes/, cli.mjs is the only file whose content moved\n\n- **WHEN** `git diff --stat -- . \":(exclude)changes\"` is run\n- **THEN** the diffstat names `cli.mjs` and no other file. During planning it printed **nothing at\n  all** (empty output, exit 0). This is the half that catches an in-place edit to an existing\n  tracked file — `test/high.test.mjs` above all — which is the concrete shape of pre-mortem\n  scenario 3.\n\n#### Scenario: no neighbouring fixture change was touched\n\n- **WHEN** `git status --porcelain -- changes/verify changes/amend` is run\n- **THEN** its output is **empty**, exactly as during planning (empty output, exit 0). Those two\n  fixture changes are clean on arrival, this change has no business in either, and unlike a\n  whole-tree listing this path-scoped form cannot be perturbed by anything the tooling writes\n  under `changes/high/` or `changes/.transactions/`.\n\n#### Scenario: nothing was reverted to make the gate green (anti-revert guard)\n\n- **WHEN** `git diff --stat -- changes/medium` is run\n- **THEN** its output is **non-empty**. During planning it reported\n  `5 files changed, 83 insertions(+), 15 deletions(-)` across `changes/medium/acceptance.md`,\n  `change.json`, `design.md`, `proposal.md` and `tasks.md`. `changes/medium/` is dirty on arrival\n  and must stay dirty: an **empty** diffstat here means someone ran `git checkout -- changes/medium`\n  or equivalent to quiet a scope gate, which is precisely the D-07 violation this criterion exists\n  to catch. On this Windows workspace the command also writes five `warning: ... LF will be replaced\n  by CRLF` lines to **stderr**; those are noise from git's autocrlf handling, not a failure, and\n  only the diffstat body on stdout is judged.\n\n#### Scenario: the delta spec was not rewritten mid-execute\n\n- **WHEN** the sha256 of `changes/high/specs/cli-output/spec.md` is recomputed with this one\n  command, run from the workspace root, and compared against the digest T-01 recorded before the\n  edit:\n\n  ```\n  node -e \"const{createHash}=require('node:crypto');console.log(createHash('sha256').update(require('node:fs').readFileSync('changes/high/specs/cli-output/spec.md')).digest('hex'))\"\n  ```\n\n- **THEN** the two digests are identical. This check exists because `git status` **structurally\n  cannot** cover that file: it collapses untracked directories, so the default listing shows only\n  `?? changes/high/specs/` and rewriting the spec's contents changes the listing not at all\n  (verified during planning; `-uall` expands the directory, but this contract does not get to\n  assume the executor's `status.showUntrackedFiles`). No status category, allow-list or path filter\n  can close that hole — only a content hash can. The command above is used in preference to\n  `Get-FileHash`, `sha256sum` or `certutil` because it is a single spelling that runs in both of\n  this workspace's shells: it contains no `$` and no backtick so neither PowerShell nor Git Bash\n  rewrites it, `node` is already a prerequisite of AC-01 and AC-03, and it hashes the file as raw\n  bytes so no line-ending translation can move the digest. Both shells were exercised during\n  planning and printed the identical value\n  `9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc`, which is this file's digest\n  at planning time and the expected value absent a contract amendment. The digest is recorded in\n  T-01's pasted evidence, not written to a file — this criterion adds no file to the tree it is\n  judging.",
+        "AC-03": "### AC-03 — Observable process behavior\n\n- evidence-mode: manual\n- required: true\n- checks: the single `node -e` spawnSync probe named below, run from the workspace root\n\n`test/high.test.mjs` never inspects `result.stderr` and never exercises an unrecognized argument,\nso the stdout-exclusivity invariant (D-06) and the fall-through decision (D-04) are evidenced here\nby direct invocation. Fresh pasted output is required; a remembered result is not evidence.\n\n**The mechanism is this one command, run from the workspace root:**\n\n```\nnode -e \"const{spawnSync}=require('node:child_process');for(const a of [[],['--json'],['--jsno']]){const r=spawnSync(process.execPath,['cli.mjs',...a],{encoding:'utf8'});console.log(JSON.stringify({args:a,status:r.status,stdout:r.stdout,stderr:r.stderr,stdoutLines:r.stdout.split('\\n').filter(Boolean).length}));}\"\n```\n\nIt must be used rather than three bare shell invocations, because this criterion asserts something\nabout stderr *separately* from stdout: a shell redirect `2>&1` merges the two streams and destroys\nthe distinction, and redirecting to `out.txt` / `err.txt` would add files the boundary forbids (see\nDo-Not-Touch). `spawnSync` returns `stdout` and `stderr` as separate strings held in memory, so a\nsingle command covers all three argument vectors with their streams intact and their line counts\ncomputed, and writes no file. The body contains no `$` and no backtick, so it survives both\nPowerShell and bash quoting unchanged — verified in both shells during planning. It prints exactly\nthree JSON lines, one per vector, in the order `[]`, `['--json']`, `['--jsno']`.\n\nPre-change, every line reads `status` 0, `stdout` `\"Hello, fixture\\n\"`, `stderr` `\"\"`,\n`stdoutLines` 1 — reproduced in both shells during planning. Only the second line's `stdout` is\nexpected to change.\n\n#### Scenario: default invocation writes one line and nothing else\n\n- **WHEN** the AC-03 probe is run and its first output line (`\"args\":[]`) is read\n- **THEN** `status` is 0, `stdout` is exactly `\"Hello, fixture\\n\"`, `stderr` is `\"\"`, and\n  `stdoutLines` is 1.\n\n#### Scenario: the flagged invocation writes only JSON\n\n- **WHEN** the second output line (`\"args\":[\"--json\"]`) is read\n- **THEN** `status` is 0, `stdout` is exactly `{\"greeting\":\"Hello, fixture\"}` followed by a single\n  newline and nothing else — no preceding or trailing text line — `stderr` is `\"\"`, and\n  `stdoutLines` is 1, so `JSON.parse` succeeds against the whole buffer.\n\n#### Scenario: an unrecognized argument falls through to text\n\n- **WHEN** the third output line (`\"args\":[\"--jsno\"]`) is read\n- **THEN** `status` is 0, `stdout` is exactly `\"Hello, fixture\\n\"`, `stderr` is `\"\"`, and\n  `stdoutLines` is 1 — the CLI neither rejects the argument nor prints a usage message, per D-04."
+      }
+    },
+    "locators": [
+      {
+        "path": "changes/high/specs/cli-output/spec.md",
+        "hash": "9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc",
+        "bytes": 3023
+      },
+      {
+        "path": "test/high.test.mjs",
+        "hash": "0f028136f9ea60aaccdafc4574108e24f275a0bd8bd2ca3fa99a6cc4c2c6e660",
+        "bytes": 719
+      }
+    ],
+    "findings": [],
+    "truncated": [],
+    "diagnostics": [],
+    "inputs": {
+      "contractDigest": "810b5e4017afdc82dec813d169d3aa5597ad671fd9145caa1ff1551e2a67343b",
+      "mode": "final",
+      "taskId": null,
+      "tasks": [
+        "T-01",
+        "T-02",
+        "T-03"
+      ],
+      "blocks": {
+        "design:D-01": "700846eee6ab3b47e9ccdbe1247f85097fc37f51b542c597d445d11fc145ec54",
+        "design:D-02": "34fee67299352c556a38a5e5eeb07d66c39ebb1dba0d2f183c38bd874d60ec3b",
+        "design:D-03": "d397fa9294ddd6340eca28aefca65a12726adb0efd1f22d88d9e961ec6d0953f",
+        "design:D-04": "9e886a3acaf300528551edeeb51eb5338376a00da21524759f4354dee5097e61",
+        "design:D-05": "b7fe536b4ed5fb2979899ecb46832be84d918e08af49fe145de74a435882c8be",
+        "design:D-06": "fa18c8670a010000445f48dc2f8365562499e5119089de9b3db86db04b173c0c",
+        "design:D-07": "ca25915391f1cd86acba896f63d6e6f23e0d5b0f3b19e40603f903f80a8eeb20",
+        "acceptance:AC-01": "bce0e6f2da9eea8e5fb29c680d08ceb0409101f06887d0caa9163c6dfda09423",
+        "acceptance:AC-02": "cf4e948a05b2ebeef527a383b8a838b7645d49514113f164969866c6e79bdce6",
+        "acceptance:AC-03": "795b793bd91756567a33beb1319b34287ce597289c9b8383b6fa26185efa3a86"
+      },
+      "constraints": "7c5562f0cddbbd96c367e612147897d603f7002ac01b7a37e57fb9320083f8a9",
+      "locators": {
+        "changes/high/specs/cli-output/spec.md": "9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc",
+        "test/high.test.mjs": "0f028136f9ea60aaccdafc4574108e24f275a0bd8bd2ca3fa99a6cc4c2c6e660"
+      },
+      "findings": {}
+    },
+    "inputsDigest": "e5f3ba298ab7f9749d680468a16b1a16316388778f7471d6b3479bb1af8bf60b"
+  },
+  "diff": {
+    "known": true,
+    "unchanged": false,
+    "changed": [
+      {
+        "kind": "contract",
+        "id": "changes/high",
+        "was": "072f681dde292e279860edea5bfdc13a94201d06e11e1ab628356aa314169e40",
+        "now": "810b5e4017afdc82dec813d169d3aa5597ad671fd9145caa1ff1551e2a67343b"
+      },
+      {
+        "kind": "constraints",
+        "id": "design.md",
+        "was": "ef0827d40a0446a805d66a857eecd698048709b8a549babff6b764efb55d2dd3",
+        "now": "7c5562f0cddbbd96c367e612147897d603f7002ac01b7a37e57fb9320083f8a9"
+      },
+      {
+        "kind": "block",
+        "id": "acceptance:AC-02",
+        "was": "afa626b80aef49a610e4aa0807274b0069fe534ae136c17bb8a95500ce6ef393",
+        "now": "cf4e948a05b2ebeef527a383b8a838b7645d49514113f164969866c6e79bdce6"
+      },
+      {
+        "kind": "block",
+        "id": "acceptance:AC-03",
+        "was": "0174c9b43d3b6a57aed6bb9e34cb0b317ab2c887589d4f3c86d0723e6e7b71ab",
+        "now": "795b793bd91756567a33beb1319b34287ce597289c9b8383b6fa26185efa3a86"
+      },
+      {
+        "kind": "block",
+        "id": "design:D-02",
+        "was": "409732b5dbd17eb7a28d38e5f1d1e26a815c5e29b17c0a76f23ef19807abfcb5",
+        "now": "34fee67299352c556a38a5e5eeb07d66c39ebb1dba0d2f183c38bd874d60ec3b"
+      },
+      {
+        "kind": "block",
+        "id": "design:D-04",
+        "was": "7067ad9354094e6028c43899c5a330c6317a66308bca3302eb16358eae25af40",
+        "now": "9e886a3acaf300528551edeeb51eb5338376a00da21524759f4354dee5097e61"
+      },
+      {
+        "kind": "block",
+        "id": "design:D-07",
+        "was": null,
+        "now": "ca25915391f1cd86acba896f63d6e6f23e0d5b0f3b19e40603f903f80a8eeb20"
+      },
+      {
+        "kind": "locator",
+        "id": "changes/high/specs/cli-output/spec.md",
+        "was": null,
+        "now": "9ae7045f6b73c4259c38ded17d5026f01da981e5b7a14ee7b48ec40297a72ebc"
+      }
+    ],
+    "findings": []
+  },
+  "path": ".my-flow/context/high/final-all-e5f3ba298ab7.json"
+}

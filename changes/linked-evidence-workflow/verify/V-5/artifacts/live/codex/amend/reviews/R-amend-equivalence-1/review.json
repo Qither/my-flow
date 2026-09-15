@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "R-amend-equivalence-1",
+  "changeId": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+  "contractDigest": "7f92db9eb5934212539033fd58e4161aaa9d357c26420fc862c23ed2b21e409c",
+  "amendment": "A-1",
+  "role": "critic",
+  "actorId": "/root/amend_equivalence",
+  "writerActorId": "/root",
+  "verdict": "OKAY",
+  "sourceRef": "native-agent:/root/amend_equivalence/final",
+  "findings": [],
+  "independent": true,
+  "reviewedAt": "2026-09-15T07:04:09.189Z"
+}

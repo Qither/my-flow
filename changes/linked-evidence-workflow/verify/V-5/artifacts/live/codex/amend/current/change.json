@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "fa3703bc-d3e3-4e88-a3c2-253f1685f8b3",
+  "slug": "amend",
+  "kind": "change",
+  "stage": "execute",
+  "revision": 3,
+  "updated": "2026-09-15T07:02:05.540Z",
+  "children": [],
+  "review": null,
+  "verification": {
+    "highWater": 0,
+    "head": null
+  }
+}

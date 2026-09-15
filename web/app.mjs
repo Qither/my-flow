@@ -10,9 +10,33 @@ import { mountListbox } from './ui.mjs';
 
 // ---------------------------------------------------------------- pure helpers
 /** '#/changes/demo' -> { page: 'changes', name: 'demo' }; '#/file/<enc>' -> { page: 'file', path } */
+export const REFERENCE_TYPES = ['task', 'acceptance', 'design', 'evidence'];
+/** `#/change/<uuid>/<type>/<id>` (contract C-02), plus the evidence acceptance subroute. */
+export const changeRoute = (ref, type, id, sub) => {
+  const base = `#/change/${encodeURIComponent(ref)}`;
+  if (!type) return base;
+  const one = `${base}/${type}/${encodeURIComponent(id)}`;
+  return sub ? `${one}/${sub.type}/${encodeURIComponent(sub.id)}` : one;
+};
+
 export function parseRoute(hash) {
-  const parts = (hash || '#/changes').replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  let parts;
+  try {
+    parts = (hash || '#/changes').replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  } catch {
+    // malformed percent encoding never reaches a resolver, and never renders anything of its own
+    return { page: 'invalid', reason: 'this link is not a valid reference (malformed percent encoding)' };
+  }
   const [page = 'changes', ...rest] = parts;
+  if (page === 'change') {
+    const [ref, type, id, subType, subId] = rest;
+    if (!ref) return { page: 'changes', name: null };
+    if (!type) return { page: 'change', ref, type: null, id: null, sub: null };
+    if (!REFERENCE_TYPES.includes(type) || !id) return { page: 'invalid', reason: `"${type}" is not one of ${REFERENCE_TYPES.join(', ')}` };
+    if (subType === undefined) return { page: 'change', ref, type, id, sub: null };
+    if (type !== 'evidence' || subType !== 'acceptance' || !subId) return { page: 'invalid', reason: 'only an evidence attempt has an acceptance subroute' };
+    return { page: 'change', ref, type, id, sub: { type: 'acceptance', id: subId } };
+  }
   if (page === 'file') return { page, path: rest.join('/') };
   if (page === 'diff') return { page, path: rest.length ? rest.join('/') : null };
   if (page === 'changes') return { page, name: rest[0] ?? null };
@@ -24,23 +48,270 @@ export function parseRoute(hash) {
 }
 export const fileRoute = (path) => `#/file/${encodeURIComponent(path)}`;
 
+/**
+ * A task line reads `<action> and verify <observable result>`. The row shows those two halves;
+ * everything technical (which suite, which historical note) lives behind the row's details.
+ * A line that does not use the phrase keeps its whole text as the action.
+ */
+export function splitTaskTitle(title) {
+  const m = /^(.*?)\s+and verif(?:y|ies|ied)\b\s*(.*)$/i.exec(String(title ?? ''));
+  return m ? { action: m[1].trim(), result: m[2].trim() } : { action: String(title ?? '').trim(), result: '' };
+}
+/** Readiness to the existing tag tones, so the row needs no colour vocabulary of its own. */
+export function readinessTone(readiness) {
+  if (readiness === 'complete' || readiness === 'ready') return 'lime';
+  if (readiness === 'blocked' || readiness === 'invalid') return 'warn';
+  return 'plain';
+}
+/** In-page anchor for one typed reference inside the change being viewed. */
+export const anchorFor = (type, id) => `${type === 'acceptance' ? 'ac' : type === 'design' ? 'd' : type}-${id}`;
+/** The word a reader understands, for each reference field. */
+export const REF_LABELS = { 'depends-on': 'needs', accepts: 'accepts', design: 'design', evidence: 'evidence' };
+
+// ---- tasks (design D1, D2): a concise row, with every detail one labelled link away
+export const refItemHtml = (ref, changeId = null) => {
+  const label = REF_LABELS[ref.field] ?? ref.field;
+  const target = ref.label ? `${ref.id} — ${ref.label}` : ref.id;
+  const link =
+    ref.resolved === false
+      ? `<span class="tag warn">${esc(ref.id)} does not resolve</span>`
+      : `<a href="${esc(changeId ? changeRoute(changeId, ref.type, ref.id) : '#' + anchorFor(ref.type, ref.id))}">${esc(target)}</a>`;
+  return `<li><span class="ref-label">${esc(label)}</span>${link}</li>`;
+};
+export const taskRowHtml = (t, changeId = null) => {
+  const { action, result } = splitTaskTitle(t.title);
+  const tone = readinessTone(t.readiness);
+  const badge = tone === 'lime' ? 'tag lime' : tone === 'warn' ? 'tag warn' : 'tag';
+  const refs = [...t.outgoing.map((r) => refItemHtml(r, changeId)), ...t.incoming.map((i) => refItemHtml({ ...i, id: i.from, type: 'task', field: 'needed by' }, changeId))];
+  return `<li class="task-row" id="${esc(anchorFor('task', t.id ?? t.number))}">
+    <div class="task-head">
+      <span class="box" aria-hidden="true">${t.checked ? '&#9745;' : '&#9744;'}</span>
+      <span class="meta">${esc(t.number)}</span>
+      <span class="task-action">${esc(action)}</span>
+      <span class="${badge}">${esc(t.readiness)}</span>
+    </div>
+    ${result ? `<div class="task-result">verify: ${esc(result)}</div>` : ''}
+    <details class="task-detail"><summary>${esc(t.id ?? 'no stable id')}</summary>
+      ${t.reasons.length ? `<p class="task-why">${esc(t.reasons.join('; '))}</p>` : ''}
+      ${t.blocked ? `<div class="warnings"><div>blocked: ${esc(t.blocked)}</div></div>` : ''}
+      ${refs.length ? `<ul class="refs">${refs.join('')}</ul>` : '<p class="muted">no declared references</p>'}
+      ${t.notes.length ? `<ul class="refs">${t.notes.map((n) => `<li><span class="ref-label">note</span>${esc(n)}</li>`).join('')}</ul>` : ''}
+    </details></li>`;
+};
+export const tasksPanelHtml = (intent, changeId = null) => {
+  if (!intent) return '';
+  const criteria = intent.acceptance
+    .map(
+      (c) => `<li id="${esc(anchorFor('acceptance', c.id))}"><span class="ref-label">${esc(c.id)}</span>${esc(c.title)}
+      <span class="meta">${esc((c.evidenceModes ?? []).join(', ') || 'no evidence mode declared')}${c.required ? '' : ', optional'}</span>
+      ${c.checks ? `<div class="task-result">checks: ${esc(c.checks)}</div>` : ''}</li>`
+    )
+    .join('');
+  const decisions = intent.design.map((d) => `<li id="${esc(anchorFor('design', d.id))}"><span class="ref-label">${esc(d.id)}</span>${esc(d.title)}</li>`).join('');
+  return `<div class="panel"><h3>Tasks <span class="meta">${intent.counts.done}/${intent.counts.total} ticked, schema v${intent.schemaVersion}</span></h3>
+      ${intent.tasks.length ? `<ul class="tasks">${intent.tasks.map((t) => taskRowHtml(t, changeId)).join('')}</ul>` : '<p class="empty">no tasks yet</p>'}</div>
+    ${criteria ? `<div class="panel"><h3>Acceptance</h3><ul class="refs">${criteria}</ul></div>` : ''}
+    ${decisions ? `<div class="panel"><h3>Design decisions</h3><ul class="refs">${decisions}</ul></div>` : ''}`;
+};
+
+/**
+ * The breadcrumb trail of a stable reference. Identity first, so a link stays meaningful after
+ * the change is renamed, renumbered or archived; the display name is read from the target.
+ */
+export const changeCrumbsHtml = (identity, location, type, id) => {
+  const home = `<a href="#/changes">changes</a>`;
+  const self = `<a href="${esc(changeRoute(identity.id ?? identity.slug))}">${esc(identity.slug)}</a>`;
+  const where = location.location === 'archive' ? `<span class="tag">archived</span>` : '';
+  const leaf = type ? ` / <span class="meta">${esc(type)}</span> ${esc(id)}` : '';
+  return `<div class="crumbs">${home} / ${self}${leaf} ${where}</div>`;
+};
+
+/** Diagnostics as the existing warnings block; every entry names its code and its source. */
+export const diagnosticsHtml = (diagnostics) => {
+  if (!diagnostics?.length) return '';
+  return `<div class="warnings">${diagnostics
+    .map((d) => `<div>${esc(d.severity ?? 'error')}: ${esc(d.code)}: ${esc(d.message)}${d.path ? ` (${esc(d.path)}${d.line ? `:${d.line}` : ''})` : ''}</div>`)
+    .join('')}</div>`;
+};
+
+
+/**
+ * The durable verification head, and every attempt on disk. The head is what decides: an open or
+ * reserved attempt blocks an older PASS, and the reasons are shown rather than summarised away.
+ */
+export const verificationPanelHtml = (verification, changeId) => {
+  if (!verification) return '';
+  const { head, eligible, reasons, attempts, missingOlder } = verification;
+  const badge = eligible ? 'tag lime' : 'tag warn';
+  const headLine = head ? `${head.sequence ? `V-${head.sequence}` : 'V-?'} ${head.state}${head.verdict ? ` ${head.verdict}` : ''}` : 'no attempt started';
+  const rows = (attempts ?? [])
+    .map((a) => {
+      const tone = a.verdict === 'PASS' && a.qualified ? 'tag lime' : a.verdict ? 'tag warn' : 'tag';
+      return `<li><span class="ref-label">${esc(a.id)}</span>
+        <a href="${esc(changeRoute(changeId, 'evidence', a.id))}">${esc(a.verdict ?? 'incomplete')}${a.cancelled ? ' (cancelled)' : ''}</a>
+        <span class="${tone}">${esc(a.qualified ? 'independent' : 'unqualified')}</span>
+        <span class="meta">${esc(a.started ?? '')}</span></li>`;
+    })
+    .join('');
+  return `<div class="panel"><h3>Verification <span class="${badge}">${eligible ? 'eligible' : 'not eligible'}</span></h3>
+    <p class="meta">head: ${esc(headLine)}; high-water ${esc(String(verification.highWater ?? 'unknown'))}</p>
+    ${verification.corrupt ? '<div class="warnings"><div>the verification metadata is corrupt; it is never repaired by scanning for an older PASS</div></div>' : ''}
+    ${reasons?.length ? `<div class="warnings">${reasons.map((r) => `<div>${esc(r)}</div>`).join('')}</div>` : ''}
+    ${missingOlder?.length ? `<p class="muted">older attempt(s) no longer on disk: ${esc(missingOlder.join(', '))}</p>` : ''}
+    ${rows ? `<ul class="refs">${rows}</ul>` : '<p class="empty">no attempts recorded</p>'}</div>`;
+};
+
+/**
+ * Umbrella children: derived state, shown separately from this umbrella own integration
+ * verification. A child being finished is information, never a reason to tick a box here.
+ */
+export const umbrellaPanelHtml = (umbrella) => {
+  if (!umbrella) return '';
+  const rows = umbrella.children
+    .map((c) => {
+      const where = c.repo === 'self' ? 'this repository' : `repository \"${c.repo}\"`;
+      if (!c.resolved) {
+        return `<li><span class=\"ref-label\">${esc(where)}</span><span class=\"tag warn\">unresolved</span> <span class=\"meta\">${esc(c.reason ?? '')}</span></li>`;
+      }
+      const t = c.state.tasks;
+      const finished = t && t.total > 0 && t.done === t.total && !c.state.abandoned;
+      return `<li><span class=\"ref-label\">${esc(where)}</span>${esc(c.state.slug)}
+        <span class=\"${c.state.abandoned ? 'tag warn' : finished ? 'tag lime' : 'tag'}\">${esc(c.state.abandoned ? 'abandoned' : c.state.stage ?? 'unknown')}</span>
+        <span class=\"meta\">${t ? `${t.done}/${t.total} tasks` : 'no tasks.md'}</span></li>`;
+    })
+    .join('');
+  return `<div class=\"panel\"><h3>Children <span class=\"meta\">${umbrella.derived.complete}/${umbrella.derived.total} finished, ${umbrella.derived.resolved} resolved</span></h3>
+    <p class=\"muted\">${esc(umbrella.note)}</p>
+    ${umbrella.blockers.length ? `<div class=\"warnings\">${umbrella.blockers.map((b) => `<div>${esc(b.message)}</div>`).join('')}</div>` : ''}
+    ${rows ? `<ul class=\"refs\">${rows}</ul>` : '<p class=\"empty\">no children declared</p>'}</div>`;
+};
+/** Spec-base conflicts, each with the three texts a reader needs in order to decide. */
+export const specBasePanelHtml = (specBase) => {
+  if (!specBase) return '';
+  const { conflicts, diagnostics } = specBase;
+  if (!conflicts?.length && !diagnostics?.length) {
+    return `<div class="panel"><h3>Spec base</h3><p class="muted">${specBase.entries} requirement base(s) captured${specBase.capturedAt ? ` at ${esc(specBase.capturedAt)}` : ''}; every claim still matches.</p></div>`;
+  }
+  const three = (label, text, absent) => `<div class="task-result">${label}: ${text === null ? absent : esc(text.split('\n')[0])}</div>`;
+  return `<div class="panel"><h3>Spec base <span class="tag warn">${(conflicts ?? []).length} conflict(s)</span></h3>
+    ${diagnostics?.length ? `<div class="warnings">${diagnostics.map((d) => `<div>${esc(d.message)}</div>`).join('')}</div>` : ''}
+    ${(conflicts ?? [])
+      .map(
+        (c) => `<div class="task-row"><div class="task-head"><span class="ref-label">${esc(c.operation)}</span><span class="task-action">${esc(c.capability)} / ${esc(c.requirement)}</span></div>
+        <p class="task-why">${esc(c.reason)}</p>
+        ${three('base', c.base, '(absent)')}${three('current', c.current, '(absent)')}${three('proposed', c.proposed, '(removal)')}</div>`
+      )
+      .join('')}</div>`;
+};
+
+/** One recorded attempt: what it was opened against, what it found, and what it copied. */
+export const attemptViewHtml = (a, changeId) => {
+  const tone = a.verdict === 'PASS' && a.qualified ? 'tag lime' : a.verdict ? 'tag warn' : 'tag';
+  const criteria = (a.criteria ?? [])
+    .map(
+      (c) => `<li><span class="ref-label">${esc(c.id)}</span>
+      <a href="${esc(changeRoute(changeId, 'evidence', a.id, { type: 'acceptance', id: c.id }))}">${esc(c.status)}</a>
+      <span class="meta">${esc((c.modes ?? []).join(', '))}${(c.evidenceRefs ?? []).length ? `; ${esc(c.evidenceRefs.join(', '))}` : '; no evidence named'}</span></li>`
+    )
+    .join('');
+  const commands = (a.commands ?? [])
+    .map((c) => `<li><span class="ref-label">exit ${esc(String(c.exitCode))}</span><code>${esc(c.command)}</code> <span class="meta">${esc(c.summary ?? '')}</span></li>`)
+    .join('');
+  const artifacts = (a.artifacts ?? []).map((x) => `<li><span class="ref-label">artifact</span>${esc(x.relativePath)} <span class="meta">${esc(String(x.bytes ?? ''))} B</span></li>`).join('');
+  return `<div class="panel"><h3>${esc(a.id)} <span class="${tone}">${esc(a.verdict ?? 'incomplete')}</span> <span class="tag">${esc(a.qualified ? 'independent' : 'unqualified')}</span></h3>
+      <p class="meta">started ${esc(a.started ?? 'unknown')}${a.finished ? `, finished ${esc(a.finished)}` : ', never finished'}</p>
+      ${a.cancelled ? `<div class="warnings"><div>cancelled: ${esc(a.cancelled.reason)}</div></div>` : ''}
+      ${a.originProblems?.length ? `<div class="warnings">${a.originProblems.map((r) => `<div>${esc(r)}</div>`).join('')}</div>` : ''}
+      <div class="task-result">implementation ${esc((a.implementationDigest ?? 'unknown').slice(0, 12))} &middot; acceptance ${esc((a.acceptanceDigest ?? 'unknown').slice(0, 12))}</div>
+      ${a.session ? `<div class="task-result">session ${esc(a.session)}</div>` : ''}</div>
+    ${criteria ? `<div class="panel"><h3>Criteria</h3><ul class="refs">${criteria}</ul></div>` : ''}
+    ${commands ? `<div class="panel"><h3>Commands</h3><ul class="refs">${commands}</ul></div>` : ''}
+    ${artifacts ? `<div class="panel"><h3>Artifacts</h3><ul class="refs">${artifacts}</ul></div>` : ''}
+    ${
+      a.capturedAcceptance
+        ? `<div class="panel"><h3>${esc(a.capturedAcceptance.id)} as this attempt captured it</h3>
+            <p class="meta">from ${esc(a.capturedAcceptance.capturedFrom)}</p>
+            <pre><code>${esc(a.capturedAcceptance.text)}</code></pre></div>`
+        : ''
+    }`;
+};
+
+/**
+ * One typed reference: the item itself, then everything that points at it. Reverse dependencies
+ * are derived from the declared references of other tasks, never stored, so they cannot go stale.
+ */
+export const referenceViewHtml = (body) => {
+  const { identity, location, type, item } = body;
+  const changeId = identity.id ?? identity.slug;
+  const incoming = item.incoming ?? [];
+  const reverse = incoming.length
+    ? `<ul class="refs">${incoming.map((i) => refItemHtml({ ...i, id: i.from, type: 'task', field: type === 'task' ? 'needed by' : 'referenced by' }, changeId)).join('')}</ul>`
+    : '<p class="muted">nothing declares a reference to this</p>';
+  if (type === 'evidence') {
+    return `${changeCrumbsHtml(identity, location, type, item.id)}
+      <h1>${esc(item.id)}</h1>
+      ${attemptViewHtml(item, changeId)}
+      ${diagnosticsHtml(body.diagnostics)}`;
+  }
+  const head =
+    type === 'task'
+      ? `<ul class="tasks">${taskRowHtml(item, changeId)}</ul>`
+      : type === 'acceptance'
+        ? `<div class="panel"><h3>${esc(item.id)} — ${esc(item.title)}</h3>
+            <p class="meta">${esc((item.evidenceModes ?? []).join(', ') || 'no evidence mode declared')}${item.required ? ', required' : ', optional'}</p>
+            ${item.checks ? `<div class="task-result">checks: ${esc(item.checks)}</div>` : ''}
+            ${item.requirements ? `<div class="task-result">requirements: ${esc(item.requirements)}</div>` : ''}</div>`
+        : `<div class="panel"><h3>${esc(item.id)} — ${esc(item.title)}</h3></div>`;
+  const source = item.path ? `<p class="meta">${esc(item.path)}${item.line ? `:${item.line}` : ''} <a href="${esc(fileRoute(item.path))}">open the file</a></p>` : '';
+  return `${changeCrumbsHtml(identity, location, type, item.id)}
+    <h1>${esc(item.id)}</h1>
+    ${head}
+    ${source}
+    <div class="panel"><h3>Referenced by</h3>${reverse}</div>
+    ${diagnosticsHtml(body.diagnostics)}`;
+};
+
+
+/**
+ * One stable string per destination. Two renders of the same destination are the same key, so a
+ * live refresh can be told apart from a navigation.
+ */
+export function routeKey(route) {
+  if (!route) return '';
+  if (route.page === 'change') return `change:${route.ref}:${route.type ?? ''}:${route.id ?? ''}:${route.sub ? `${route.sub.type}:${route.sub.id}` : ''}`;
+  if (route.page === 'file' || route.page === 'diff') return `${route.page}:${route.path ?? ''}`;
+  if (route.page === 'invalid') return `invalid:${route.reason}`;
+  return `${route.page}:${route.name ?? ''}`;
+}
+/**
+ * Focus moves to the new page's heading when the reader navigated, and never when a
+ * Server-Sent Event repainted the page they are already reading: a live update must not steal
+ * the caret or the screen-reader cursor.
+ */
+export const shouldFocusHeading = (previousKey, nextKey) => previousKey !== nextKey;
+
 /** Does a `change` event carrying these root-relative paths affect this route? */
+const pathWithin = (path, parent) => typeof path === 'string' && typeof parent === 'string' && (path === parent || path.startsWith(`${parent.replace(/\/$/, '')}/`));
 export function shouldRefetch(route, paths) {
   const any = (pred) => paths.some(pred);
   switch (route.page) {
     case 'changes':
-      return any((p) => p.startsWith('changes/') || p.startsWith('specs/') || p === '.my-flow/state/current-change.json');
+      return any((p) => pathWithin(p, 'changes') || pathWithin(p, 'specs') || pathWithin('.my-flow/state/current-change.json', p));
     case 'specs':
-      return any((p) => p.startsWith('specs/') || p.startsWith('changes/'));
+      return any((p) => pathWithin(p, 'specs') || pathWithin(p, 'changes'));
     case 'archive':
-      return any((p) => p.startsWith('changes/archive'));
+      return any((p) => pathWithin(p, 'changes/archive') || pathWithin('changes/archive', p));
     case 'scratch':
-      return any((p) => p.startsWith('.my-flow/'));
+      return any((p) => pathWithin(p, '.my-flow'));
+    case 'change':
+      return any((p) => pathWithin(p, 'changes') || pathWithin(p, 'specs') || pathWithin('.my-flow/state/current-change.json', p));
+    case 'invalid':
+      return false; // a refused link has nothing behind it to refetch
     case 'styleguide':
       return false; // static page, no data behind it
     case 'file':
       // the state file decides the execute lock, so every editor reacts to it
-      return any((p) => p === route.path || p === '.my-flow/state/current-change.json');
+      return any((p) => pathWithin(route.path, p) || pathWithin('.my-flow/state/current-change.json', p));
     case 'diff':
       return true; // any write can change the working-tree diff
     default:
@@ -230,9 +501,37 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
       ${general.length ? `<div class="warnings">${general.map((w) => `<div>${esc(w)}</div>`).join('')}</div>` : ''}
       ${body.changes.length ? `<div class="cards">${body.changes.map((r) => rowHtml(r, per(r.name))).join('')}</div>` : '<p class="empty">no active changes (changes/ is empty or missing)</p>'}`;
   };
+  /**
+   * `#/change/<uuid>` and `#/change/<uuid>/<type>/<id>` (contract C-02). The reference resolves
+   * through identity, so the same link keeps working after the tasks are renumbered, the change
+   * is renamed, or the whole directory has moved into `changes/archive/`.
+   */
+  const pageReference = async (route) => {
+    const path = route.type
+      ? `/api/intent/${encodeURIComponent(route.ref)}/${encodeURIComponent(route.type)}/${encodeURIComponent(route.id)}${
+          route.sub ? `/${route.sub.type}/${encodeURIComponent(route.sub.id)}` : ''
+        }`
+      : `/api/intent/${encodeURIComponent(route.ref)}`;
+    const { ok, body } = await api(path);
+    const crumbs = `<div class="crumbs"><a href="#/changes">changes</a> / ${esc(route.ref)}</div>`;
+    if (!ok) return `${crumbs}${fail(body)}${diagnosticsHtml(body?.diagnostics)}`;
+    if (route.type) return referenceViewHtml(body);
+    return `${changeCrumbsHtml(body.identity, body.location, null, null)}
+      <h1>${esc(body.identity.slug)}</h1>
+      <p class="meta">${esc(body.location.rel)} &middot; ${body.counts.done}/${body.counts.total} tasks &middot; ${esc(body.identity.stage ?? 'no lifecycle stage')}</p>
+      ${tasksPanelHtml(body, body.identity.id ?? body.identity.slug)}
+      ${umbrellaPanelHtml(body.umbrella)}
+      ${verificationPanelHtml(body.verification, body.identity.id ?? body.identity.slug)}
+      ${specBasePanelHtml(body.specBase)}
+      ${diagnosticsHtml(body.diagnostics)}`;
+  };
+
   const pageChange = async (name) => {
     const { ok, body } = await api(`/api/changes/${encodeURIComponent(name)}`);
     if (!ok) return `<div class="crumbs"><a href="#/changes">changes</a> / ${esc(name)}</div>${fail(body)}`;
+    const i = await api(`/api/intent/${encodeURIComponent(name)}`);
+    const intent = i.ok ? i.body : null;
+    const intentNotice = i.ok ? '' : `<div class="notice">${esc(i.body?.message ?? 'the linked task view is unavailable')}</div>`;
     const v = await api('/api/validate');
     const result = v.ok ? v.body.results.find((r) => r.name === name) : null;
     const files = body.files
@@ -246,6 +545,11 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
     return `<div class="crumbs"><a href="#/changes">changes</a> / ${esc(name)}</div>
       <h1>${esc(name)}</h1>
       ${rowHtml(body.row, [])}
+      ${intentNotice}
+      ${tasksPanelHtml(intent, intent?.identity?.id ?? intent?.identity?.slug ?? null)}
+      ${umbrellaPanelHtml(intent?.umbrella)}
+      ${verificationPanelHtml(intent?.verification, intent?.identity?.id ?? intent?.identity?.slug ?? null)}
+      ${specBasePanelHtml(intent?.specBase)}
       <div class="panel"><h3>Files</h3><ul class="file-list">${files}</ul></div>
       ${
         result
@@ -475,6 +779,34 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
       sgItem('code block with line numbers', '<pre style="width:320px"><span class="line-number"><span>1</span><span>2</span><span>3</span></span><code>import x from "y";\nconst z = x + 1;\nexport { z };\n</code></pre>'),
     ];
     const tasks = [sgItem('task list: open, done', '<div class="md"><ul><li class="task open"><span class="box" aria-hidden="true">&#9744;</span> 1.1 an open task</li><li class="task done"><span class="box" aria-hidden="true">&#9745;</span> 1.2 a done task</li><li>a plain bullet</li></ul></div>')];
+    // Linked rows rendered by the real functions, so the styleguide cannot drift from the page.
+    const sgTask = (over) => ({
+      id: 'T-01', number: '1.1', title: 'Parse stable task fields and verify the graph parsing fixtures',
+      checked: false, kind: 'work', blocked: null, readiness: 'ready', reasons: ['no prerequisites'],
+      line: 5, endLine: 9, path: 'changes/demo/tasks.md', notes: [], outgoing: [], incoming: [], ...over,
+    });
+    const linked = [
+      sgItem(
+        'linked task rows: ready, complete, waiting, blocked, unresolved',
+        `<div class="panel"><ul class="tasks">${[
+          taskRowHtml(sgTask({ outgoing: [{ type: 'acceptance', id: 'AC-01', field: 'accepts', resolved: true, label: 'Readable task entry' }], incoming: [{ type: 'task', from: 'T-02', field: 'depends-on', label: 'Resolve typed references' }] })),
+          taskRowHtml(sgTask({ id: 'T-02', number: '1.2', checked: true, readiness: 'complete', reasons: ['every declared prerequisite is complete'], title: 'Resolve typed references and verify the edge cases' })),
+          taskRowHtml(sgTask({ id: 'T-03', number: '1.3', readiness: 'waiting', reasons: ['waiting for T-02'], title: 'Add change identities and verify the lookup fixtures' })),
+          taskRowHtml(sgTask({ id: 'T-04', number: '1.4', readiness: 'blocked', blocked: 'the host profile is unauthenticated', reasons: ['blocked: the host profile is unauthenticated'], title: 'Preflight both live hosts and verify the goal handoff' })),
+          taskRowHtml(sgTask({ id: 'T-05', number: '1.5', readiness: 'invalid', reasons: ['a typed reference does not resolve'], outgoing: [{ type: 'task', id: 'T-GONE', field: 'depends-on', resolved: false, label: null }] })),
+        ].join('')}</ul></div>`
+      ),
+      sgItem(
+        'highlighted reference target, and a row that must not overflow the page',
+        `<div class="panel"><ul class="tasks">${taskRowHtml(
+          sgTask({ id: 'T-06', number: '1.6', title: 'Handle an unbreakable identifier averylongunbreakableidentifier_that_keeps_going_and_going_and_going and verify averylongunbreakableresult_that_keeps_going_and_going_too', notes: ['a_note_with_one_unbreakable_token_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'] })
+        ).replace('class="task-row"', 'class="task-row highlight"')}</ul></div>`
+      ),
+      sgItem('diagnostics', diagnosticsHtml([
+        { code: 'unknown-dependency', message: 'task T-02 depends on T-GONE, which no task declares', severity: 'error', path: 'changes/demo/tasks.md', line: 12 },
+        { code: 'checked-with-unfinished-prerequisite', message: 'task T-30 is ticked while T-29 is unfinished', severity: 'notice' },
+      ])),
+    ];
     const tree = [
       sgItem('file tree: open dir, closed dir, hover, selected, latest', '<div class="diff-left" style="width:260px;position:static;max-height:none"><ul class="diff-tree"><li class="dir"><button type="button" class="dir-toggle" aria-expanded="true">web/</button><ul><li class="file"><a href="#/styleguide"><span class="tag st">M</span> app.css</a></li><li class="file sg-hover"><a href="#/styleguide"><span class="tag st">M</span> hovered.mjs</a></li><li class="file selected"><a href="#/styleguide"><span class="tag st">M</span><span class="tag latest">&#9679;</span> selected.mjs</a><span class="meta">+3 -1</span></li></ul></li><li class="dir closed"><button type="button" class="dir-toggle" aria-expanded="false">test/</button><ul><li class="file"><a href="#/styleguide">hidden.mjs</a></li></ul></li></ul></div>'),
       sgItem('flat list', '<div class="diff-left" style="width:260px;position:static;max-height:none"><ul class="diff-tree flat"><li class="file"><a href="#/styleguide"><span class="tag st">?</span> web/ui.mjs</a></li><li class="file"><a href="#/styleguide"><span class="tag st">D</span> old/file.md</a></li></ul></div>'),
@@ -514,6 +846,7 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
         ${sgSection('Tables and rules', tables)}
         ${sgSection('Code', code)}
         ${sgSection('Task list', tasks)}
+        ${sgSection('Linked tasks', linked)}
         ${sgSection('File tree', tree)}
         ${sgSection('Patch', patch)}
         ${sgSection('Listbox', listbox)}
@@ -618,6 +951,8 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
     const job = (async () => {
       try {
         if (route.page === 'changes') return route.name ? pageChange(route.name) : pageChanges();
+        if (route.page === 'change') return pageReference(route);
+        if (route.page === 'invalid') return `<div class="crumbs"><a href="#/changes">changes</a></div><div class="notice">${esc(route.reason)}</div>`;
         if (route.page === 'specs') return pageSpecs(route.name);
         if (route.page === 'archive') return pageArchive(route.name);
         if (route.page === 'scratch') return pageScratch();
@@ -644,13 +979,24 @@ export function boot(doc = globalThis.document, win = globalThis.window) {
     if (route.page === 'styleguide') wireStyleguide();
     if (route.page === 'diff') doc.querySelector('.diff-left li.file.selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     if (route.page === 'archive' && route.name) doc.getElementById(`archive-${route.name}`)?.classList.add('highlight');
+    if (route.page === 'change' && route.id) doc.getElementById(anchorFor(route.type, route.id))?.classList.add('highlight');
+    // Navigation moves focus to the new heading; a live refresh of the same page never does.
+    const key = routeKey(route);
+    if (shouldFocusHeading(state.focusedRouteKey, key)) {
+      const heading = view.querySelector('h1');
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: false });
+      }
+    }
+    state.focusedRouteKey = key;
   };
 
   // ---- live updates
   const onChange = async (paths) => {
     const route = state.route;
     if (!shouldRefetch(route, paths)) return;
-    if (route.page === 'file' && state.editor && paths.includes(route.path)) {
+    if (route.page === 'file' && state.editor && paths.some((p) => pathWithin(route.path, p))) {
       const r = await api(`/api/file?path=${encodeURIComponent(route.path)}`);
       if (!r.ok) return render();
       const ed = state.editor;

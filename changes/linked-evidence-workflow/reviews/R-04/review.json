@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "R-04",
+  "changeId": "2c630df9-1a5d-480d-9630-f4af50378bb7",
+  "contractDigest": "fe714caad44fce5b6c93c4b524a94c850a58387b13e484ee5d434bd05d52c399",
+  "amendment": null,
+  "role": "architect",
+  "actorId": "agent:my-flow:architect",
+  "writerActorId": "agent:claude-code:executor",
+  "verdict": "WATCH",
+  "sourceRef": "agent:my-flow:architect#t32-high-lane-rereview",
+  "findings": [
+    {
+      "id": "F-1",
+      "severity": "RESOLVED",
+      "blocking": false,
+      "title": "one digest: declaredScope resolves the change's own scope for every caller, verified by value across no-inputs, null, empty and declared, including the amendment paths that default inputs to {}"
+    },
+    {
+      "id": "F-2",
+      "severity": "RESOLVED",
+      "blocking": false,
+      "title": "the execute gate exists: executableContractProblems is one definition shared by stage execute, evidence begin and archive, and the docstring and skill text now describe the gate that exists"
+    },
+    {
+      "id": "F-3",
+      "severity": "RESOLVED",
+      "blocking": false,
+      "title": "lane changes are appended to lanes/L-nn.json with previous, direction and forced, and a forced downgrade is refused once any review is on record; the lanes record and the manifest are two writes under one lock, lanes first, so a crash over-records rather than under-records"
+    },
+    {
+      "id": "F-5",
+      "severity": "RESOLVED",
+      "blocking": false,
+      "title": "a scope amendment is held to the recorded lane's reviews, and approvalChain passes the lane it is evaluating under, so a link reviewed at a cheaper lane fails a chain re-evaluated at a higher one"
+    },
+    {
+      "id": "F-6",
+      "severity": "RESOLVED",
+      "blocking": false,
+      "title": "the dashboard save allow-list rejects reserved .md under verify/, reviews/, amendments/, findings/, usage/ and migration/; this also closes the residual that laneApproval's amendment selector filters by id alone"
+    },
+    {
+      "id": "F-8",
+      "severity": "RESOLVED",
+      "blocking": false,
+      "title": "eventFile appends a digest of the id whenever sanitizing changed it, so two ids cannot collide"
+    },
+    {
+      "id": "N-1",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "the execute gate read a multi-file intent outside the intent lock, unlike every other read path in spec.mjs; fixed after this review by moving both checks inside the mutate callback so the read holds the lock the write takes",
+      "evidence": "scripts/spec.mjs stage command; contracts.md C-09"
+    },
+    {
+      "id": "N-2",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "--force on stage meant three things at once, so recovering an expired lease silently waived the contract gate; fixed after this review by giving the waiver its own --skip-contract-gate flag",
+      "evidence": "scripts/spec.mjs stage command; contracts.md C-06"
+    },
+    {
+      "id": "F-7",
+      "severity": "NOTE",
+      "blocking": false,
+      "title": "the task number stays in the acceptance target as C-03 authorizes; the architect asks that design.md's Risks section record the consequence that a pure renumber costs a full re-review plus fresh evidence, which is deferred because any edit to design.md now invalidates this approval"
+    },
+    {
+      "id": "F-4",
+      "severity": "WATCH",
+      "blocking": false,
+      "title": "every change is born with review null, so the undeclared default is more load-bearing now that three gates short-circuit on it; recorded for follow-ups rather than changed in this delivery"
+    }
+  ],
+  "independent": true,
+  "reviewedAt": "2026-09-14T18:57:32.401Z"
+}
